@@ -7,4 +7,3 @@
 | Sarimah Chindah            		| E       |            |             |                      |                       |
 
 **Discord Chat/Server Invite :** [https://discord.gg/fGtsPGaExR]
-
