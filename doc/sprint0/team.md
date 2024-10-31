@@ -2,6 +2,6 @@
 |-------------------------------|---------|------------|-------------|----------------------|-----------------------|
 | Olajonlu Timi Akinbaleye 	| E       |  218863761          |    timmyola@my.yorku.ca         |   Text (905-965-6789)                   |           Timi.d1            |
 | Kosy Oraka            	| E       |            |             |                      |                       |
-| Kennie Oraka          	| E       |            |             |                      |                       |
+| Kennie Oraka          	| E       | 219163104           |  kennie@my.yorku.ca           |   Text (437-344-3502)                   |   Kennie03                    |
 | Elyse Dhaliwal       	 	| E       |            |             |                      |                       |
 | Sarimah              		| E       |            |             |                      |                       |
