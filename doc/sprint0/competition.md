@@ -40,10 +40,10 @@ We also talk about how our app/solution is different from our competitors, and h
 - **Primary Users**: Our ideal users are individuals who are passionate about specific hobbies or interests and seek meaningful one-on-one connections, rather than joining larger, generalized communities. They prefer a personalized and focused platform to find more like-mdined people. 
 
 ### Key Scenarios:
-    - University students who are new to campus or looking to expand their social circles beyond academic settings. They may be interested in connecting with others for study groups, club activities and many other things.
-    - Users who want a straightforward way to meet others with shared interests, without navigating through large online communities.
-    - People moving to a new city looking to make friends with specific hobbies, such as photography, language exchange, or hiking.
-    - Users looking for activity partners for regular sessions, like weekly book clubs, game nights, or fitness meetups/workout partners.
+- University students who are new to campus or looking to expand their social circles beyond academic settings. They may be interested in connecting with others for study groups, club activities and many other things.
+- Users who want a straightforward way to meet others with shared interests, without navigating through large online communities.
+- People moving to a new city looking to make friends with specific hobbies, such as photography, language exchange, or hiking.
+- Users looking for activity partners for regular sessions, like weekly book clubs, game nights, or fitness meetups/workout partners.
 
 ## Why Competitors May Not Focus on These Users and Scenarios
 1. Community-Based Focus:
