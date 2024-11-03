@@ -1,4 +1,4 @@
-UniVerse - Connecting University students together!
+**UniVerse - Connecting University students together!**
 
 **Project Objective:** UniVerse is a social platform tailored for university students and uniquely designed to foster meaningful friendships and connections not only through ones academic field, but curated from shared interests. The objective is to provide students with an accessible platform to expand their social circles within their campus community, differentiating from the traditional social media route and tailored to the specific social needs of university life. 
 
