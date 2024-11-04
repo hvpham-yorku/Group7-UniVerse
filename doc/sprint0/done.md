@@ -4,7 +4,6 @@
 ## **Overview**  
 This document outlines the agreed-upon Definition of Done (DoD) criteria for all user stories and features in our project. Both standard and additional criteria are provided to ensure each feature meets the team's quality standards before it is marked as complete.
 
----
 
 ### **A. Standard Definition of Done**
 
