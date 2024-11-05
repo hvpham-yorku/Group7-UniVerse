@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<SplitPane dividerPositions="0.5" orientation="HORIZONTAL" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AppController">
+    <items>
+        <!-- Left Side with Logo and Text -->
+        <AnchorPane style="-fx-background-color: #d3eaff;">
+            <children>
+                <VBox alignment="CENTER" spacing="20.0" layoutX="50.0" layoutY="100.0">
+                    <children>
+                        <!-- Logo Image (Replace with your actual image path) -->
+                        <ImageView fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@logo.png" /> <!-- Replace with your logo image path -->
+                            </image>
+                        </ImageView>
+                        
+                        <!-- Title -->
+                        <Label text="UniVerse" style="-fx-font-size: 36px; -fx-font-family: 'Inria Sans'; -fx-font-weight: bold; -fx-text-fill: #4b0082;" />
+
+                        <!-- Subtitle -->
+                        <Label text="Create. Discover. Connect." style="-fx-font-size: 18px; -fx-font-family: 'Poppins'; -fx-text-fill: #4b0082;" />
+
+                        <!-- Description Text -->
+                        <Label text="Log in or Create an account to begin your journey and discover your community within UniVerse!"
+                               wrapText="true" textAlignment="CENTER"
+                               style="-fx-font-size: 14px; -fx-font-family: 'Poppins'; -fx-text-fill: #800080;" />
+                    </children>
+                </VBox>
+            </children>
+        </AnchorPane>
+
+        <!-- Right Side with Sign-Up Form -->
+        <AnchorPane>
+            <children>
+                <VBox alignment="CENTER" layoutX="50.0" layoutY="50.0" spacing="15.0">
+                    <children>
+                        <!-- Title -->
+                        <Label text="Create Your Account" style="-fx-font-size: 24px; -fx-font-family: 'Poppins'; -fx-font-weight: bold; -fx-text-fill: #4b9eff;" />
+
+                        <!-- Social Sign-Up Buttons -->
+                        <Button text="Sign Up with Google" style="-fx-background-color: #a8d4f0; -fx-font-size: 14px; -fx-font-family: 'Poppins'; -fx-text-fill: #4b4b4b;" prefWidth="250" />
+                        <Button text="Sign Up with Facebook" style="-fx-background-color: #a8d4f0; -fx-font-size: 14px; -fx-font-family: 'Poppins'; -fx-text-fill: #4b4b4b;" prefWidth="250" />
+                        <Button text="Sign Up with Microsoft" style="-fx-background-color: #a8d4f0; -fx-font-size: 14px; -fx-font-family: 'Poppins'; -fx-text-fill: #4b4b4b;" prefWidth="250" />
+
+                        <!-- OR Separator -->
+                        <HBox alignment="CENTER" spacing="10.0">
+                            <Separator prefWidth="100" />
+                            <Label text="OR" style="-fx-font-size: 12px; -fx-font-family: 'Poppins'; -fx-font-weight: bold; -fx-text-fill: #a0a0a0;" />
+                            <Separator prefWidth="100" />
+                        </HBox>
+
+                        <!-- Text Fields for Name, Email, Password -->
+                        <TextField fx:id="usernameField" promptText="Name" style="-fx-background-color: #a8d4f0; -fx-font-family: 'Poppins'; -fx-font-size: 14px; -fx-text-fill: #4b4b4b;" prefWidth="250" />
+                        <TextField fx:id="emailField" promptText="Email" style="-fx-background-color: #a8d4f0; -fx-font-family: 'Poppins'; -fx-font-size: 14px; -fx-text-fill: #4b4b4b;" prefWidth="250" />
+                        
+                        <!-- Password Field -->
+                        <PasswordField fx:id="bioField" promptText="Password" style="-fx-background-color: #a8d4f0; -fx-font-family: 'Poppins'; -fx-font-size: 14px; -fx-text-fill: #4b4b4b;" prefWidth="250" />
+                        <Label text="Must be 8 characters at least" style="-fx-font-size: 12px; -fx-font-family: 'Poppins'; -fx-text-fill: #4b4b4b;" />
+
+                        <!-- Terms and Conditions Checkbox -->
+                        <HBox alignment="CENTER_LEFT" spacing="5.0">
+                            <CheckBox />
+                            <Label text="I agree to the " style="-fx-font-size: 12px; -fx-font-family: 'Poppins'; -fx-text-fill: #4b4b4b;" />
+                            <Hyperlink text="Terms & Conditions" style="-fx-font-size: 12px; -fx-font-family: 'Poppins'; -fx-text-fill: #4b9eff;" />
+                        </HBox>
+
+                        <!-- Register Button -->
+                        <Button fx:id="registerButton" text="Register" style="-fx-background-color: #4b9eff; -fx-font-size: 18px; -fx-font-family: 'Poppins'; -fx-text-fill: white;" prefWidth="250" />
+
+                        <!-- Status Label -->
+                        <Label fx:id="statusLabel" text="" style="-fx-font-size: 12px; -fx-font-family: 'Poppins'; -fx-text-fill: green;" />
+
+                        <!-- Sign-In Option -->
+                        <HBox alignment="CENTER" spacing="5.0">
+                            <Label text="Already have an account?" style="-fx-font-size: 12px; -fx-font-family: 'Poppins'; -fx-text-fill: #4b4b4b;" />
+                            <Hyperlink text="Sign In" style="-fx-font-size: 12px; -fx-font-family: 'Poppins'; -fx-text-fill: #4b9eff;" />
+                        </HBox>
+                    </children>
+                </VBox>
+            </children>
+        </AnchorPane>
+    </items>
+</SplitPane>
