@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.loginformjavafx.afterLogIn" alignment="CENTER" spacing="20" style="-fx-padding: 20;">
+   <Label text="Welcome to UniVerse!" style="-fx-font-size: 24px; -fx-font-family: 'Poppins'; -fx-font-weight: bold; -fx-text-fill: #4b0082;" />
+   <Label text="You are now logged in." style="-fx-font-size: 16px; -fx-font-family: 'Poppins'; -fx-text-fill: #4b4b4b;" />
+   <Button fx:id="logout" text="Logout" onAction="#userLogOut" style="-fx-background-color: #4b9eff; -fx-font-size: 18px; -fx-font-family: 'Poppins'; -fx-text-fill: white;" prefWidth="150" />
+</VBox>
