@@ -8,12 +8,12 @@
 
 2. **User Story**: As a user, I want to personalize my profile with a bio, profile picture, and interests so that others can understand who I am and my hobbies.
    - **Criteria for Satisfaction**:
-     - Profile includes editable bio, profile picture, and interest tags.
+     - Profile includes editable bio, profile picture, university, program, year of study and interest tags.
      - Interests can be selected from a list or entered manually.
 
 3. **User Story**: As a user, I want to be able to update or delete my profile information to keep my account up-to-date and manage my data.
    - **Criteria for Satisfaction**:
-     - Users can edit or delete their bio, profile picture, and interests.
+     - Users can edit or delete their bio, profile picture, university, program, year of study and interests.
      - Users have the option to delete their account entirely.
 
 4. **User Story**: As a user, I want to search for connections based on specific interests to find people who share my hobbies or passions.
@@ -28,7 +28,7 @@
 
 6. **User Story**: As a user, I want to see profile details (bio, interests) of a suggested match before deciding to connect.
    - **Criteria for Satisfaction**:
-     - Users can view profiles with bio and interest information.
+     - Users can view profiles with bio, university, program, year of study and interest information.
      - A prompt is available to send a connection request.
 
 7. **User Story**: As a user, I want to send a connection request to someone I find interesting to initiate a one-on-one connection.
