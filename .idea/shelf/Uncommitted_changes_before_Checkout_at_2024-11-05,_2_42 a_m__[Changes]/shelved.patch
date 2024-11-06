@@ -1,0 +1,21 @@
+Index: src/models/UserProfile.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package models;\n\npublic class UserProfile {\n\tprivate int userId;\n\tprivate String username;\n\tprivate String email;\n\tprivate String passwordHash;\n\tprivate String bio;\n\n\t// Constructor\n\tpublic UserProfile(int userId, String username, String email, String passwordHash, String bio) {\n\t\tthis.userId = userId;\n\t\tthis.username = username;\n\t\tthis.email = email;\n\t\tthis.passwordHash = passwordHash;\n\t\tthis.bio = bio;\n\t}\n\n\t// Getters and Setters\n\tpublic int getUserId() {\n\t\treturn userId;\n\t}\n\n\tpublic void setUserId(int userId) {\n\t\tthis.userId = userId;\n\t}\n\n\tpublic String getUsername() {\n\t\treturn username;\n\t}\n\n\tpublic void setUsername(String username) {\n\t\tthis.username = username;\n\t}\n\n\tpublic String getEmail() {\n\t\treturn email;\n\t}\n\n\tpublic void setEmail(String email) {\n\t\tthis.email = email;\n\t}\n\n\tpublic String getPasswordHash() {\n\t\treturn passwordHash;\n\t}\n\n\tpublic void setPasswordHash(String passwordHash) {\n\t\tthis.passwordHash = passwordHash;\n\t}\n\n\tpublic String getBio() {\n\t\treturn bio;\n\t}\n\n\tpublic void setBio(String bio) {\n\t\tthis.bio = bio;\n\t}\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/models/UserProfile.java b/src/models/UserProfile.java
+--- a/src/models/UserProfile.java	(revision b7b2d4c45ecbb8e518d7b1e26b13777aab500ec9)
++++ b/src/models/UserProfile.java	(date 1730770178759)
+@@ -7,6 +7,10 @@
+ 	private String passwordHash;
+ 	private String bio;
+ 
++	 // Default Constructor
++	 public UserProfile() {
++    }
++
+ 	// Constructor
+ 	public UserProfile(int userId, String username, String email, String passwordHash, String bio) {
+ 		this.userId = userId;
