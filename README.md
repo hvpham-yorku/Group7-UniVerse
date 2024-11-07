@@ -1,5 +1,8 @@
 # UniVerse
 
+note: to have access to firebase you would have to contact me by # or email 
+905-965-6789 or olajonlutimilehin@gmail.com so I can add you to it. : ) 
+
 ## Motivation
 
 **UniVerse** is a social networking application that connects users based on shared hobbies and interests. The project aims to help users find friends with similar passions, enhancing their social experience by allowing them to connect with like-minded individuals. By focusing on specific activities, UniVerse fosters meaningful connections and helps users engage in group activities with new friends.
@@ -10,33 +13,43 @@ This project is part of a team initiative to learn about full-stack application 
 
 To set up and run the project locally, ensure you have the following tools installed:
 
-- **Java Development Kit (JDK) 1.8 or higher**
-- **MySQL** (with a local instance)
-- **Eclipse IDE** 
-- **JUnit** (for testing)
+- **Java 17** or later installed.
+- **Apache Maven** installed.
 
 ### Steps to Build and Run
 
 1. **Clone the Repository**:
    ```
-   git clone https://github.com/hvpham-yorku/UniVerse.git
-   cd UniVerse
+   git clone https://github.com/hvpham-yorku/Group7-UniVerse.git
+   cd UniVerse/universe
    ```
-2. Set Up the MySQL Database:
-- Create a new MySQL database called friend_finder_db.
-- Run the SQL script (uni_verse_db_users.sql) included in the project to create necessary tables.
-- Update the DatabaseConnection class with your MySQL credentials.
+2. Install Dependecies
+```
+mvn clean install
+```
 
-3. Open the Project in Eclipse:
-- Import the project into Eclipse as an existing Java project.
-- Make sure all required libraries (JUnit, MySQL Connector) are added to the build path.
+3. Run the Application
+```
+mvn exec:java -Dexec.mainClass="com.universe.gui.SignUporIn"
+```
 
-4. Run the Application:
-- Run the main class to start the backend.
-
-5. Testing:
+4. Testing:
 - Use JUnit tests to verify the functionality.
-- Run tests by navigating to the test folder in Eclipse, right-clicking UserProfileDAOTest, and selecting Run As > JUnit Test.
+- Run tests by navigating to the test folder in Eclipse, Run As > JUnit Test.
+
+### Common issues
+**NoClassDefFoundError**: If you encounter this or any dependency-related error, force Maven to update all dependencies by running:
+```
+mvn clean install -U
+```
+
+
+### Alternatively, you can run the GUI from an IDE like Eclipse:
+
+- Open the project in Eclipse.
+- Navigate to com.universe.gui.SignUporIn.java.
+- Right-click on the file and select Run As -> Java Application.
+
 
 
 ## Contribution
