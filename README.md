@@ -21,7 +21,7 @@ To set up and run the project locally, ensure you have the following tools insta
 1. **Clone the Repository**:
    ```
    git clone https://github.com/hvpham-yorku/Group7-UniVerse.git
-   cd UniVerse/universe
+   cd Group7-UniVerse/universe
    ```
 2. Install Dependecies
 ```
