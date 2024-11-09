@@ -120,5 +120,9 @@ public class SignUporIn {
 
         // Show confirmation message
         JOptionPane.showMessageDialog(frame, "Sign up successful! User ID: " + userId, "Success", JOptionPane.INFORMATION_MESSAGE);
+        
+        // Close the current frame and open the Welcome Page
+        frame.dispose(); 
+        new WelcomePage(name); 
     }
 }
