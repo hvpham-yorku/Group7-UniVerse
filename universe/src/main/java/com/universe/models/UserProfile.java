@@ -6,24 +6,23 @@ public class UserProfile {
 	private String userId;
 	private String username;
 	private String email;
+	private String passwordHash;
 	private String bio;
 	private String dateOfBirth;
 	private String province;
 	private String university;
 	private List<String> interests;
 
-	// Default Constructor
 	public UserProfile() {
 	}
 
-	// Constructor with only basic fields (used for sign-up)
-	public UserProfile(String userId, String username, String email) {
+	public UserProfile(String userId, String username, String email, String passwordHash) {
 		this.userId = userId;
 		this.username = username;
 		this.email = email;
+		this.passwordHash = passwordHash;
 	}
 
-	// Full Constructor (used for detailed profile creation)
 	public UserProfile(String userId, String username, String email, String bio, String dateOfBirth, String province,
 			String university, List<String> interests) {
 		this.userId = userId;
@@ -36,7 +35,20 @@ public class UserProfile {
 		this.interests = interests;
 	}
 
-	// Getters and Setters
+	// Constructor for Full Profile
+	public UserProfile(String userId, String username, String email, String bio, String dateOfBirth, String province,
+			String university, List<String> interests, String passwordHash) {
+		this.userId = userId;
+		this.username = username;
+		this.email = email;
+		this.bio = bio;
+		this.dateOfBirth = dateOfBirth;
+		this.province = province;
+		this.university = university;
+		this.interests = interests;
+		this.passwordHash = passwordHash;
+	}
+
 	public String getUserId() {
 		return userId;
 	}
@@ -59,6 +71,14 @@ public class UserProfile {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public String getPasswordHash() {
+		return passwordHash;
+	}
+
+	public void setPasswordHash(String passwordHash) {
+		this.passwordHash = passwordHash;
 	}
 
 	public String getBio() {
@@ -100,11 +120,20 @@ public class UserProfile {
 	public void setInterests(List<String> interests) {
 		this.interests = interests;
 	}
-
+	
 	@Override
 	public String toString() {
-		return "UserProfile{" + "userId='" + userId + '\'' + ", username='" + username + '\'' + ", email='" + email
-				+ '\'' + ", bio='" + bio + '\'' + ", dateOfBirth='" + dateOfBirth + '\'' + ", province='" + province
-				+ '\'' + ", university='" + university + '\'' + ", interests=" + interests + '}';
+	    return "UserProfile{" +
+	            "userId='" + userId + '\'' +
+	            ", username='" + username + '\'' +
+	            ", email='" + email + '\'' +
+	            ", passwordHash='" + passwordHash + '\'' +
+	            ", bio='" + bio + '\'' +
+	            ", dateOfBirth='" + dateOfBirth + '\'' +
+	            ", province='" + province + '\'' +
+	            ", university='" + university + '\'' +
+	            ", interests=" + interests +
+	            '}';
 	}
+
 }
