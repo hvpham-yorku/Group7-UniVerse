@@ -22,11 +22,14 @@ public class SignUporIn {
     private JPasswordField passwordField;
     private JFormattedTextField dobField;
     private JTextField bioTextField;
-    private JLabel lblInterestsSummary;
     private JLabel lblUserName;
     private JLabel lblUserEmail;
+    private JLabel lblInterestsSummary;
     private Choice choiceCity;
     private Choice choiceUniversity;
+    private List<String> selectedInterests;
+    private JLabel profilePicLabel;
+    private String currentUserId;
 
     public static void main(String[] args) {
         // Initialize Firebase
@@ -48,9 +51,8 @@ public class SignUporIn {
     }
 
     private void initialize() {
-        // Set up the main frame
-        frame = new JFrame("Sign Up or Welcome Page");
-        frame.setBounds(500, 500, 700, 700);
+        frame = new JFrame("Sign Up or Login");
+        frame.setBounds(500, 500, 800, 800);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
@@ -59,278 +61,231 @@ public class SignUporIn {
         mainPanel = new JPanel(cardLayout);
         frame.getContentPane().add(mainPanel);
 
-        // Create the sign-up/sign-in panel
         JPanel signUpPanel = new JPanel();
         signUpPanel.setLayout(null);
         initializeSignUpPanel(signUpPanel);
 
-        // Create the welcome panel
+        JPanel loginPanel = new JPanel();
+        loginPanel.setLayout(null);
+        initializeLoginPanel(loginPanel);
+
         JPanel welcomePanel = new JPanel();
         welcomePanel.setLayout(null);
         initializeWelcomePanel(welcomePanel);
 
-        // Add panels to main panel with CardLayout
         mainPanel.add(signUpPanel, "SignUp");
+        mainPanel.add(loginPanel, "Login");
         mainPanel.add(welcomePanel, "Welcome");
 
-        // Show the sign-up panel first
         cardLayout.show(mainPanel, "SignUp");
     }
 
     private void initializeSignUpPanel(JPanel signUpPanel) {
-        // Name field
+        // Full Name Field
         textFieldName = new JTextField();
-        textFieldName.setBounds(420, 174, 212, 34);
+        textFieldName.setBounds(250, 120, 212, 34);
         signUpPanel.add(textFieldName);
 
         JLabel lblName = new JLabel("Full Name:");
-        lblName.setBounds(318, 183, 76, 16);
+        lblName.setBounds(150, 125, 76, 16);
         signUpPanel.add(lblName);
 
-        // Email field
+        // Email Field
         textFieldEmail = new JTextField();
-        textFieldEmail.setBounds(422, 241, 212, 34);
+        textFieldEmail.setBounds(250, 180, 212, 34);
         signUpPanel.add(textFieldEmail);
 
         JLabel lblEmail = new JLabel("Email:");
-        lblEmail.setBounds(349, 250, 38, 16);
+        lblEmail.setBounds(150, 185, 38, 16);
         signUpPanel.add(lblEmail);
 
-        // Password field
+        // Password Field
         passwordField = new JPasswordField();
-        passwordField.setBounds(422, 310, 217, 36);
+        passwordField.setBounds(250, 240, 212, 36);
         signUpPanel.add(passwordField);
 
         JLabel lblPassword = new JLabel("Password:");
-        lblPassword.setBounds(325, 323, 71, 16);
+        lblPassword.setBounds(150, 245, 71, 16);
         signUpPanel.add(lblPassword);
 
-        // Sign Up button
+        // Sign-Up Button
         JButton btnSignUp = new JButton("Sign Up");
-        btnSignUp.setBackground(new Color(255, 91, 108));
-        btnSignUp.setBounds(470, 374, 117, 29);
+        btnSignUp.setBounds(290, 300, 117, 29);
         signUpPanel.add(btnSignUp);
 
-        // Action listener for sign up button
         btnSignUp.addActionListener(this::handleSignUp);
+
+        JLabel lblLoginLink = new JLabel("<html><u>Already have an account? Login</u></html>");
+        lblLoginLink.setForeground(Color.BLUE);
+        lblLoginLink.setBounds(250, 350, 200, 30);
+        signUpPanel.add(lblLoginLink);
+
+        lblLoginLink.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                cardLayout.show(mainPanel, "Login");
+            }
+        });
     }
 
-    private void initializeWelcomePanel(JPanel welcomePanel) {
-        // Profile picture section
-        JLabel profilePicLabel = new JLabel();
-        profilePicLabel.setBounds(292, 6, 117, 93);
-        profilePicLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        welcomePanel.add(profilePicLabel);
+    private void initializeLoginPanel(JPanel loginPanel) {
+        JLabel lblEmail = new JLabel("Email:");
+        lblEmail.setBounds(150, 180, 100, 30);
+        loginPanel.add(lblEmail);
 
-        JButton btnAddPic = new JButton("Add Picture");
-        btnAddPic.setBounds(410, 53, 102, 19);
-        welcomePanel.add(btnAddPic);
+        JTextField emailField = new JTextField();
+        emailField.setBounds(250, 180, 212, 30);
+        loginPanel.add(emailField);
 
-        btnAddPic.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-            int result = fileChooser.showOpenDialog(frame);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
-                ImageIcon profilePic = new ImageIcon(selectedFile.getAbsolutePath());
-                Image scaledImage = profilePic.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
-                profilePicLabel.setIcon(new ImageIcon(scaledImage));
+        JLabel lblPassword = new JLabel("Password:");
+        lblPassword.setBounds(150, 240, 100, 30);
+        loginPanel.add(lblPassword);
+
+        JPasswordField passwordField = new JPasswordField();
+        passwordField.setBounds(250, 240, 212, 30);
+        loginPanel.add(passwordField);
+
+        JButton btnLogin = new JButton("Login");
+        btnLogin.setBounds(290, 300, 100, 30);
+        loginPanel.add(btnLogin);
+
+        btnLogin.addActionListener(e -> {
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
+            String passwordHash = Integer.toHexString(password.hashCode()); // Hash the entered password
+
+            boolean isAuthenticated = FirestoreHandler.authenticateUser(email, passwordHash);
+            if (isAuthenticated) {
+                JOptionPane.showMessageDialog(frame, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                cardLayout.show(mainPanel, "Welcome"); // Redirect to Welcome/Profile page
+            } else {
+                JOptionPane.showMessageDialog(frame, "Invalid email or password.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        // User name and email labels
-        lblUserName = new JLabel();
+        JLabel lblSignUpLink = new JLabel("<html><u>Don't have an account? Sign Up</u></html>");
+        lblSignUpLink.setForeground(Color.BLUE);
+        lblSignUpLink.setBounds(250, 350, 200, 30);
+        loginPanel.add(lblSignUpLink);
+
+        lblSignUpLink.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                cardLayout.show(mainPanel, "SignUp");
+            }
+        });
+    }
+
+
+    private void initializeWelcomePanel(JPanel welcomePanel) {
+        // Profile Picture Section
+        JLabel lblProfilePic = new JLabel("Profile Picture:");
+        lblProfilePic.setBounds(150, 20, 100, 20);
+        welcomePanel.add(lblProfilePic);
+
+        profilePicLabel = new JLabel();
+        profilePicLabel.setBounds(250, 20, 100, 100);
+        profilePicLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        welcomePanel.add(profilePicLabel);
+
+        JButton btnAddPic = new JButton("Add Picture");
+        btnAddPic.setBounds(370, 60, 120, 30);
+        welcomePanel.add(btnAddPic);
+
+        btnAddPic.addActionListener(e -> handleAddPicture());
+
+        // User Name Label
+        lblUserName = new JLabel("Name: ");
         lblUserName.setFont(new Font("Arial", Font.BOLD, 16));
-        lblUserName.setBounds(323, 99, 135, 19);
+        lblUserName.setBounds(200, 140, 300, 20);
         welcomePanel.add(lblUserName);
 
-        lblUserEmail = new JLabel();
+        lblUserEmail = new JLabel("Email: ");
         lblUserEmail.setFont(new Font("Arial", Font.BOLD, 16));
-        lblUserEmail.setBounds(323, 130, 175, 19);
+        lblUserEmail.setBounds(200, 170, 300, 20);
         welcomePanel.add(lblUserEmail);
 
-        // Username field
-        JTextField welcomeUsernameField = new JTextField();
-        welcomeUsernameField.setBounds(237, 183, 229, 26);
-        welcomePanel.add(welcomeUsernameField);
+        // Date of Birth
+        JLabel lblDob = new JLabel("Date of Birth:");
+        lblDob.setBounds(150, 210, 100, 20);
+        welcomePanel.add(lblDob);
 
-        // Date of birth field
         try {
             MaskFormatter dateMask = new MaskFormatter("##/##/####");
             dateMask.setPlaceholderCharacter('_');
             dobField = new JFormattedTextField(dateMask);
-            dobField.setBounds(237, 233, 229, 26);
+            dobField.setBounds(250, 210, 150, 25);
             welcomePanel.add(dobField);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // About Me/Bio text field
+        // Bio
+        JLabel lblBio = new JLabel("About Me:");
+        lblBio.setBounds(150, 250, 100, 20);
+        welcomePanel.add(lblBio);
+
         bioTextField = new JTextField();
-        bioTextField.setBounds(237, 283, 229, 26);
+        bioTextField.setBounds(250, 250, 300, 25);
         welcomePanel.add(bioTextField);
 
-        // Button to open interest selection dialog
-        JButton btnSelectInterests = new JButton("Select Interests");
-        btnSelectInterests.setBounds(237, 330, 150, 25);
-        welcomePanel.add(btnSelectInterests);
+        // City
+        JLabel lblCity = new JLabel("City:");
+        lblCity.setBounds(150, 290, 50, 20);
+        welcomePanel.add(lblCity);
 
-        lblInterestsSummary = new JLabel("Selected Interests: None");
-        lblInterestsSummary.setBounds(237, 365, 400, 25);
-        welcomePanel.add(lblInterestsSummary);
-
-        btnSelectInterests.addActionListener(e -> showInterestSelectionDialog());
-
-        // City dropdown
         choiceCity = new Choice();
-        choiceCity.setBounds(208, 420, 150, 27);
-        String[] citiesInOntario = {
-                "Toronto", "Ottawa", "Mississauga", "Brampton", "Hamilton",
-                "London", "Markham", "Vaughan", "Kitchener", "Windsor",
-                "Richmond Hill", "Oakville", "Burlington", "Sudbury", "Oshawa",
-                "St. Catharines", "Barrie", "Cambridge", "Kingston", "Guelph",
-                "Thunder Bay", "Waterloo", "Pickering", "Niagara Falls", "Whitby"
-            };
-        for (String city : citiesInOntario) {
-        	choiceCity.add(city);
+        choiceCity.setBounds(250, 290, 200, 25);
+        String[] cities = {"Toronto", "Ottawa", "Mississauga"};
+        for (String city : cities) {
+            choiceCity.add(city);
         }
         welcomePanel.add(choiceCity);
 
-        // University dropdown
+        // University
+        JLabel lblUniversity = new JLabel("University:");
+        lblUniversity.setBounds(150, 330, 100, 20);
+        welcomePanel.add(lblUniversity);
+
         choiceUniversity = new Choice();
-        choiceUniversity.setBounds(398, 420, 150, 27);
-        String[] universitiesInOntario = {
-                "University of Toronto", "York University", "McMaster University",
-                "University of Waterloo", "Western University", "Queen's University",
-                "University of Ottawa", "Carleton University", "University of Guelph",
-                "Lakehead University", "Trent University", "Wilfrid Laurier University",
-                "Brock University", "Ryerson University", "Laurentian University",
-                "Nipissing University", "Ontario Tech University", "Algoma University"
-            };
-        for (String university : universitiesInOntario) {
+        choiceUniversity.setBounds(250, 330, 200, 25);
+        String[] universities = {"University of Toronto", "York University", "McMaster University"};
+        for (String university : universities) {
             choiceUniversity.add(university);
         }
         welcomePanel.add(choiceUniversity);
 
-        // Labels for text fields
-        Label labelUsername = new Label("Create a Username *");
-        labelUsername.setBounds(237, 161, 150, 16);
-        welcomePanel.add(labelUsername);
+        // Interests
+        JLabel lblInterests = new JLabel("Interests:");
+        lblInterests.setBounds(150, 370, 100, 20);
+        welcomePanel.add(lblInterests);
 
-        Label labelDob = new Label("Select Date of Birth *");
-        labelDob.setBounds(237, 211, 150, 16);
-        welcomePanel.add(labelDob);
+        lblInterestsSummary = new JLabel("None selected");
+        lblInterestsSummary.setBounds(250, 370, 300, 20);
+        welcomePanel.add(lblInterestsSummary);
 
-        Label labelBio = new Label("About Me/Bio *");
-        labelBio.setBounds(237, 261, 150, 16);
-        welcomePanel.add(labelBio);
+        JButton btnSelectInterests = new JButton("Select Interests");
+        btnSelectInterests.setBounds(250, 400, 150, 30);
+        welcomePanel.add(btnSelectInterests);
 
-        Label labelProvince = new Label("Province");
-        labelProvince.setBounds(208, 400, 100, 16);
-        welcomePanel.add(labelProvince);
+        btnSelectInterests.addActionListener(e -> showInterestSelectionDialog());
 
-        Label labelUniversity = new Label("University");
-        labelUniversity.setBounds(398, 400, 100, 16);
-        welcomePanel.add(labelUniversity);
-
-        // Save button
-        JButton btnSave = new JButton("Save");
-        btnSave.setBounds(292, 470, 117, 29);
+        // Save Button
+        JButton btnSave = new JButton("Save Profile");
+        btnSave.setBounds(290, 450, 150, 30);
         welcomePanel.add(btnSave);
 
-        // Action listener for save button
-        btnSave.addActionListener(this::handleSave);
+        btnSave.addActionListener(e -> handleSave(e));
     }
 
-    private void handleSignUp(ActionEvent e) {
-        String name = textFieldName.getText();
-        String email = textFieldEmail.getText();
-        String password = new String(passwordField.getPassword());
-
-        // Validate input fields
-        if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        String passwordHash = Integer.toHexString(password.hashCode());
-
-        // Create a user profile and add to Firestore
-        String userId = String.valueOf(System.currentTimeMillis()); // Unique ID based on current time
-        UserProfile user = new UserProfile(userId, name, email);
-        FirestoreHandler.addUserData(user);
-
-        // Show confirmation message
-        JOptionPane.showMessageDialog(frame, "Sign up successful! User ID: " + userId, "Success", JOptionPane.INFORMATION_MESSAGE);
-
-        // Set user data to the welcome panel and switch to it
-        lblUserName.setText(name);
-        lblUserEmail.setText(email);
-        cardLayout.show(mainPanel, "Welcome");
-    }
-
-    private void handleSave(ActionEvent e) {
-        String userId = String.valueOf(System.currentTimeMillis());
-        String username = lblUserName.getText();
-        String email = lblUserEmail.getText();
-        String dateOfBirth = dobField.getText();
-        String bio = bioTextField.getText();
-        String province = choiceCity.getSelectedItem();
-        String university = choiceUniversity.getSelectedItem();
-
-        // Get selected interests
-        String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
-        List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
-
-        // Create user profile and save to Firestore
-        UserProfile userProfile = new UserProfile(userId, username, email, bio, dateOfBirth, province, university, interests);
-        FirestoreHandler.addUserData(userProfile);
-
-        JOptionPane.showMessageDialog(frame, "Profile saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-    }
 
     private void showInterestSelectionDialog() {
-        JDialog dialog = new JDialog(frame, "Select Your Interests", true);
+        JDialog dialog = new JDialog(frame, "Select Interests", true);
         dialog.setSize(400, 300);
-        dialog.getContentPane().setLayout(new BorderLayout());
-        dialog.setLocationRelativeTo(frame);
+        dialog.setLayout(new BorderLayout());
 
         JPanel interestsPanel = new JPanel();
         interestsPanel.setLayout(new BoxLayout(interestsPanel, BoxLayout.Y_AXIS));
 
-        String[] interests = {
-                "Sports", "Music", "Reading", "Travel", "Art", "Technology", "Cooking", "Fitness", "Gaming", "Movies",
-                "Photography", "Fashion", "Environment", "Social Media", "Entrepreneurship", "Volunteering", "Writing",
-                "Public Speaking", "Languages", "Hiking", "Yoga", "Meditation", "Health & Wellness", "Debate",
-                "Community Service", "Cultural Activities", "Programming", "Robotics", "Startups", "Investing",
-                "Astronomy", "Biology", "Physics", "Chemistry", "Mathematics", "Economics", "History", "Philosophy",
-                "Political Science", "Psychology", "Sociology", "Graphic Design", "Video Editing", "Content Creation",
-                "Podcasts", "Camping", "Food Tasting", "Dance", "Theater", "Stand-Up Comedy", "Board Games",
-                "Card Games", "Puzzles", "Gardening", "Pets & Animals", "Anime", "Comics", "Creative Writing",
-                "Journalism", "3D Modeling", "Virtual Reality", "Augmented Reality", "Cryptocurrency", "Blockchain",
-                "Marketing", "Advertising", "Digital Art", "Painting", "Sculpting", "Music Production", "DJing",
-                "Cars", "Motorcycles", "DIY Projects", "Home Decor", "Cooking Experiments", "Baking", "Mixology",
-                "Event Planning", "Networking", "Career Development", "Fitness Challenges", "Weightlifting",
-                "CrossFit", "Rugby", "Soccer", "Basketball", "Swimming", "Martial Arts", "Self-Defense", "Esports",
-                "Streaming", "Interior Design", "Mindfulness", "Climate Activism", "Pet Care", "Charity Work",
-                "Startup Pitches", "Business Plan Writing", "Urban Exploration", "Bird Watching", "Science Fiction",
-                "Fantasy", "Classical Music", "Hip Hop", "Rock Music", "Electronic Music", "Jazz", "Blues", "Country Music",
-                "Reggae", "K-Pop", "J-Pop", "Latino Music", "Dancehall", "Piano", "Guitar", "Drums", "Violin",
-                "Networking Events", "TED Talks", "Personal Finance", "Home Brewing", "Cheese Tasting", "Public Relations",
-                "Social Activism", "Podcast Hosting", "Speech Competitions", "Debate Club", "Yoga Retreats", "Survival Skills",
-                "Outdoor Adventures", "Mountain Biking", "Skateboarding", "Snowboarding", "Skiing", "Fishing", "Kayaking",
-                "Sailing", "Scuba Diving", "Freediving", "Surfing", "Archery", "Horseback Riding", "Cycling",
-                "Triathlons", "Running", "Marathon Training", "Hunting", "Skydiving", "Bungee Jumping", "Parkour",
-                "Geocaching", "Street Art", "Mural Painting", "Tattoo Art", "Hairstyling", "Cosplay", "Conventions",
-                "LARPing (Live Action Role Playing)", "Escape Rooms", "Trivia Nights", "Improv Comedy", "Sketching",
-                "Woodworking", "Metalworking", "Leather Crafting", "Knitting", "Crocheting", "Sewing", "Quilting",
-                "Storytelling", "Magic Tricks", "Collecting", "Antique Hunting", "Vinyl Collecting", "Record Stores",
-                "Museum Hopping", "Concerts", "Theater Plays", "Opera", "Ballet", "Trivia Games", "Learning New Languages",
-                "Coding Hackathons", "Mathematics Competitions", "Model United Nations", "Science Fairs", "History Reenactment",
-                "Cultural Festivals", "Travel Blogging", "Food Blogging", "Vlogging", "Fitness Blogging", "Book Clubs",
-                "Study Groups", "Research Projects", "Academic Writing", "Grant Writing", "Academic Conferences", "Eco-Friendly Lifestyle",
-                "Upcycling", "Minimalism", "Zero Waste", "Urban Gardening", "Sustainable Development", "Wildlife Conservation"
-            };
-
+        String[] interests = {"Sports", "Music", "Reading", "Art", "Technology"};
         List<JCheckBox> checkBoxes = new ArrayList<>();
         for (String interest : interests) {
             JCheckBox checkBox = new JCheckBox(interest);
@@ -338,14 +293,11 @@ public class SignUporIn {
             checkBoxes.add(checkBox);
         }
 
-        JScrollPane scrollPane = new JScrollPane(interestsPanel);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        dialog.getContentPane().add(scrollPane, BorderLayout.CENTER);
+        dialog.add(new JScrollPane(interestsPanel), BorderLayout.CENTER);
 
         JButton btnOk = new JButton("OK");
-        btnOk.addActionListener(ev -> {
-            List<String> selectedInterests = new ArrayList<>();
+        btnOk.addActionListener(e -> {
+            selectedInterests = new ArrayList<>();
             for (JCheckBox checkBox : checkBoxes) {
                 if (checkBox.isSelected()) {
                     selectedInterests.add(checkBox.getText());
@@ -357,8 +309,86 @@ public class SignUporIn {
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(btnOk);
-        dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
 
         dialog.setVisible(true);
     }
+
+    private void handleAddPicture() {
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showOpenDialog(frame);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            ImageIcon profilePic = new ImageIcon(selectedFile.getAbsolutePath());
+            Image scaledImage = profilePic.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+            profilePicLabel.setIcon(new ImageIcon(scaledImage));
+        }
+    }
+
+    private void handleSignUp(ActionEvent e) {
+        String username = textFieldName.getText();
+        String email = textFieldEmail.getText();
+        String password = new String(passwordField.getPassword());
+
+        if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        currentUserId = String.valueOf(System.currentTimeMillis());
+        String passwordHash = Integer.toHexString(password.hashCode());
+
+        UserProfile user = new UserProfile(currentUserId, username, email, passwordHash);
+        FirestoreHandler.addUserData(user);
+
+        lblUserName.setText("Name: " + username);
+        lblUserEmail.setText("Email: " + email);
+
+        JOptionPane.showMessageDialog(frame, "Sign up successful! Please complete your profile.", "Success", JOptionPane.INFORMATION_MESSAGE);
+        cardLayout.show(mainPanel, "Welcome");
+    }
+
+    private void handleSave(ActionEvent e) {
+        if (currentUserId == null) {
+            JOptionPane.showMessageDialog(frame, "No user logged in to save data for.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String username = lblUserName.getText().replace("Name: ", "");
+        String email = lblUserEmail.getText().replace("Email: ", "");
+        String dateOfBirth = dobField.getText();
+        String bio = bioTextField.getText();
+        String province = choiceCity.getSelectedItem();
+        String university = choiceUniversity.getSelectedItem();
+
+        // Get selected interests
+        String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
+        List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
+
+        // Fetch existing user data to preserve passwordHash
+        UserProfile existingUser = FirestoreHandler.getUserData(currentUserId);
+        if (existingUser == null) {
+            JOptionPane.showMessageDialog(frame, "User data not found in Firestore.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Create updated user profile while preserving the passwordHash
+        UserProfile updatedUser = new UserProfile(
+            currentUserId,
+            username,
+            email,
+            bio,
+            dateOfBirth,
+            province,
+            university,
+            interests,
+            existingUser.getPasswordHash() // Preserve passwordHash
+        );
+
+        // Update Firestore
+        FirestoreHandler.updateUserData(updatedUser);
+
+        JOptionPane.showMessageDialog(frame, "Profile updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+    }
+
 }
