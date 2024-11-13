@@ -5,10 +5,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.FlowLayout;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -31,13 +33,13 @@ public class Messaging extends JFrame {
     private JPanel contentPane;
     private JPanel contactsList; // Declare at the class level to avoid scope issues
     private JPanel chatHistoryPanel; // Declare at the class level to avoid scope issues
-    private String currentUserId = "currentUserIdPlaceholder"; // Placeholder. In practice, set this to the logged-in user's ID.
+    private String currentUserId = "currentUserIdPlaceholder"; // Placeholder. Set this to the logged-in user's ID.
 
     /**
      * Launch the application.
      */
     public static void main(String[] args) {
-    	EventQueue.invokeLater(() -> {
+        EventQueue.invokeLater(() -> {
             try {
                 // Initialize Firebase first
                 FirebaseInitializer.initializeFirebase();
@@ -48,7 +50,7 @@ public class Messaging extends JFrame {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        });;
+        });
     }
 
     /**
@@ -214,40 +216,44 @@ public class Messaging extends JFrame {
         contactsList.removeAll(); // Clear existing contacts before loading new ones
 
         List<UserProfile> contacts = FirestoreHandler.getUserContacts(currentUserId);
-        for (UserProfile contact : contacts) {
-            String contactId = contact.getUserId();
-            String contactName = contact.getUsername();
+        if (contacts != null) {
+            for (UserProfile contact : contacts) {
+                String contactId = contact.getUserId();
+                String contactName = contact.getUsername();
 
-            // Create contact item panel
-            JPanel contactItem = new JPanel();
-            contactItem.setLayout(new BorderLayout());
-            contactItem.setBackground(Color.WHITE);
-            contactItem.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
+                // Create contact item panel
+                JPanel contactItem = new JPanel();
+                contactItem.setLayout(new BorderLayout());
+                contactItem.setBackground(Color.WHITE);
+                contactItem.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
 
-            // Profile image
-            JLabel contactImage = new JLabel(new ImageIcon("path/to/contactImage.png"));
-            contactImage.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-            contactItem.add(contactImage, BorderLayout.WEST);
+                // Profile image
+                JLabel contactImage = new JLabel(new ImageIcon("path/to/contactImage.png"));
+                contactImage.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+                contactItem.add(contactImage, BorderLayout.WEST);
 
-            // Contact name and status
-            JPanel contactDetails = new JPanel();
-            contactDetails.setLayout(new BoxLayout(contactDetails, BoxLayout.Y_AXIS));
-            contactDetails.setBackground(Color.WHITE);
-            JLabel contactNameLabel = new JLabel(contactName);
-            JLabel contactStatus = new JLabel("Online");
-            contactStatus.setForeground(Color.BLUE);
-            contactDetails.add(contactNameLabel);
-            contactDetails.add(contactStatus);
-            contactItem.add(contactDetails, BorderLayout.CENTER);
+                // Contact name and status
+                JPanel contactDetails = new JPanel();
+                contactDetails.setLayout(new BoxLayout(contactDetails, BoxLayout.Y_AXIS));
+                contactDetails.setBackground(Color.WHITE);
+                JLabel contactNameLabel = new JLabel(contactName);
+                JLabel contactStatus = new JLabel("Online");
+                contactStatus.setForeground(Color.BLUE);
+                contactDetails.add(contactNameLabel);
+                contactDetails.add(contactStatus);
+                contactItem.add(contactDetails, BorderLayout.CENTER);
 
-            // Add click listener to open a chat with the selected contact
-            contactItem.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    switchChat(contactId, contactName);
-                }
-            });
+                // Add click listener to open a chat with the selected contact
+                contactItem.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseClicked(java.awt.event.MouseEvent evt) {
+                        switchChat(contactId, contactName);
+                    }
+                });
 
-            contactsList.add(contactItem);
+                contactsList.add(contactItem);
+            }
+        } else {
+            System.out.println("No contacts found for user: " + currentUserId);
         }
 
         contactsList.revalidate();
@@ -279,10 +285,12 @@ public class Messaging extends JFrame {
 
         // Load chat history from Firestore for this contact
         List<Map<String, String>> messages = FirestoreHandler.getChatHistory(currentUserId, contactId);
-        for (Map<String, String> message : messages) {
-            String messageContent = message.get("content");
-            boolean isUserMessage = message.get("senderId").equals(currentUserId);
-            addMessageToChat(chatHistoryPanel, messageContent, isUserMessage);
+        if (messages != null) {
+            for (Map<String, String> message : messages) {
+                String messageContent = message.get("content");
+                boolean isUserMessage = message.get("senderId").equals(currentUserId);
+                addMessageToChat(chatHistoryPanel, messageContent, isUserMessage);
+            }
         }
 
         // Update chat panel title or something similar to indicate the active chat
@@ -290,21 +298,32 @@ public class Messaging extends JFrame {
     }
 
     private void addMessageToChat(JPanel chatHistoryPanel, String message, boolean isUserMessage) {
-        JLabel messageLabel = new JLabel("<html><body style='width: 200px'>" + message + "</body></html>");
+        // Set dimensions for the message bubble
+        int maxBubbleWidth = 200;
+
+        // Create a JLabel for the message content
+        JLabel messageLabel = new JLabel("<html><div style='padding: 8px;'>" + message + "</div></html>");
         messageLabel.setOpaque(true);
-        messageLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        messageLabel.setBackground(isUserMessage ? new Color(173, 216, 230) : new Color(245, 245, 245));
-        messageLabel.setForeground(isUserMessage ? Color.BLACK : Color.DARK_GRAY);
-        messageLabel.setHorizontalAlignment(isUserMessage ? SwingConstants.RIGHT : SwingConstants.LEFT);
+        messageLabel.setBackground(isUserMessage ? new Color(54, 125, 225) : new Color(240, 240, 240)); // Bubble color based on sender
+        messageLabel.setForeground(isUserMessage ? Color.WHITE : Color.BLACK);
+        messageLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10)); // Padding inside the bubble
 
-        JPanel bubble = new JPanel();
-        bubble.setLayout(new BorderLayout());
-        bubble.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
-        bubble.add(messageLabel, BorderLayout.LINE_START);
-        bubble.setBackground(Color.WHITE);
+        // Limit the width of the message bubble
+        messageLabel.setPreferredSize(new Dimension(maxBubbleWidth, messageLabel.getPreferredSize().height));
+        messageLabel.setMaximumSize(new Dimension(maxBubbleWidth, messageLabel.getPreferredSize().height));
 
-        chatHistoryPanel.add(bubble);
+        // Use FlowLayout to add natural alignment to left or right
+        JPanel bubbleWrapper = new JPanel(new FlowLayout(isUserMessage ? FlowLayout.RIGHT : FlowLayout.LEFT));
+        bubbleWrapper.setBackground(Color.WHITE);
+        bubbleWrapper.add(messageLabel);
+
+        // Add the bubble wrapper to the chat history panel
+        chatHistoryPanel.add(bubbleWrapper);
+        chatHistoryPanel.add(Box.createVerticalStrut(1)); // Space between messages
+
+        // Refresh the chat panel
         chatHistoryPanel.revalidate();
         chatHistoryPanel.repaint();
     }
+
 }
