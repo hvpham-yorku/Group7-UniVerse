@@ -67,12 +67,13 @@ public class Messaging extends JFrame {
         sidebarPanel.add(profilePicture);
 
         // Sidebar buttons with icons
-        sidebarPanel.add(createSidebarButton("/Users/sarimahchindah/Downloads/icons8-home-50.png"));
-        sidebarPanel.add(createSidebarButton("/Users/sarimahchindah/Downloads/icons8-chat-48.png"));
-        sidebarPanel.add(createSidebarButton("/Users/sarimahchindah/Downloads/icons8-notification-50.png"));
-        sidebarPanel.add(createSidebarButton("/Users/sarimahchindah/Downloads/icons8-community-48.png"));
-        sidebarPanel.add(createSidebarButton("/Users/sarimahchindah/Downloads/icons8-settings-50.png"));
-        sidebarPanel.add(createSidebarButton("/Users/sarimahchindah/Downloads/icons8-exit-48.png"));
+        sidebarPanel.add(createSidebarButton(getClass().getResource("/icons/icons8-home-50.png").getPath(), "home"));
+        sidebarPanel.add(createSidebarButton(getClass().getResource("/icons/icons8-chat-48.png").getPath(), "chat"));
+        sidebarPanel.add(createSidebarButton(getClass().getResource("/icons/icons8-notification-50.png").getPath(), "notifications"));
+        sidebarPanel.add(createSidebarButton(getClass().getResource("/icons/icons8-community-48.png").getPath(), "community"));
+        sidebarPanel.add(createSidebarButton(getClass().getResource("/icons/icons8-settings-50.png").getPath(), "settings"));
+        sidebarPanel.add(createSidebarButton(getClass().getResource("/icons/icons8-exit-48.png").getPath(), "exit"));
+
 
         // Contacts List Panel
         JPanel contactsPanel = new JPanel();
@@ -177,6 +178,8 @@ public class Messaging extends JFrame {
                 chatHistoryPanel.revalidate();
                 chatHistoryPanel.repaint();
                 messageField.setText("");
+             // Scroll to the bottom after adding a new message
+                chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum());
             }
         });
     }
@@ -184,14 +187,42 @@ public class Messaging extends JFrame {
     /**
      * Utility method to create sidebar buttons with icons.
      */
-    private JButton createSidebarButton(String iconPath) {
-        JButton button = new JButton(new ImageIcon(iconPath));
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setBackground(Color.WHITE);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        button.setFocusPainted(false);
-        return button;
-    }
+	private JButton createSidebarButton(String iconPath, String actionCommand) {
+	    JButton button = new JButton(new ImageIcon(iconPath));
+	    button.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    button.setBackground(Color.WHITE);
+	    button.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+	    button.setFocusPainted(false);
+	    button.setActionCommand(actionCommand);
+	    button.addActionListener(e -> handleSidebarAction(e.getActionCommand()));
+	    return button;
+	}
+	
+	private void handleSidebarAction(String actionCommand) {
+	    switch (actionCommand) {
+	        case "home":
+	            System.out.println("Home button clicked");
+	            break;
+	        case "chat":
+	            System.out.println("Chat button clicked");
+	            break;
+	        case "notifications":
+	            System.out.println("Notifications button clicked");
+	            break;
+	        case "community":
+	            System.out.println("Community button clicked");
+	            break;
+	        case "settings":
+	            System.out.println("Settings button clicked");
+	            break;
+	        case "exit":
+	            System.out.println("Exit button clicked");
+	            System.exit(0);  // Example to close the application
+	            break;
+	        default:
+	            System.out.println("Unknown action");
+	    }
+	}
 
     /**
      * Utility method to add a message bubble to the chat history.
@@ -211,6 +242,13 @@ public class Messaging extends JFrame {
         bubble.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));  // Adjusted spacing between bubbles
         bubble.add(messageLabel, BorderLayout.LINE_START);
         bubble.setBackground(Color.WHITE);
+        
+     // Add alignment based on message type
+        if (isUserMessage) {
+            messageLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        } else {
+            messageLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        }
 
         chatHistoryPanel.add(bubble);
     }
