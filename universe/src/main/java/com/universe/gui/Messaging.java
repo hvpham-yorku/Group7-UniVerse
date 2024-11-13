@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -12,37 +14,47 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+import com.universe.FirebaseInitializer;
+import com.universe.FirestoreHandler;
+import com.universe.models.UserProfile;
+
 public class Messaging extends JFrame {
 
-	private static final long serialVersionUID = 1L;
-	private JPanel contentPane;
+    private static final long serialVersionUID = 1L;
+    private JPanel contentPane;
+    private JPanel contactsList; // Declare at the class level to avoid scope issues
+    private JPanel chatHistoryPanel; // Declare at the class level to avoid scope issues
+    private String currentUserId = "currentUserIdPlaceholder"; // Placeholder. In practice, set this to the logged-in user's ID.
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Messaging frame = new Messaging();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+    /**
+     * Launch the application.
+     */
+    public static void main(String[] args) {
+    	EventQueue.invokeLater(() -> {
+            try {
+                // Initialize Firebase first
+                FirebaseInitializer.initializeFirebase();
 
-	/**
-	 * Create the frame.
-	 */
-	public Messaging() {
+                // Now create and show the Messaging GUI
+                Messaging frame = new Messaging();
+                frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });;
+    }
+
+    /**
+     * Create the frame.
+     */
+    public Messaging() {
         setTitle("Messaging App");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 900, 600);
@@ -50,7 +62,7 @@ public class Messaging extends JFrame {
         // Main content pane
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        contentPane.setLayout(new BorderLayout(10, 10));  // BorderLayout for main structure
+        contentPane.setLayout(new BorderLayout(10, 10));
         setContentPane(contentPane);
 
         // Sidebar Panel
@@ -67,13 +79,12 @@ public class Messaging extends JFrame {
         sidebarPanel.add(profilePicture);
 
         // Sidebar buttons with icons
-        sidebarPanel.add(createSidebarButton(getClass().getResource("/icons/icons8-home-50.png").getPath(), "home"));
-        sidebarPanel.add(createSidebarButton(getClass().getResource("/icons/icons8-chat-48.png").getPath(), "chat"));
-        sidebarPanel.add(createSidebarButton(getClass().getResource("/icons/icons8-notification-50.png").getPath(), "notifications"));
-        sidebarPanel.add(createSidebarButton(getClass().getResource("/icons/icons8-community-48.png").getPath(), "community"));
-        sidebarPanel.add(createSidebarButton(getClass().getResource("/icons/icons8-settings-50.png").getPath(), "settings"));
-        sidebarPanel.add(createSidebarButton(getClass().getResource("/icons/icons8-exit-48.png").getPath(), "exit"));
-
+        sidebarPanel.add(createSidebarButton("/icons/icons8-home-50.png", "home"));
+        sidebarPanel.add(createSidebarButton("/icons/icons8-chat-48.png", "chat"));
+        sidebarPanel.add(createSidebarButton("/icons/icons8-notification-50.png", "notifications"));
+        sidebarPanel.add(createSidebarButton("/icons/icons8-community-48.png", "community"));
+        sidebarPanel.add(createSidebarButton("/icons/icons8-settings-50.png", "settings"));
+        sidebarPanel.add(createSidebarButton("/icons/icons8-exit-48.png", "exit"));
 
         // Contacts List Panel
         JPanel contactsPanel = new JPanel();
@@ -82,55 +93,42 @@ public class Messaging extends JFrame {
         contactsPanel.setBackground(Color.WHITE);
         contentPane.add(contactsPanel, BorderLayout.CENTER);
 
-    
-     // Contacts Label
+        // Contacts Label
         JLabel contactsLabel = new JLabel("Contacts");
         contactsLabel.setHorizontalAlignment(SwingConstants.CENTER);
         contactsLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
         contactsPanel.add(contactsLabel, BorderLayout.NORTH);
 
-     // Contacts List (Scrollable)
-        JPanel contactsList = new JPanel();
+        // Contacts List (Scrollable)
+        contactsList = new JPanel(); // Initialize the contact list at class level
         contactsList.setLayout(new BoxLayout(contactsList, BoxLayout.Y_AXIS));
         JScrollPane contactsScrollPane = new JScrollPane(contactsList);
-        contactsScrollPane.setPreferredSize(new Dimension(200, 100)); // Reduced height
+        contactsScrollPane.setPreferredSize(new Dimension(200, 100));
         contactsPanel.add(contactsScrollPane, BorderLayout.CENTER);
 
-        
-     // Search Bar for Contacts
+        // Search Bar for Contacts
         JTextField searchField = new JTextField();
         searchField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(200, 200, 200)),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         searchField.setPreferredSize(new Dimension(200, 30));
         searchField.setToolTipText("Search Contacts...");
         contactsPanel.add(searchField, BorderLayout.NORTH);
 
-        // Adding styled dummy contacts
-        for (int i = 0; i < 19; i++) {
-            JPanel contactItem = new JPanel();
-            contactItem.setLayout(new BorderLayout());
-            contactItem.setBackground(Color.WHITE);
-            contactItem.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
+        JButton addContactButton = new JButton("Add Contact");
+        addContactButton.setPreferredSize(new Dimension(150, 30));
+        contactsPanel.add(addContactButton, BorderLayout.SOUTH);
+        addContactButton.addActionListener(e -> {
+            String searchQuery = searchField.getText().trim();
+            if (!searchQuery.isEmpty()) {
+                handleAddContact(searchQuery);
+            } else {
+                JOptionPane.showMessageDialog(this, "Please enter a username or email to search.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
-            // Profile image
-            JLabel contactImage = new JLabel(new ImageIcon("path/to/contactImage.png"));
-            contactImage.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-            contactItem.add(contactImage, BorderLayout.WEST);
-
-            // Contact name and status
-            JPanel contactDetails = new JPanel();
-            contactDetails.setLayout(new BoxLayout(contactDetails, BoxLayout.Y_AXIS));
-            contactDetails.setBackground(Color.WHITE);
-            JLabel contactName = new JLabel("Contact " + (i + 1));
-            JLabel contactStatus = new JLabel("Online");
-            contactStatus.setForeground(Color.BLUE);
-            contactDetails.add(contactName);
-            contactDetails.add(contactStatus);
-            contactItem.add(contactDetails, BorderLayout.CENTER);
-
-            contactsList.add(contactItem);
-        }
+        // Load existing contacts from Firestore
+        populateContacts();
 
         // Chat Panel
         JPanel chatPanel = new JPanel();
@@ -139,14 +137,12 @@ public class Messaging extends JFrame {
         contentPane.add(chatPanel, BorderLayout.EAST);
 
         // Chat History Panel
-        JPanel chatHistoryPanel = new JPanel();
+        chatHistoryPanel = new JPanel(); // Initialize the chat history at class level
         chatHistoryPanel.setLayout(new BoxLayout(chatHistoryPanel, BoxLayout.Y_AXIS));
         chatHistoryPanel.setBackground(Color.WHITE);
         JScrollPane chatScrollPane = new JScrollPane(chatHistoryPanel);
         chatScrollPane.setPreferredSize(new Dimension(400, 0));
         chatPanel.add(chatScrollPane, BorderLayout.CENTER);
-
-    
 
         // Message Input Panel
         JPanel messageInputPanel = new JPanel();
@@ -166,90 +162,149 @@ public class Messaging extends JFrame {
         messageInputPanel.add(sendButton, BorderLayout.EAST);
         chatPanel.add(messageInputPanel, BorderLayout.SOUTH);
 
-     // Send button action (adds message to chat history)
+        // Send button action (adds message to chat history)
         sendButton.addActionListener(e -> {
             String message = messageField.getText().trim();
             if (!message.isEmpty()) {
-                JLabel messageLabel = new JLabel(message);
-                messageLabel.setOpaque(true);
-                messageLabel.setBackground(new Color(173, 216, 230));
-                messageLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-                chatHistoryPanel.add(messageLabel);
-                chatHistoryPanel.revalidate();
-                chatHistoryPanel.repaint();
+                addMessageToChat(chatHistoryPanel, message, true);
                 messageField.setText("");
-             // Scroll to the bottom after adding a new message
                 chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum());
             }
         });
     }
 
-    /**
-     * Utility method to create sidebar buttons with icons.
-     */
-	private JButton createSidebarButton(String iconPath, String actionCommand) {
-	    JButton button = new JButton(new ImageIcon(iconPath));
-	    button.setAlignmentX(Component.CENTER_ALIGNMENT);
-	    button.setBackground(Color.WHITE);
-	    button.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-	    button.setFocusPainted(false);
-	    button.setActionCommand(actionCommand);
-	    button.addActionListener(e -> handleSidebarAction(e.getActionCommand()));
-	    return button;
-	}
-	
-	private void handleSidebarAction(String actionCommand) {
-	    switch (actionCommand) {
-	        case "home":
-	            System.out.println("Home button clicked");
-	            break;
-	        case "chat":
-	            System.out.println("Chat button clicked");
-	            break;
-	        case "notifications":
-	            System.out.println("Notifications button clicked");
-	            break;
-	        case "community":
-	            System.out.println("Community button clicked");
-	            break;
-	        case "settings":
-	            System.out.println("Settings button clicked");
-	            break;
-	        case "exit":
-	            System.out.println("Exit button clicked");
-	            System.exit(0);  // Example to close the application
-	            break;
-	        default:
-	            System.out.println("Unknown action");
-	    }
-	}
+    private JButton createSidebarButton(String iconPath, String actionCommand) {
+        JButton button = new JButton(new ImageIcon(getClass().getResource(iconPath)));
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setBackground(Color.WHITE);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        button.setFocusPainted(false);
+        button.setActionCommand(actionCommand);
+        button.addActionListener(e -> handleSidebarAction(e.getActionCommand()));
+        return button;
+    }
 
-    /**
-     * Utility method to add a message bubble to the chat history.
-     */
+    private void handleSidebarAction(String actionCommand) {
+        switch (actionCommand) {
+            case "home":
+                System.out.println("Home button clicked");
+                break;
+            case "chat":
+                System.out.println("Chat button clicked");
+                break;
+            case "notifications":
+                System.out.println("Notifications button clicked");
+                break;
+            case "community":
+                System.out.println("Community button clicked");
+                break;
+            case "settings":
+                System.out.println("Settings button clicked");
+                break;
+            case "exit":
+                System.out.println("Exit button clicked");
+                System.exit(0);
+                break;
+            default:
+                System.out.println("Unknown action");
+        }
+    }
+
+    private void populateContacts() {
+        contactsList.removeAll(); // Clear existing contacts before loading new ones
+
+        List<UserProfile> contacts = FirestoreHandler.getUserContacts(currentUserId);
+        for (UserProfile contact : contacts) {
+            String contactId = contact.getUserId();
+            String contactName = contact.getUsername();
+
+            // Create contact item panel
+            JPanel contactItem = new JPanel();
+            contactItem.setLayout(new BorderLayout());
+            contactItem.setBackground(Color.WHITE);
+            contactItem.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
+
+            // Profile image
+            JLabel contactImage = new JLabel(new ImageIcon("path/to/contactImage.png"));
+            contactImage.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+            contactItem.add(contactImage, BorderLayout.WEST);
+
+            // Contact name and status
+            JPanel contactDetails = new JPanel();
+            contactDetails.setLayout(new BoxLayout(contactDetails, BoxLayout.Y_AXIS));
+            contactDetails.setBackground(Color.WHITE);
+            JLabel contactNameLabel = new JLabel(contactName);
+            JLabel contactStatus = new JLabel("Online");
+            contactStatus.setForeground(Color.BLUE);
+            contactDetails.add(contactNameLabel);
+            contactDetails.add(contactStatus);
+            contactItem.add(contactDetails, BorderLayout.CENTER);
+
+            // Add click listener to open a chat with the selected contact
+            contactItem.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                    switchChat(contactId, contactName);
+                }
+            });
+
+            contactsList.add(contactItem);
+        }
+
+        contactsList.revalidate();
+        contactsList.repaint();
+    }
+
+    private void handleAddContact(String searchQuery) {
+        UserProfile foundUser = FirestoreHandler.findUserByEmailOrUsername(searchQuery);
+        if (foundUser != null) {
+            // Check if the user is trying to add themselves
+            if (foundUser.getUserId().equals(currentUserId)) {
+                JOptionPane.showMessageDialog(this, "You cannot add yourself as a contact.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            FirestoreHandler.addContact(currentUserId, foundUser.getUserId(), foundUser.getUsername());
+            JOptionPane.showMessageDialog(this, "Contact added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            populateContacts(); // Refresh contact list after adding
+        } else {
+            JOptionPane.showMessageDialog(this, "User not found.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void switchChat(String contactId, String contactName) {
+        // Clear current chat panel
+        chatHistoryPanel.removeAll();
+        chatHistoryPanel.revalidate();
+        chatHistoryPanel.repaint();
+
+        // Load chat history from Firestore for this contact
+        List<Map<String, String>> messages = FirestoreHandler.getChatHistory(currentUserId, contactId);
+        for (Map<String, String> message : messages) {
+            String messageContent = message.get("content");
+            boolean isUserMessage = message.get("senderId").equals(currentUserId);
+            addMessageToChat(chatHistoryPanel, messageContent, isUserMessage);
+        }
+
+        // Update chat panel title or something similar to indicate the active chat
+        setTitle("Chatting with " + contactName);
+    }
+
     private void addMessageToChat(JPanel chatHistoryPanel, String message, boolean isUserMessage) {
         JLabel messageLabel = new JLabel("<html><body style='width: 200px'>" + message + "</body></html>");
         messageLabel.setOpaque(true);
-        messageLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));  // Reduced padding
+        messageLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         messageLabel.setBackground(isUserMessage ? new Color(173, 216, 230) : new Color(245, 245, 245));
         messageLabel.setForeground(isUserMessage ? Color.BLACK : Color.DARK_GRAY);
-        messageLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        messageLabel.setAlignmentX(isUserMessage ? Component.RIGHT_ALIGNMENT : Component.LEFT_ALIGNMENT);
+        messageLabel.setHorizontalAlignment(isUserMessage ? SwingConstants.RIGHT : SwingConstants.LEFT);
 
-        // Add message bubble to panel
         JPanel bubble = new JPanel();
         bubble.setLayout(new BorderLayout());
-        bubble.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));  // Adjusted spacing between bubbles
+        bubble.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
         bubble.add(messageLabel, BorderLayout.LINE_START);
         bubble.setBackground(Color.WHITE);
-        
-     // Add alignment based on message type
-        if (isUserMessage) {
-            messageLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-        } else {
-            messageLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        }
 
         chatHistoryPanel.add(bubble);
+        chatHistoryPanel.revalidate();
+        chatHistoryPanel.repaint();
     }
 }
