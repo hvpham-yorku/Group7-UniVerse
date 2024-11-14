@@ -34,6 +34,7 @@ public class Messaging extends JFrame {
     private JPanel contactsList; // Declare at the class level to avoid scope issues
     private JPanel chatHistoryPanel; // Declare at the class level to avoid scope issues
     private String currentUserId = "currentUserIdPlaceholder"; // Placeholder. Set this to the logged-in user's ID.
+    private String currentChatContactId; //Declaring field
 
     /**
      * Launch the application.
@@ -168,7 +169,8 @@ public class Messaging extends JFrame {
         sendButton.addActionListener(e -> {
             String message = messageField.getText().trim();
             if (!message.isEmpty()) {
-                addMessageToChat(chatHistoryPanel, message, true);
+             //   addMessageToChat(chatHistoryPanel, message, true);
+                sendMessage(message);
                 messageField.setText("");
                 chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum());
             }
@@ -277,8 +279,10 @@ public class Messaging extends JFrame {
         }
     }
 
-    private void switchChat(String contactId, String contactName) {
-        // Clear current chat panel
+       private void switchChat(String contactId, String contactName) {
+       
+    	this.currentChatContactId = contactId;
+    	// Clear current chat panel
         chatHistoryPanel.removeAll();
         chatHistoryPanel.revalidate();
         chatHistoryPanel.repaint();
@@ -296,6 +300,18 @@ public class Messaging extends JFrame {
         // Update chat panel title or something similar to indicate the active chat
         setTitle("Chatting with " + contactName);
     }
+       private void sendMessage(String messageContent)
+       {
+       	if(currentChatContactId != null && !currentChatContactId.isEmpty())
+       	{
+       		FirestoreHandler.saveMessages(currentUserId, currentChatContactId, messageContent);
+       		addMessageToChat(chatHistoryPanel, messageContent, true);
+       	}
+       	else
+       	{
+       		JOptionPane.showMessageDialog(this, "Please select a contact to message", "No contact selected.",JOptionPane.WARNING_MESSAGE);
+       	}
+       }
 
     private void addMessageToChat(JPanel chatHistoryPanel, String message, boolean isUserMessage) {
         // Set dimensions for the message bubble
@@ -325,5 +341,6 @@ public class Messaging extends JFrame {
         chatHistoryPanel.revalidate();
         chatHistoryPanel.repaint();
     }
+    
 
 }
