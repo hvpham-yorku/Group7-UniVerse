@@ -172,4 +172,25 @@ public class FirestoreHandler {
 	    return messages;
 	}
 
+	//Ensuring messages are being saved in database and adding a saved messaged message into the console.
+	public static void saveMessages(String userId, String contactId, String messages)
+	{
+		Firestore db = FirestoreClient.getFirestore();
+		CollectionReference messagesRef = db.collection("chats").document(userId + "_" + contactId).collection("messages");
+		Map<String, Object> messageData = new HashMap<>();
+		messageData.put("content", messages);
+		messageData.put("senderId", userId);
+		messageData.put("timestamp", FieldValue.serverTimestamp());
+		
+		ApiFuture<DocumentReference> writeResult = messagesRef.add(messageData);
+		try
+		{
+			DocumentReference documentReference = writeResult.get();
+			System.out.println("Message stored in document ID: " + documentReference.getId());
+		}
+		catch(InterruptedException | ExecutionException e)
+		{
+			System.err.println("Error saving message: " + e.getMessage());
+		}
+	}
 }
