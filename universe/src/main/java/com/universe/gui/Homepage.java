@@ -29,9 +29,9 @@ public class Homepage extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
-    private JPanel friendsListPanel;
-    private JPanel friendsPanelRight;
-    private JPanel rightFriendsListPanel; // New panel for friends list in the right section
+    private JPanel friendsListPanel; // Left panel for searching users
+    private JPanel friendsPanelRight; // Panel on the right for added friends
+    private JPanel rightFriendsListPanel; // Scrollable panel for added friends
     private JTextField searchField;
 
     private List<UserProfile> allUsers; // Store all users fetched from the database
@@ -146,12 +146,13 @@ public class Homepage extends JFrame {
 
         // Friends list panel with a scrollable view
         friendsListPanel = new JPanel();
-        friendsListPanel.setLayout(null);
+        friendsListPanel.setLayout(new BoxLayout(friendsListPanel, BoxLayout.Y_AXIS));
         friendsListPanel.setBackground(Color.WHITE);
 
         JScrollPane scrollPane = new JScrollPane(friendsListPanel);
         scrollPane.setBounds(15, 75, 240, 390);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         friendsPanel.add(scrollPane);
 
         contentPane.add(friendsPanel);
@@ -231,14 +232,11 @@ public class Homepage extends JFrame {
         friendsListPanel.removeAll();
 
         if (users != null && !users.isEmpty()) {
-            int yPosition = 5;
             for (UserProfile user : users) {
-                addFriendEntry(user.getUsername(), user.getUniversity(), "src/main/resources/icons/sandra.png", yPosition);
-                yPosition += 65;
+                addFriendEntry(user.getUsername(), user.getUniversity(), "src/main/resources/icons/sandra.png");
             }
         } else {
             JLabel noUsersLabel = new JLabel("No users found!", JLabel.CENTER);
-            noUsersLabel.setBounds(0, 0, 240, 30);
             noUsersLabel.setFont(new Font("Roboto", Font.BOLD, 16));
             noUsersLabel.setForeground(Color.GRAY);
             friendsListPanel.add(noUsersLabel);
@@ -248,9 +246,9 @@ public class Homepage extends JFrame {
         friendsListPanel.repaint();
     }
 
-    private void addFriendEntry(String name, String university, String imagePath, int yPosition) {
+    private void addFriendEntry(String name, String university, String imagePath) {
         JPanel friendEntry = new JPanel();
-        friendEntry.setBounds(5, yPosition, 230, 60);
+        friendEntry.setPreferredSize(new Dimension(230, 60));
         friendEntry.setBackground(new Color(230, 230, 230));
         friendEntry.setLayout(null);
 
@@ -320,8 +318,7 @@ public class Homepage extends JFrame {
 
         List<UserProfile> filteredUsers = new ArrayList<>();
         for (UserProfile user : allUsers) {
-            if (user.getUsername().toLowerCase().contains(query) || 
-                user.getUniversity().toLowerCase().contains(query)) {
+            if (user.getUsername().toLowerCase().contains(query) || user.getUniversity().toLowerCase().contains(query)) {
                 filteredUsers.add(user);
             }
         }
@@ -329,7 +326,6 @@ public class Homepage extends JFrame {
         if (filteredUsers.isEmpty()) {
             friendsListPanel.removeAll();
             JLabel noUsersLabel = new JLabel("No users match your search.", JLabel.CENTER);
-            noUsersLabel.setBounds(0, 0, 240, 30);
             noUsersLabel.setFont(new Font("Roboto", Font.BOLD, 16));
             noUsersLabel.setForeground(Color.GRAY);
             friendsListPanel.add(noUsersLabel);
@@ -339,8 +335,5 @@ public class Homepage extends JFrame {
 
         friendsListPanel.revalidate();
         friendsListPanel.repaint();
-
-        // Reset scroll position to the top
-        ((JScrollPane) friendsListPanel.getParent().getParent()).getVerticalScrollBar().setValue(0);
     }
 }
