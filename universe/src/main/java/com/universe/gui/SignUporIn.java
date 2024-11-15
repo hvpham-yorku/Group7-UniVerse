@@ -15,165 +15,250 @@ import java.util.List;
 
 public class SignUporIn {
 
-	private JFrame frame;
-	private JPanel mainPanel;
-	private CardLayout cardLayout;
-	private JTextField textFieldName;
-	private JTextField textFieldEmail;
-	private JPasswordField passwordField;
-	private JFormattedTextField dobField;
-	private JTextField bioTextField;
-	private JLabel lblUserName;
-	private JLabel lblUserEmail;
-	private JLabel lblInterestsSummary;
-	private Choice choiceCity;
-	private Choice choiceUniversity;
-	private List<String> selectedInterests;
-	private JLabel profilePicLabel;
-	private String currentUserId;
+    private JFrame frame;
+    private JPanel mainPanel;
+    private CardLayout cardLayout;
+    private JTextField textFieldName;
+    private JTextField textFieldEmail;
+    private JPasswordField passwordField;
+    private JFormattedTextField dobField;
+    private JTextField bioTextField;
+    private JLabel lblUserName;
+    private JLabel lblUserEmail;
+    private JLabel lblInterestsSummary;
+    private Choice choiceCity;
+    private Choice choiceUniversity;
+    private List<String> selectedInterests;
+    private JLabel profilePicLabel;
+    private String currentUserId;
 
-	public static void main(String[] args) {
-		// Initialize Firebase
-		FirebaseInitializer.initializeFirebase();
+    public static void main(String[] args) {
+        // Initialize Firebase
+        FirebaseInitializer.initializeFirebase();
 
-		// Launch the GUI
-		EventQueue.invokeLater(() -> {
-			try {
-				SignUporIn window = new SignUporIn();
-				window.frame.setVisible(true);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-	}
+        // Launch the GUI
+        EventQueue.invokeLater(() -> {
+            try {
+                SignUporIn window = new SignUporIn();
+                window.frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
-	public SignUporIn() {
-		initialize();
-	}
+    public SignUporIn() {
+        initialize();
+    }
 
-	private void initialize() {
-		frame = new JFrame("Sign Up or Login");
-		frame.setBounds(500, 500, 800, 800);
-		frame.setLocationRelativeTo(null);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setResizable(false);
+    private void initialize() {
+        frame = new JFrame("Sign Up or Login");
+        frame.setBounds(100, 100, 900, 600);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setResizable(false);
 
-		cardLayout = new CardLayout();
-		mainPanel = new JPanel(cardLayout);
-		frame.getContentPane().add(mainPanel);
+        // Create a background panel
+        JPanel backgroundPanel = new JPanel() {
+            private Image backgroundImage;
 
-		JPanel signUpPanel = new JPanel();
-		signUpPanel.setLayout(null);
-		initializeSignUpPanel(signUpPanel);
+            {
+                try {
+                    backgroundImage = new ImageIcon("src/main/resources/wallpaper.png").getImage()
+                            .getScaledInstance(900, 600, Image.SCALE_SMOOTH);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Failed to load background image.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
 
-		JPanel loginPanel = new JPanel();
-		loginPanel.setLayout(null);
-		initializeLoginPanel(loginPanel);
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (backgroundImage != null) {
+                    g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+                }
+            }
+        };
 
-		JPanel welcomePanel = new JPanel();
-		welcomePanel.setLayout(null);
-		initializeWelcomePanel(welcomePanel);
+        backgroundPanel.setLayout(new BorderLayout());
+        frame.setContentPane(backgroundPanel);
 
-		mainPanel.add(signUpPanel, "SignUp");
-		mainPanel.add(loginPanel, "Login");
-		mainPanel.add(welcomePanel, "Welcome");
+        cardLayout = new CardLayout();
+        mainPanel = new JPanel(cardLayout);
+        mainPanel.setOpaque(false);
+        backgroundPanel.add(mainPanel, BorderLayout.CENTER);
 
-		cardLayout.show(mainPanel, "SignUp");
-	}
+        JPanel signUpPanel = new JPanel();
+        signUpPanel.setLayout(null);
+        signUpPanel.setOpaque(false);
+        initializeSignUpPanel(signUpPanel);
 
-	private void initializeSignUpPanel(JPanel signUpPanel) {
-		// Full Name Field
-		textFieldName = new JTextField();
-		textFieldName.setBounds(250, 120, 212, 34);
-		signUpPanel.add(textFieldName);
+        JPanel loginPanel = new JPanel();
+        loginPanel.setLayout(null);
+        loginPanel.setOpaque(false);
+        initializeLoginPanel(loginPanel);
 
-		JLabel lblName = new JLabel("Full Name:");
-		lblName.setBounds(150, 125, 76, 16);
-		signUpPanel.add(lblName);
+        JPanel welcomePanel = new JPanel();
+        welcomePanel.setLayout(null);
+        welcomePanel.setOpaque(false);
+        initializeWelcomePanel(welcomePanel);
 
-		// Email Field
-		textFieldEmail = new JTextField();
-		textFieldEmail.setBounds(250, 180, 212, 34);
-		signUpPanel.add(textFieldEmail);
+        mainPanel.add(signUpPanel, "SignUp");
+        mainPanel.add(loginPanel, "Login");
+        mainPanel.add(welcomePanel, "Welcome");
 
-		JLabel lblEmail = new JLabel("Email:");
-		lblEmail.setBounds(150, 185, 38, 16);
-		signUpPanel.add(lblEmail);
+        cardLayout.show(mainPanel, "SignUp");
+    }
 
-		// Password Field
-		passwordField = new JPasswordField();
-		passwordField.setBounds(250, 240, 212, 36);
-		signUpPanel.add(passwordField);
 
-		JLabel lblPassword = new JLabel("Password:");
-		lblPassword.setBounds(150, 245, 71, 16);
-		signUpPanel.add(lblPassword);
+    private void initializeSignUpPanel(JPanel signUpPanel) {
+        // Adjust vertical and horizontal placement
+        int verticalOffset = 250; 
+        int horizontalOffset = 100; 
 
-		// Sign-Up Button
-		JButton btnSignUp = new JButton("Sign Up");
-		btnSignUp.setBounds(290, 300, 117, 29);
-		signUpPanel.add(btnSignUp);
+        // Full Name Field
+        textFieldName = new JTextField();
+        textFieldName.setBounds(horizontalOffset + 250, verticalOffset, 212, 34); // Adjusted X position
+        signUpPanel.add(textFieldName);
 
-		btnSignUp.addActionListener(this::handleSignUp);
+        JLabel lblName = new JLabel("Full Name:");
+        lblName.setBounds(horizontalOffset + 150, verticalOffset + 5, 76, 16); // Adjusted X position
+        signUpPanel.add(lblName);
 
-		JLabel lblLoginLink = new JLabel("<html><u>Already have an account? Login</u></html>");
-		lblLoginLink.setForeground(Color.BLUE);
-		lblLoginLink.setBounds(250, 350, 200, 30);
-		signUpPanel.add(lblLoginLink);
+        // Email Field
+        textFieldEmail = new JTextField();
+        textFieldEmail.setBounds(horizontalOffset + 250, verticalOffset + 60, 212, 34); // Adjusted X position
+        signUpPanel.add(textFieldEmail);
 
-		lblLoginLink.addMouseListener(new java.awt.event.MouseAdapter() {
-			public void mouseClicked(java.awt.event.MouseEvent e) {
-				cardLayout.show(mainPanel, "Login");
-			}
-		});
-	}
+        JLabel lblEmail = new JLabel("Email:");
+        lblEmail.setBounds(horizontalOffset + 150, verticalOffset + 65, 38, 16); // Adjusted X position
+        signUpPanel.add(lblEmail);
 
-	private void initializeLoginPanel(JPanel loginPanel) {
-		JLabel lblEmail = new JLabel("Email:");
-		lblEmail.setBounds(150, 180, 100, 30);
-		loginPanel.add(lblEmail);
+        // Password Field
+        passwordField = new JPasswordField();
+        passwordField.setBounds(horizontalOffset + 250, verticalOffset + 120, 212, 36); // Adjusted X position
+        signUpPanel.add(passwordField);
 
-		JTextField emailField = new JTextField();
-		emailField.setBounds(250, 180, 212, 30);
-		loginPanel.add(emailField);
+        JLabel lblPassword = new JLabel("Password:");
+        lblPassword.setBounds(horizontalOffset + 150, verticalOffset + 125, 71, 16); // Adjusted X position
+        signUpPanel.add(lblPassword);
 
-		JLabel lblPassword = new JLabel("Password:");
-		lblPassword.setBounds(150, 240, 100, 30);
-		loginPanel.add(lblPassword);
+        // Sign-Up Button
+        JButton btnSignUp = new JButton("Sign Up");
+        btnSignUp.setBounds(horizontalOffset + 290, verticalOffset + 180, 117, 29); // Adjusted X position
+        signUpPanel.add(btnSignUp);
+        btnSignUp.addActionListener(this::handleSignUp);
 
-		JPasswordField passwordField = new JPasswordField();
-		passwordField.setBounds(250, 240, 212, 30);
-		loginPanel.add(passwordField);
+        JLabel lblLoginLink = new JLabel("<html><u>Already have an account? Login</u></html>");
+        lblLoginLink.setForeground(Color.BLUE);
+        lblLoginLink.setBounds(horizontalOffset + 250, verticalOffset + 230, 200, 30); // Adjusted X position
+        signUpPanel.add(lblLoginLink);
 
-		JButton btnLogin = new JButton("Login");
-		btnLogin.setBounds(290, 300, 100, 30);
-		loginPanel.add(btnLogin);
+        lblLoginLink.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                cardLayout.show(mainPanel, "Login");
+            }
+        });
+    }
 
-		btnLogin.addActionListener(e -> {
-			String email = emailField.getText();
-			String password = new String(passwordField.getPassword());
-			String passwordHash = Integer.toHexString(password.hashCode()); // Hash the entered password
+    private void initializeLoginPanel(JPanel loginPanel) {
+        // Adjust horizontal and vertical placement
+        int horizontalOffset = 100; 
+        int verticalOffset = 075;   
 
-			boolean isAuthenticated = FirestoreHandler.authenticateUser(email, passwordHash);
-			if (isAuthenticated) {
-				JOptionPane.showMessageDialog(frame, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-				cardLayout.show(mainPanel, "Welcome"); // Redirect to Welcome/Profile page
-			} else {
-				JOptionPane.showMessageDialog(frame, "Invalid email or password.", "Error", JOptionPane.ERROR_MESSAGE);
-			}
-		});
+        JLabel lblEmail = new JLabel("Email:");
+        lblEmail.setBounds(horizontalOffset + 150, 180 + verticalOffset, 100, 30); // Adjusted X and Y position
+        loginPanel.add(lblEmail);
 
-		JLabel lblSignUpLink = new JLabel("<html><u>Don't have an account? Sign Up</u></html>");
-		lblSignUpLink.setForeground(Color.BLUE);
-		lblSignUpLink.setBounds(250, 350, 200, 30);
-		loginPanel.add(lblSignUpLink);
+        JTextField emailField = new JTextField();
+        emailField.setBounds(horizontalOffset + 250, 180 + verticalOffset, 212, 30); // Adjusted X and Y position
+        loginPanel.add(emailField);
 
-		lblSignUpLink.addMouseListener(new java.awt.event.MouseAdapter() {
-			public void mouseClicked(java.awt.event.MouseEvent e) {
-				cardLayout.show(mainPanel, "SignUp");
-			}
-		});
-	}
+        JLabel lblPassword = new JLabel("Password:");
+        lblPassword.setBounds(horizontalOffset + 150, 240 + verticalOffset, 100, 30); // Adjusted X and Y position
+        loginPanel.add(lblPassword);
+
+        JPasswordField passwordField = new JPasswordField();
+        passwordField.setBounds(horizontalOffset + 250, 240 + verticalOffset, 212, 30); // Adjusted X and Y position
+        loginPanel.add(passwordField);
+
+        JButton btnLogin = new JButton("Login");
+        btnLogin.setBounds(horizontalOffset + 290, 300 + verticalOffset, 100, 30); // Adjusted X and Y position
+        loginPanel.add(btnLogin);
+
+        btnLogin.addActionListener(e -> {
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
+            String passwordHash = Integer.toHexString(password.hashCode()); // Hash the entered password
+
+            boolean isAuthenticated = FirestoreHandler.authenticateUser(email, passwordHash);
+            if (isAuthenticated) {
+                JOptionPane.showMessageDialog(frame, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                cardLayout.show(mainPanel, "Welcome"); // Redirect to Welcome/Profile page
+            } else {
+                JOptionPane.showMessageDialog(frame, "Invalid email or password.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        JLabel lblSignUpLink = new JLabel("<html><u>Don't have an account? Sign Up</u></html>");
+        lblSignUpLink.setForeground(Color.BLUE);
+        lblSignUpLink.setBounds(horizontalOffset + 250, 350 + verticalOffset, 200, 30); // Adjusted X and Y position
+        loginPanel.add(lblSignUpLink);
+
+        lblSignUpLink.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                cardLayout.show(mainPanel, "SignUp");
+            }
+        });
+    }
+
+//	private void initializeLoginPanel(JPanel loginPanel) {
+//		JLabel lblEmail = new JLabel("Email:");
+//		lblEmail.setBounds(150, 180, 100, 30);
+//		loginPanel.add(lblEmail);
+//
+//		JTextField emailField = new JTextField();
+//		emailField.setBounds(250, 180, 212, 30);
+//		loginPanel.add(emailField);
+//
+//		JLabel lblPassword = new JLabel("Password:");
+//		lblPassword.setBounds(150, 240, 100, 30);
+//		loginPanel.add(lblPassword);
+//
+//		JPasswordField passwordField = new JPasswordField();
+//		passwordField.setBounds(250, 240, 212, 30);
+//		loginPanel.add(passwordField);
+//
+//		JButton btnLogin = new JButton("Login");
+//		btnLogin.setBounds(290, 300, 100, 30);
+//		loginPanel.add(btnLogin);
+//
+//		btnLogin.addActionListener(e -> {
+//			String email = emailField.getText();
+//			String password = new String(passwordField.getPassword());
+//			String passwordHash = Integer.toHexString(password.hashCode()); // Hash the entered password
+//
+//			boolean isAuthenticated = FirestoreHandler.authenticateUser(email, passwordHash);
+//			if (isAuthenticated) {
+//				JOptionPane.showMessageDialog(frame, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+//				cardLayout.show(mainPanel, "Welcome"); // Redirect to Welcome/Profile page
+//			} else {
+//				JOptionPane.showMessageDialog(frame, "Invalid email or password.", "Error", JOptionPane.ERROR_MESSAGE);
+//			}
+//		});
+//
+//		JLabel lblSignUpLink = new JLabel("<html><u>Don't have an account? Sign Up</u></html>");
+//		lblSignUpLink.setForeground(Color.BLUE);
+//		lblSignUpLink.setBounds(250, 350, 200, 30);
+//		loginPanel.add(lblSignUpLink);
+//
+//		lblSignUpLink.addMouseListener(new java.awt.event.MouseAdapter() {
+//			public void mouseClicked(java.awt.event.MouseEvent e) {
+//				cardLayout.show(mainPanel, "SignUp");
+//			}
+//		});
+//	}
 
 	private void initializeWelcomePanel(JPanel welcomePanel) {
 		// Profile Picture Section
