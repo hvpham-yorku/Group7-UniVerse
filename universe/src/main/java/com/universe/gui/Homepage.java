@@ -290,8 +290,8 @@ public class Homepage extends JFrame {
         friendUniversity.setBounds(70, 30, 120, 20);
         friendEntry.add(friendUniversity);
 
-        JButton addButton = new JButton(addedFriends.contains(user) ? "Added" : "Add");
-        addButton.setBounds(190, 15, 60, 30);
+        JButton addButton = new JButton(addedFriends.contains(user) ? "Remove" : "Add");
+        addButton.setBounds(180, 10, 60, 30);
         addButton.setFont(new Font("Roboto", Font.BOLD, 10));
         addButton.setBackground(new Color(46, 157, 251));
         addButton.setForeground(Color.BLACK);
@@ -313,7 +313,7 @@ public class Homepage extends JFrame {
             addedFriends.add(user);
             FirestoreHandler.addFriend(user); // Add to Firestore
            // updateRightFriendsList();
-            button.setText("Removes");
+            button.setText("Remove");
         }
     }
 
