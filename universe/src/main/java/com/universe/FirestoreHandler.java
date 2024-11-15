@@ -193,4 +193,20 @@ public class FirestoreHandler {
 			System.err.println("Error saving message: " + e.getMessage());
 		}
 	}
+	public static List<UserProfile> getAllUsers() {
+	    Firestore db = FirestoreClient.getFirestore();
+	    List<UserProfile> users = new ArrayList<>();
+	    try {
+	        ApiFuture<QuerySnapshot> future = db.collection("UserProfile").get();
+	        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+	        for (DocumentSnapshot document : documents) {
+	            users.add(document.toObject(UserProfile.class));
+	        }
+	    } catch (InterruptedException | ExecutionException e) {
+	        e.printStackTrace();
+	    }
+	    return users;
+	}
+
+	
 }
