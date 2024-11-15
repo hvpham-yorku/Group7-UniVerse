@@ -187,7 +187,7 @@ public class Homepage extends JFrame {
         friendsPanelRight.setLayout(null);
 
         // Logo Section
-        JLabel logoLabel = new JLabel(new ImageIcon(new ImageIcon("src/main/resources/icons/logo2.png").getImage().getScaledInstance(200, 100, Image.SCALE_SMOOTH)));
+        JLabel logoLabel = new JLabel(new ImageIcon(new ImageIcon("src/main/resources/icons/logo5.png").getImage().getScaledInstance(200, 100, Image.SCALE_SMOOTH)));
         logoLabel.setBounds(145, 10, 200, 100);
         friendsPanelRight.add(logoLabel);
 
