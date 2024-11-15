@@ -130,11 +130,11 @@ public class Homepage extends JFrame {
         friendsPanel.add(searchField);
 
         // Friend entries with adjusted yPosition for spacing
-        addFriendEntry(friendsPanel, "Sandra King", "York University", "/Users/kosy/Downloads/sandra.png", 80);
-        addFriendEntry(friendsPanel, "Jane Freeman Leonardino", "University of Toronto", "/Users/kosy/Downloads/jane.png", 160);
-        addFriendEntry(friendsPanel, "Armin Singh", "Toronto Metropolitan University", "/Users/kosy/Downloads/armin.png", 240);
-        addFriendEntry(friendsPanel, "James Anderson", "University of Waterloo", "/Users/kosy/Downloads/james.png", 320);
-        addFriendEntry(friendsPanel, "Asterios Vassilis", "Seneca College", "/Users/kosy/Downloads/asterios.png", 400);
+        addFriendEntry(friendsPanel, "Sandra King", "York University", "src/main/resources/icons/sandra.png", 80);
+        addFriendEntry(friendsPanel, "Jane Freeman Leonardino", "University of Toronto", "src/main/resources/icons/jane.png", 160);
+        addFriendEntry(friendsPanel, "Armin Singh", "Toronto Metropolitan University", "src/main/resources/icons/armin.png", 240);
+        addFriendEntry(friendsPanel, "James Anderson", "University of Waterloo", "src/main/resources/icons/james.png", 320);
+        addFriendEntry(friendsPanel, "Asterios Vassilis", "Seneca College", "src/main/resources/icons/asterios.png", 400);
 
         contentPane.add(friendsPanel);
 
