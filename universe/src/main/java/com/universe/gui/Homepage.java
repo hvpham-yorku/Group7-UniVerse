@@ -67,6 +67,7 @@ public class Homepage extends JFrame {
         JPanel sidebar = new JPanel();
         sidebar.setBounds(10, 10, 70, 540);
         sidebar.setBackground(Color.WHITE);
+        sidebar.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
         sidebar.setLayout(null);
 
         // Profile label above the profile picture
@@ -81,33 +82,104 @@ public class Homepage extends JFrame {
         profilePic.setBounds(5, 25, 60, 60);
         sidebar.add(profilePic);
 
-        // Sidebar icons with adjusted positions and even spacing
+     // Sidebar icons with adjusted positions and even spacing
         int iconStartY = 100;
         int iconSpacing = 70;
 
-        JLabel homeIcon = new JLabel(new ImageIcon("src/main/resources/icons/home.png")); // Home icon
+        // Load, resize, and make home icon clickable
+        ImageIcon homeOriginalIcon = new ImageIcon("src/main/resources/icons/home.png");
+        Image homeResizedImage = homeOriginalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        ImageIcon homeResizedIcon = new ImageIcon(homeResizedImage);
+        JLabel homeIcon = new JLabel(homeResizedIcon);
         homeIcon.setBounds(5, iconStartY, 60, 60);
+        homeIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Set cursor to hand
+        homeIcon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JOptionPane.showMessageDialog(null, "Home clicked!");
+            }
+        });
         sidebar.add(homeIcon);
 
-        JLabel chatIcon = new JLabel(new ImageIcon("src/main/resources/icons/messages.png")); // Messages icon
+        // Load, resize, and make chat icon clickable
+        ImageIcon chatOriginalIcon = new ImageIcon("src/main/resources/icons/messages.png");
+        Image chatResizedImage = chatOriginalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        ImageIcon chatResizedIcon = new ImageIcon(chatResizedImage);
+        JLabel chatIcon = new JLabel(chatResizedIcon);
         chatIcon.setBounds(5, iconStartY + iconSpacing, 60, 60);
+        chatIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Set cursor to hand
+        chatIcon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JOptionPane.showMessageDialog(null, "Chat clicked!");
+            }
+        });
         sidebar.add(chatIcon);
 
-        JLabel bellIcon = new JLabel(new ImageIcon("src/main/resources/icons/notifications.png")); // Notifications icon
+        // Load, resize, and make notifications icon clickable
+        ImageIcon bellOriginalIcon = new ImageIcon("src/main/resources/icons/notifications.png");
+        Image bellResizedImage = bellOriginalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        ImageIcon bellResizedIcon = new ImageIcon(bellResizedImage);
+        JLabel bellIcon = new JLabel(bellResizedIcon);
         bellIcon.setBounds(5, iconStartY + 2 * iconSpacing, 60, 60);
+        bellIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Set cursor to hand
+        bellIcon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JOptionPane.showMessageDialog(null, "Notifications clicked!");
+            }
+        });
         sidebar.add(bellIcon);
 
-        JLabel friendsIcon = new JLabel(new ImageIcon("src/main/resources/icons/community.png")); // Community icon
+        // Load, resize, and make community icon clickable
+        ImageIcon friendsOriginalIcon = new ImageIcon("src/main/resources/icons/community.png");
+        Image friendsResizedImage = friendsOriginalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        ImageIcon friendsResizedIcon = new ImageIcon(friendsResizedImage);
+        JLabel friendsIcon = new JLabel(friendsResizedIcon);
         friendsIcon.setBounds(5, iconStartY + 3 * iconSpacing, 60, 60);
+        friendsIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Set cursor to hand
+        friendsIcon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JOptionPane.showMessageDialog(null, "Community clicked!");
+            }
+        });
         sidebar.add(friendsIcon);
 
-        JLabel settingsIcon = new JLabel(new ImageIcon("src/main/resources/icons/settings.png")); // Settings icon
+        // Load, resize, and make settings icon clickable
+        ImageIcon settingsOriginalIcon = new ImageIcon("src/main/resources/icons/settings.png");
+        Image settingsResizedImage = settingsOriginalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        ImageIcon settingsResizedIcon = new ImageIcon(settingsResizedImage);
+        JLabel settingsIcon = new JLabel(settingsResizedIcon);
         settingsIcon.setBounds(5, iconStartY + 4 * iconSpacing, 60, 60);
+        settingsIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Set cursor to hand
+        settingsIcon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JOptionPane.showMessageDialog(null, "Settings clicked!");
+            }
+        });
         sidebar.add(settingsIcon);
 
-        JLabel logoutIcon = new JLabel(new ImageIcon("src/main/resources/icons/leave.png")); // Leave icon
+        // Load, resize, and make logout icon clickable to exit the application
+        ImageIcon logoutOriginalIcon = new ImageIcon("src/main/resources/icons/leave.png");
+        Image logoutResizedImage = logoutOriginalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        ImageIcon logoutResizedIcon = new ImageIcon(logoutResizedImage);
+        JLabel logoutIcon = new JLabel(logoutResizedIcon);
         logoutIcon.setBounds(5, iconStartY + 5 * iconSpacing, 60, 60);
+        logoutIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Set cursor to hand
+        logoutIcon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to exit?", "Exit Confirmation", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    System.exit(0); // Exit the application
+                }
+            }
+        });
         sidebar.add(logoutIcon);
+
+
 
         contentPane.add(sidebar);
 
