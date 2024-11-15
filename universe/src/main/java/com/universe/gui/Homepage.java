@@ -77,7 +77,7 @@ public class Homepage extends JFrame {
         sidebar.add(profileLabel);
 
         // Profile picture
-        JLabel profilePic = new JLabel(new ImageIcon("/Users/kosy/Downloads/profile.png")); // Profile icon
+        JLabel profilePic = new JLabel(new ImageIcon("/icons/profile.png")); // Profile icon
         profilePic.setBounds(5, 25, 60, 60);
         sidebar.add(profilePic);
 
