@@ -270,7 +270,7 @@ public class Homepage extends JFrame {
         logoPanel.setLayout(null);
 
         // Load and resize the logo image
-        ImageIcon logoIcon = new ImageIcon("src/main/resources/icons/logo.png");
+        ImageIcon logoIcon = new ImageIcon("src/main/resources/icons/logo2.png");
         Image scaledLogo = logoIcon.getImage().getScaledInstance(490, 480, Image.SCALE_SMOOTH);
         JLabel logoLabel = new JLabel(new ImageIcon(scaledLogo));
         logoLabel.setBounds(0, 0, 490, 480);
