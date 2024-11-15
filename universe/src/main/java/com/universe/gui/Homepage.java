@@ -77,7 +77,7 @@ public class Homepage extends JFrame {
         sidebar.add(profileLabel);
 
         // Profile picture
-        JLabel profilePic = new JLabel(new ImageIcon("/icons/profile.png")); // Profile icon
+        JLabel profilePic = new JLabel(new ImageIcon("src/main/resources/icons/profile.png")); // Profile icon
         profilePic.setBounds(5, 25, 60, 60);
         sidebar.add(profilePic);
 
@@ -85,27 +85,27 @@ public class Homepage extends JFrame {
         int iconStartY = 100;
         int iconSpacing = 70;
 
-        JLabel homeIcon = new JLabel(new ImageIcon("/Users/kosy/Downloads/home.png")); // Home icon
+        JLabel homeIcon = new JLabel(new ImageIcon("src/main/resources/icons/home.png")); // Home icon
         homeIcon.setBounds(5, iconStartY, 60, 60);
         sidebar.add(homeIcon);
 
-        JLabel chatIcon = new JLabel(new ImageIcon("/Users/kosy/Downloads/messages.png")); // Messages icon
+        JLabel chatIcon = new JLabel(new ImageIcon("src/main/resources/icons/messages.png")); // Messages icon
         chatIcon.setBounds(5, iconStartY + iconSpacing, 60, 60);
         sidebar.add(chatIcon);
 
-        JLabel bellIcon = new JLabel(new ImageIcon("/Users/kosy/Downloads/notifications.png")); // Notifications icon
+        JLabel bellIcon = new JLabel(new ImageIcon("src/main/resources/icons/notifications.png")); // Notifications icon
         bellIcon.setBounds(5, iconStartY + 2 * iconSpacing, 60, 60);
         sidebar.add(bellIcon);
 
-        JLabel friendsIcon = new JLabel(new ImageIcon("/Users/kosy/Downloads/community.png")); // Community icon
+        JLabel friendsIcon = new JLabel(new ImageIcon("src/main/resources/icons/community.png")); // Community icon
         friendsIcon.setBounds(5, iconStartY + 3 * iconSpacing, 60, 60);
         sidebar.add(friendsIcon);
 
-        JLabel settingsIcon = new JLabel(new ImageIcon("/Users/kosy/Downloads/settings.png")); // Settings icon
+        JLabel settingsIcon = new JLabel(new ImageIcon("src/main/resources/icons/settings.png")); // Settings icon
         settingsIcon.setBounds(5, iconStartY + 4 * iconSpacing, 60, 60);
         sidebar.add(settingsIcon);
 
-        JLabel logoutIcon = new JLabel(new ImageIcon("/Users/kosy/Downloads/leave.png")); // Leave icon
+        JLabel logoutIcon = new JLabel(new ImageIcon("src/main/resources/icons/leave.png")); // Leave icon
         logoutIcon.setBounds(5, iconStartY + 5 * iconSpacing, 60, 60);
         sidebar.add(logoutIcon);
 
@@ -146,7 +146,7 @@ public class Homepage extends JFrame {
         logoPanel.setLayout(null);
 
         // Load and resize the logo image
-        ImageIcon logoIcon = new ImageIcon("/Users/kosy/Downloads/logo.png");
+        ImageIcon logoIcon = new ImageIcon("src/main/resources/icons/logo.png");
         Image scaledLogo = logoIcon.getImage().getScaledInstance(490, 480, Image.SCALE_SMOOTH);
         JLabel logoLabel = new JLabel(new ImageIcon(scaledLogo));
         logoLabel.setBounds(0, 0, 490, 480);
