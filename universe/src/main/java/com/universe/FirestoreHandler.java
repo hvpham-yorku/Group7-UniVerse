@@ -5,27 +5,27 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.universe.models.UserProfile;
 
-import javax.annotation.Nullable;
+//import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import com.google.cloud.firestore.*;
+//import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
-import com.universe.models.UserProfile;
+//import com.universe.models.UserProfile;
 
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+//import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
+//import java.util.concurrent.ExecutionException;
 
 public class FirestoreHandler {
 
 	private static final String COLLECTION_NAME = "UserProfile";
-	 private static final String FRIENDS_COLLECTION = "friends";
-	// Firestore instance
-	    private static Firestore db = FirestoreClient.getFirestore();
+	 private static final String FRIENDS_COLLECTION = "friends"; //kennie modified
+	 // Firestore instance
+	    private static Firestore db = FirestoreClient.getFirestore(); //kennie modified
 
 	public static void addUserData(UserProfile user) {
 		Firestore db = FirestoreClient.getFirestore();
@@ -117,7 +117,7 @@ public class FirestoreHandler {
         }
     }
 	
-	/**
+	/** Kennie
      * Add a friend to the Firestore database.
      */
 	public static void addFriend(UserProfile user) {
@@ -132,7 +132,7 @@ public class FirestoreHandler {
 	    }
 	}
 
-    /**
+    /** Kennie
      * Remove a friend from the Firestore database.
      */
 	public static void removeFriend(UserProfile user) {
@@ -260,7 +260,7 @@ public class FirestoreHandler {
 	    return users;
 	}
 	
-	/**
+	/** Kennie
      * Fetch a one-time list of all friends from Firestore.
      */
     public static List<UserProfile> getFriendsSync() {

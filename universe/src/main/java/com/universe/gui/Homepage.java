@@ -305,19 +305,20 @@ public class Homepage extends JFrame {
         if (addedFriends.contains(user)) {
             // Remove friend
             addedFriends.remove(user);
-            FirestoreHandler.removeFriend(user); // Update Firestore
-            updateRightFriendsList();
+            FirestoreHandler.removeFriend(user); // Add to Firestore
+            //updateRightFriendsList();
             button.setText("Add");
-            button.setBackground(Color.BLUE);
         } else {
             // Add friend
             addedFriends.add(user);
-            FirestoreHandler.addFriend(user); // Update Firestore
-            updateRightFriendsList();
-            button.setText("Added");
-            button.setBackground(Color.GREEN);
+            FirestoreHandler.addFriend(user); // Add to Firestore
+           // updateRightFriendsList();
+            button.setText("Removes");
         }
     }
+
+
+
 
     private void updateRightFriendsList() {
         rightFriendsListPanel.removeAll();
