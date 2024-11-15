@@ -15,6 +15,13 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.ImageIcon;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import javax.swing.JPanel;
+
 
 public class Homepage extends JFrame {
 
@@ -62,12 +69,56 @@ public class Homepage extends JFrame {
         welcomeLabel.setBounds(0, 5, 770, 50); // Adjusted width to match welcomePanel
         welcomePanel.add(welcomeLabel);
         contentPane.add(welcomePanel);
+        
+//     // Custom JPanel class to create rounded corners
+//        class RoundedPanel extends JPanel {
+//            private int cornerRadius;
+//            private Color borderColor;
+//            private int borderThickness;
+//
+//            public RoundedPanel(int radius, Color borderColor, int borderThickness) {
+//                this.cornerRadius = radius;
+//                this.borderColor = borderColor;
+//                this.borderThickness = borderThickness;
+//                setOpaque(false); // Ensures background is transparent for custom painting
+//            }
+//
+//            @Override
+//            protected void paintComponent(Graphics g) {
+//                super.paintComponent(g);
+//                Graphics2D g2 = (Graphics2D) g;
+//                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//
+//                // Draw the rounded panel background
+//                g2.setColor(getBackground());
+//                g2.fillRoundRect(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
+//
+//                // Draw the border
+//                g2.setColor(borderColor);
+//                g2.setStroke(new BasicStroke(borderThickness));
+//                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, cornerRadius, cornerRadius);
+//            }
+//        }
+//
+//        // Use the custom RoundedPanel for the welcome message panel
+//        RoundedPanel welcomePanel = new RoundedPanel(25, new Color(46, 157, 251), 2); // Radius of 25, border color, and thickness of 2
+//        welcomePanel.setBounds(100, 10, 770, 60);
+//        welcomePanel.setBackground(Color.WHITE);
+//        welcomePanel.setLayout(null);
+//
+//        JLabel welcomeLabel = new JLabel("Hi John Doe, Welcome to UniVerse!", JLabel.CENTER);
+//        welcomeLabel.setFont(new Font("Inria Sans", Font.BOLD, 20));
+//        welcomeLabel.setForeground(new Color(31, 162, 255));
+//        welcomeLabel.setBounds(0, 5, 770, 50); // Adjusted width to match welcomePanel
+//        welcomePanel.add(welcomeLabel);
+//        contentPane.add(welcomePanel);
+
+        
 
         // Sidebar panel
         JPanel sidebar = new JPanel();
         sidebar.setBounds(10, 10, 70, 540);
         sidebar.setBackground(Color.WHITE);
-        sidebar.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
         sidebar.setLayout(null);
 
         // Profile label above the profile picture
@@ -92,6 +143,7 @@ public class Homepage extends JFrame {
         ImageIcon homeResizedIcon = new ImageIcon(homeResizedImage);
         JLabel homeIcon = new JLabel(homeResizedIcon);
         homeIcon.setBounds(5, iconStartY, 60, 60);
+        //homeIcon.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
         homeIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Set cursor to hand
         homeIcon.addMouseListener(new MouseAdapter() {
             @Override
@@ -171,7 +223,7 @@ public class Homepage extends JFrame {
         logoutIcon.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to exit?", "Exit Confirmation", JOptionPane.YES_NO_OPTION);
+                int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to exit the application?", "Exit Confirmation", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
                     System.exit(0); // Exit the application
                 }
