@@ -3,12 +3,14 @@ package com.universe.gui;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
@@ -47,16 +49,16 @@ public class Homepage extends JFrame {
         contentPane.setBackground(new Color(210, 236, 255));
         setContentPane(contentPane);
 
-        // Welcome message panel
+        // Welcome message panel aligned with logoPanel
         JPanel welcomePanel = new JPanel();
-        welcomePanel.setBounds(120, 10, 650, 60);
+        welcomePanel.setBounds(100, 10, 770, 60); // Adjusted width to align with right edge of logoPanel
         welcomePanel.setBackground(Color.WHITE);
         welcomePanel.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
         welcomePanel.setLayout(null);
         JLabel welcomeLabel = new JLabel("Hi John Doe, Welcome to UniVerse!", JLabel.CENTER);
         welcomeLabel.setFont(new Font("Inria Sans", Font.BOLD, 20));
         welcomeLabel.setForeground(new Color(31, 162, 255));
-        welcomeLabel.setBounds(0, 5, 650, 50);
+        welcomeLabel.setBounds(0, 5, 770, 50); // Adjusted width to match welcomePanel
         welcomePanel.add(welcomeLabel);
         contentPane.add(welcomePanel);
 
@@ -66,9 +68,16 @@ public class Homepage extends JFrame {
         sidebar.setBackground(Color.WHITE);
         sidebar.setLayout(null);
 
+        // Profile label above the profile picture
+        JLabel profileLabel = new JLabel("Profile");
+        profileLabel.setFont(new Font("Roboto", Font.BOLD, 14));
+        profileLabel.setForeground(new Color(97, 97, 97)); // Gray color to match a subtle look
+        profileLabel.setBounds(10, 5, 50, 20); // Positioned above the profile picture
+        sidebar.add(profileLabel);
+
         // Profile picture
         JLabel profilePic = new JLabel(new ImageIcon("/Users/kosy/Downloads/profile.png")); // Profile icon
-        profilePic.setBounds(5, 20, 60, 60);
+        profilePic.setBounds(5, 25, 60, 60);
         sidebar.add(profilePic);
 
         // Sidebar icons with adjusted positions and even spacing
@@ -128,16 +137,20 @@ public class Homepage extends JFrame {
 
         contentPane.add(friendsPanel);
 
-        // Placeholder for the main content area (logo area)
+        // Logo panel with resized logo
         JPanel logoPanel = new JPanel();
         logoPanel.setBounds(380, 80, 490, 480);
         logoPanel.setBackground(Color.WHITE);
         logoPanel.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
         logoPanel.setLayout(null);
-        JLabel logoPlaceholder = new JLabel("Place logo here", JLabel.CENTER);
-        logoPlaceholder.setFont(new Font("Roboto", Font.BOLD, 18));
-        logoPlaceholder.setBounds(0, 200, 490, 25);
-        logoPanel.add(logoPlaceholder);
+
+        // Load and resize the logo image
+        ImageIcon logoIcon = new ImageIcon("/Users/kosy/Downloads/logo.png");
+        Image scaledLogo = logoIcon.getImage().getScaledInstance(490, 480, Image.SCALE_SMOOTH);
+        JLabel logoLabel = new JLabel(new ImageIcon(scaledLogo));
+        logoLabel.setBounds(0, 0, 490, 480);
+        logoPanel.add(logoLabel);
+
         contentPane.add(logoPanel);
     }
 
@@ -161,10 +174,12 @@ public class Homepage extends JFrame {
         friendUniversity.setBounds(70, 30, 120, 20);
         friendEntry.add(friendUniversity);
 
-        // Plain clickable button (white background, interactive)
+        // Plain clickable button with white background and blue border
         JButton addButton = new JButton();
         addButton.setBounds(210, 15, 20, 20); // Set the size of the button
-        addButton.setBackground(Color.WHITE); // White background
+        addButton.setBackground(Color.WHITE); // White background inside the button
+        addButton.setContentAreaFilled(true); // Ensures the content area is filled with white
+        addButton.setOpaque(true); // Ensures background color is visible
         addButton.setFocusPainted(false); // Removes focus outline on click
         addButton.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251))); // Blue border
 
@@ -179,6 +194,11 @@ public class Homepage extends JFrame {
             public void mouseExited(MouseEvent e) {
                 addButton.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251))); // Original border color
             }
+        });
+
+        // ActionListener to handle button clicks
+        addButton.addActionListener(e -> {
+            JOptionPane.showMessageDialog(null, "Friend request sent to " + name);
         });
 
         friendEntry.add(addButton);
