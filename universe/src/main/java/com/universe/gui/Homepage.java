@@ -1,45 +1,56 @@
 package com.universe.gui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Image;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.ImageIcon;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import javax.swing.JPanel;
 
+import com.universe.FirebaseInitializer;
+import com.universe.FirestoreHandler;
+import com.universe.models.UserProfile;
 
 public class Homepage extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
+    private JPanel friendsListPanel;
+    private JPanel friendsPanelRight;
+    private JPanel rightFriendsListPanel; // New panel for friends list in the right section
+    private JTextField searchField;
+
+    private List<UserProfile> allUsers; // Store all users fetched from the database
+    private List<UserProfile> addedFriends; // Store added friends
 
     /**
      * Launch the application.
      */
     public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    Homepage frame = new Homepage();
-                    frame.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        EventQueue.invokeLater(() -> {
+            try {
+                // Initialize Firebase
+                FirebaseInitializer.initializeFirebase();
+
+                // Launch the Homepage
+                Homepage frame = new Homepage();
+                frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
     }
@@ -50,72 +61,30 @@ public class Homepage extends JFrame {
     public Homepage() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 900, 600);
-        setResizable(false); // Prevents resizing of the window
+        setResizable(false); // Prevent resizing
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         contentPane.setLayout(null);
         contentPane.setBackground(new Color(210, 236, 255));
         setContentPane(contentPane);
 
-        // Welcome message panel aligned with logoPanel
+        // Initialize added friends list
+        addedFriends = new ArrayList<>();
+
+        // Welcome message panel
         JPanel welcomePanel = new JPanel();
-        welcomePanel.setBounds(100, 10, 770, 60); // Adjusted width to align with right edge of logoPanel
+        welcomePanel.setBounds(100, 10, 770, 60);
         welcomePanel.setBackground(Color.WHITE);
         welcomePanel.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
         welcomePanel.setLayout(null);
         JLabel welcomeLabel = new JLabel("Hi John Doe, Welcome to UniVerse!", JLabel.CENTER);
         welcomeLabel.setFont(new Font("Inria Sans", Font.BOLD, 20));
         welcomeLabel.setForeground(new Color(31, 162, 255));
-        welcomeLabel.setBounds(0, 5, 770, 50); // Adjusted width to match welcomePanel
+        welcomeLabel.setBounds(0, 5, 770, 50);
         welcomePanel.add(welcomeLabel);
         contentPane.add(welcomePanel);
-        
-//     // Custom JPanel class to create rounded corners
-//        class RoundedPanel extends JPanel {
-//            private int cornerRadius;
-//            private Color borderColor;
-//            private int borderThickness;
-//
-//            public RoundedPanel(int radius, Color borderColor, int borderThickness) {
-//                this.cornerRadius = radius;
-//                this.borderColor = borderColor;
-//                this.borderThickness = borderThickness;
-//                setOpaque(false); // Ensures background is transparent for custom painting
-//            }
-//
-//            @Override
-//            protected void paintComponent(Graphics g) {
-//                super.paintComponent(g);
-//                Graphics2D g2 = (Graphics2D) g;
-//                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-//
-//                // Draw the rounded panel background
-//                g2.setColor(getBackground());
-//                g2.fillRoundRect(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
-//
-//                // Draw the border
-//                g2.setColor(borderColor);
-//                g2.setStroke(new BasicStroke(borderThickness));
-//                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, cornerRadius, cornerRadius);
-//            }
-//        }
-//
-//        // Use the custom RoundedPanel for the welcome message panel
-//        RoundedPanel welcomePanel = new RoundedPanel(25, new Color(46, 157, 251), 2); // Radius of 25, border color, and thickness of 2
-//        welcomePanel.setBounds(100, 10, 770, 60);
-//        welcomePanel.setBackground(Color.WHITE);
-//        welcomePanel.setLayout(null);
-//
-//        JLabel welcomeLabel = new JLabel("Hi John Doe, Welcome to UniVerse!", JLabel.CENTER);
-//        welcomeLabel.setFont(new Font("Inria Sans", Font.BOLD, 20));
-//        welcomeLabel.setForeground(new Color(31, 162, 255));
-//        welcomeLabel.setBounds(0, 5, 770, 50); // Adjusted width to match welcomePanel
-//        welcomePanel.add(welcomeLabel);
-//        contentPane.add(welcomePanel);
 
-        
-
-        // Sidebar panel
+        // Sidebar
         JPanel sidebar = new JPanel();
         sidebar.setBounds(10, 10, 70, 540);
         sidebar.setBackground(Color.WHITE);
@@ -124,118 +93,31 @@ public class Homepage extends JFrame {
         // Profile label above the profile picture
         JLabel profileLabel = new JLabel("Profile");
         profileLabel.setFont(new Font("Roboto", Font.BOLD, 14));
-        profileLabel.setForeground(new Color(97, 97, 97)); // Gray color to match a subtle look
+        profileLabel.setForeground(new Color(97, 97, 97)); // Gray color for subtle look
         profileLabel.setBounds(10, 5, 50, 20); // Positioned above the profile picture
         sidebar.add(profileLabel);
 
         // Profile picture
-        JLabel profilePic = new JLabel(new ImageIcon("src/main/resources/icons/profile.png")); // Profile icon
+        JLabel profilePic = new JLabel(new ImageIcon("src/main/resources/icons/profile.png"));
         profilePic.setBounds(5, 25, 60, 60);
         sidebar.add(profilePic);
 
-     // Sidebar icons with adjusted positions and even spacing
-        int iconStartY = 100;
-        int iconSpacing = 70;
-
-        // Load, resize, and make home icon clickable
-        ImageIcon homeOriginalIcon = new ImageIcon("src/main/resources/icons/home.png");
-        Image homeResizedImage = homeOriginalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon homeResizedIcon = new ImageIcon(homeResizedImage);
-        JLabel homeIcon = new JLabel(homeResizedIcon);
-        homeIcon.setBounds(5, iconStartY, 60, 60);
-        //homeIcon.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
-        homeIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Set cursor to hand
-        homeIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                JOptionPane.showMessageDialog(null, "Home clicked!");
+        // Sidebar icons with functionality
+        addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> JOptionPane.showMessageDialog(null, "Home clicked!"));
+        addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> JOptionPane.showMessageDialog(null, "Chat clicked!"));
+        addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> JOptionPane.showMessageDialog(null, "Notifications clicked!"));
+        addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310, e -> JOptionPane.showMessageDialog(null, "Community clicked!"));
+        addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380, e -> JOptionPane.showMessageDialog(null, "Settings clicked!"));
+        addSidebarIcon(sidebar, "src/main/resources/icons/leave.png", "Logout", 450, e -> {
+            int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to exit?", "Exit Confirmation", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                System.exit(0); // Exit application
             }
         });
-        sidebar.add(homeIcon);
-
-        // Load, resize, and make chat icon clickable
-        ImageIcon chatOriginalIcon = new ImageIcon("src/main/resources/icons/messages.png");
-        Image chatResizedImage = chatOriginalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon chatResizedIcon = new ImageIcon(chatResizedImage);
-        JLabel chatIcon = new JLabel(chatResizedIcon);
-        chatIcon.setBounds(5, iconStartY + iconSpacing, 60, 60);
-        chatIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Set cursor to hand
-        chatIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                JOptionPane.showMessageDialog(null, "Chat clicked!");
-            }
-        });
-        sidebar.add(chatIcon);
-
-        // Load, resize, and make notifications icon clickable
-        ImageIcon bellOriginalIcon = new ImageIcon("src/main/resources/icons/notifications.png");
-        Image bellResizedImage = bellOriginalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon bellResizedIcon = new ImageIcon(bellResizedImage);
-        JLabel bellIcon = new JLabel(bellResizedIcon);
-        bellIcon.setBounds(5, iconStartY + 2 * iconSpacing, 60, 60);
-        bellIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Set cursor to hand
-        bellIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                JOptionPane.showMessageDialog(null, "Notifications clicked!");
-            }
-        });
-        sidebar.add(bellIcon);
-
-        // Load, resize, and make community icon clickable
-        ImageIcon friendsOriginalIcon = new ImageIcon("src/main/resources/icons/community.png");
-        Image friendsResizedImage = friendsOriginalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon friendsResizedIcon = new ImageIcon(friendsResizedImage);
-        JLabel friendsIcon = new JLabel(friendsResizedIcon);
-        friendsIcon.setBounds(5, iconStartY + 3 * iconSpacing, 60, 60);
-        friendsIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Set cursor to hand
-        friendsIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                JOptionPane.showMessageDialog(null, "Community clicked!");
-            }
-        });
-        sidebar.add(friendsIcon);
-
-        // Load, resize, and make settings icon clickable
-        ImageIcon settingsOriginalIcon = new ImageIcon("src/main/resources/icons/settings.png");
-        Image settingsResizedImage = settingsOriginalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon settingsResizedIcon = new ImageIcon(settingsResizedImage);
-        JLabel settingsIcon = new JLabel(settingsResizedIcon);
-        settingsIcon.setBounds(5, iconStartY + 4 * iconSpacing, 60, 60);
-        settingsIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Set cursor to hand
-        settingsIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                JOptionPane.showMessageDialog(null, "Settings clicked!");
-            }
-        });
-        sidebar.add(settingsIcon);
-
-        // Load, resize, and make logout icon clickable to exit the application
-        ImageIcon logoutOriginalIcon = new ImageIcon("src/main/resources/icons/leave.png");
-        Image logoutResizedImage = logoutOriginalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon logoutResizedIcon = new ImageIcon(logoutResizedImage);
-        JLabel logoutIcon = new JLabel(logoutResizedIcon);
-        logoutIcon.setBounds(5, iconStartY + 5 * iconSpacing, 60, 60);
-        logoutIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Set cursor to hand
-        logoutIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to exit the application?", "Exit Confirmation", JOptionPane.YES_NO_OPTION);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    System.exit(0); // Exit the application
-                }
-            }
-        });
-        sidebar.add(logoutIcon);
-
-
 
         contentPane.add(sidebar);
 
-        // Friends list panel
+        // Friends List Panel
         JPanel friendsPanel = new JPanel();
         friendsPanel.setBounds(100, 80, 270, 480);
         friendsPanel.setBackground(Color.WHITE);
@@ -243,55 +125,142 @@ public class Homepage extends JFrame {
         friendsPanel.setLayout(null);
 
         JLabel searchLabel = new JLabel("Add or search for friends!");
-        searchLabel.setBounds(15, 10, 220, 20);
-        searchLabel.setFont(new Font("Roboto", Font.BOLD, 16));
+        searchLabel.setBounds(15, 10, 200, 20);
+        searchLabel.setFont(new Font("Roboto", Font.BOLD, 14));
         friendsPanel.add(searchLabel);
 
-        // Search field with blue border
-        JTextField searchField = new JTextField();
-        searchField.setBounds(15, 35, 240, 30);
+        // Search bar
+        searchField = new JTextField();
+        searchField.setBounds(15, 35, 180, 30);
         searchField.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
         friendsPanel.add(searchField);
 
-        // Friend entries with adjusted yPosition for spacing
-        addFriendEntry(friendsPanel, "Sandra King", "York University", "src/main/resources/icons/sandra.png", 80);
-        addFriendEntry(friendsPanel, "Jane Freeman Leonardino", "University of Toronto", "src/main/resources/icons/jane.png", 160);
-        addFriendEntry(friendsPanel, "Armin Singh", "Toronto Metropolitan University", "src/main/resources/icons/armin.png", 240);
-        addFriendEntry(friendsPanel, "James Anderson", "University of Waterloo", "src/main/resources/icons/james.png", 320);
-        addFriendEntry(friendsPanel, "Asterios Vassilis", "Seneca College", "src/main/resources/icons/asterios.png", 400);
+        // Search button
+        JButton searchButton = new JButton("Go");
+        searchButton.setBounds(200, 35, 60, 30);
+        searchButton.setFont(new Font("Roboto", Font.BOLD, 12));
+        searchButton.setBackground(new Color(46, 157, 251));
+        searchButton.setForeground(Color.BLACK);
+        searchButton.setFocusPainted(false);
+        friendsPanel.add(searchButton);
+
+        // Friends list panel with a scrollable view
+        friendsListPanel = new JPanel();
+        friendsListPanel.setLayout(null);
+        friendsListPanel.setBackground(Color.WHITE);
+
+        JScrollPane scrollPane = new JScrollPane(friendsListPanel);
+        scrollPane.setBounds(15, 75, 240, 390);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        friendsPanel.add(scrollPane);
 
         contentPane.add(friendsPanel);
 
-        // Logo panel with resized logo
-        JPanel logoPanel = new JPanel();
-        logoPanel.setBounds(380, 80, 490, 480);
-        logoPanel.setBackground(Color.WHITE);
-        logoPanel.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
-        logoPanel.setLayout(null);
+        // Populate friends list from the database
+        allUsers = FirestoreHandler.getAllUsers();
+        populateFriendsList(allUsers);
 
-        // Load and resize the logo image
-        ImageIcon logoIcon = new ImageIcon("src/main/resources/icons/logo2.png");
-        Image scaledLogo = logoIcon.getImage().getScaledInstance(490, 480, Image.SCALE_SMOOTH);
-        JLabel logoLabel = new JLabel(new ImageIcon(scaledLogo));
-        logoLabel.setBounds(0, 0, 490, 480);
-        logoPanel.add(logoLabel);
+        // Add search functionality
+        searchButton.addActionListener(e -> handleSearch());
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                handleSearch();
+            }
 
-        contentPane.add(logoPanel);
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                handleSearch();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                handleSearch();
+            }
+        });
+
+        // Right Panel for Logo and Friends
+        friendsPanelRight = new JPanel();
+        friendsPanelRight.setBounds(380, 80, 490, 480);
+        friendsPanelRight.setBackground(Color.WHITE);
+        friendsPanelRight.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
+        friendsPanelRight.setLayout(null);
+
+        // Logo Section
+        JLabel logoLabel = new JLabel(new ImageIcon(new ImageIcon("src/main/resources/icons/logo2.png").getImage().getScaledInstance(200, 100, Image.SCALE_SMOOTH)));
+        logoLabel.setBounds(145, 10, 200, 100);
+        friendsPanelRight.add(logoLabel);
+
+        // Friends Section
+        JLabel friendsTitleLabel = new JLabel("Friends", JLabel.CENTER);
+        friendsTitleLabel.setFont(new Font("Roboto", Font.BOLD, 18));
+        friendsTitleLabel.setBounds(0, 120, 490, 30);
+        friendsTitleLabel.setOpaque(true);
+        friendsTitleLabel.setBackground(new Color(46, 157, 251));
+        friendsTitleLabel.setForeground(Color.WHITE);
+        friendsPanelRight.add(friendsTitleLabel);
+
+        // Scrollable Friends List
+        rightFriendsListPanel = new JPanel();
+        rightFriendsListPanel.setLayout(new BoxLayout(rightFriendsListPanel, BoxLayout.Y_AXIS)); // BoxLayout for dynamic height
+        rightFriendsListPanel.setBackground(Color.WHITE);
+
+        JScrollPane rightScrollPane = new JScrollPane(rightFriendsListPanel);
+        rightScrollPane.setBounds(10, 160, 470, 310);
+        rightScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        friendsPanelRight.add(rightScrollPane);
+
+        contentPane.add(friendsPanelRight);
     }
 
-    private void addFriendEntry(JPanel parentPanel, String name, String university, String imagePath, int yPosition) {
+    private void addSidebarIcon(JPanel sidebar, String iconPath, String tooltip, int yPosition, java.awt.event.ActionListener action) {
+        ImageIcon originalIcon = new ImageIcon(iconPath);
+        Image resizedImage = originalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        ImageIcon resizedIcon = new ImageIcon(resizedImage);
+        JButton iconButton = new JButton(resizedIcon);
+        iconButton.setBounds(5, yPosition, 60, 60);
+        iconButton.setBackground(Color.WHITE);
+        iconButton.setBorder(BorderFactory.createEmptyBorder());
+        iconButton.setFocusPainted(false);
+        iconButton.setToolTipText(tooltip);
+        iconButton.addActionListener(action);
+        sidebar.add(iconButton);
+    }
+
+    private void populateFriendsList(List<UserProfile> users) {
+        friendsListPanel.removeAll();
+
+        if (users != null && !users.isEmpty()) {
+            int yPosition = 5;
+            for (UserProfile user : users) {
+                addFriendEntry(user.getUsername(), user.getUniversity(), "src/main/resources/icons/sandra.png", yPosition);
+                yPosition += 65;
+            }
+        } else {
+            JLabel noUsersLabel = new JLabel("No users found!", JLabel.CENTER);
+            noUsersLabel.setBounds(0, 0, 240, 30);
+            noUsersLabel.setFont(new Font("Roboto", Font.BOLD, 16));
+            noUsersLabel.setForeground(Color.GRAY);
+            friendsListPanel.add(noUsersLabel);
+        }
+
+        friendsListPanel.revalidate();
+        friendsListPanel.repaint();
+    }
+
+    private void addFriendEntry(String name, String university, String imagePath, int yPosition) {
         JPanel friendEntry = new JPanel();
-        friendEntry.setBounds(15, yPosition, 240, 60);
+        friendEntry.setBounds(5, yPosition, 230, 60);
         friendEntry.setBackground(new Color(230, 230, 230));
         friendEntry.setLayout(null);
 
-        JLabel friendPic = new JLabel(new ImageIcon(imagePath)); // Friend's profile picture
+        JLabel friendPic = new JLabel(new ImageIcon(imagePath)); // Profile picture
         friendPic.setBounds(5, 5, 50, 50);
         friendEntry.add(friendPic);
 
         JLabel friendName = new JLabel(name);
         friendName.setFont(new Font("Roboto", Font.BOLD, 14));
-        friendName.setBounds(70, 10, 120, 20);
+        friendName.setBounds(70, 5, 120, 20);
         friendEntry.add(friendName);
 
         JLabel friendUniversity = new JLabel(university);
@@ -299,34 +268,67 @@ public class Homepage extends JFrame {
         friendUniversity.setBounds(70, 30, 120, 20);
         friendEntry.add(friendUniversity);
 
-        // Plain clickable button with white background and blue border
-        JButton addButton = new JButton();
-        addButton.setBounds(210, 15, 20, 20); // Set the size of the button
-        addButton.setBackground(Color.WHITE); // White background inside the button
-        addButton.setContentAreaFilled(true); // Ensures the content area is filled with white
-        addButton.setOpaque(true); // Ensures background color is visible
-        addButton.setFocusPainted(false); // Removes focus outline on click
-        addButton.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251))); // Blue border
-
-        // Interactive effect: change border color on hover
-        addButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                addButton.setBorder(BorderFactory.createLineBorder(new Color(31, 162, 255), 2)); // Darker blue border on hover
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                addButton.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251))); // Original border color
-            }
-        });
-
-        // ActionListener to handle button clicks
+        JButton addButton = new JButton("Add");
+        addButton.setBounds(190, 15, 30, 30);
+        addButton.setFont(new Font("Roboto", Font.BOLD, 10));
+        addButton.setBackground(new Color(46, 157, 251));
+        addButton.setForeground(Color.WHITE);
         addButton.addActionListener(e -> {
-            JOptionPane.showMessageDialog(null, "Friend request sent to " + name);
+            JOptionPane.showMessageDialog(null, name + " added as a friend!");
+            addToFriendsPanel(name, university);
         });
-
         friendEntry.add(addButton);
-        parentPanel.add(friendEntry);
+
+        friendsListPanel.add(friendEntry);
+    }
+
+    private void addToFriendsPanel(String name, String university) {
+        JPanel friendEntry = new JPanel();
+        friendEntry.setPreferredSize(new Dimension(470, 60));
+        friendEntry.setBackground(new Color(230, 230, 230));
+        friendEntry.setLayout(null);
+
+        JLabel friendName = new JLabel(name);
+        friendName.setFont(new Font("Roboto", Font.BOLD, 14));
+        friendName.setBounds(10, 5, 300, 20);
+        friendEntry.add(friendName);
+
+        JLabel friendUniversity = new JLabel(university);
+        friendUniversity.setFont(new Font("Roboto", Font.PLAIN, 12));
+        friendUniversity.setBounds(10, 30, 300, 20);
+        friendEntry.add(friendUniversity);
+
+        JButton messageButton = new JButton("Message");
+        messageButton.setBounds(370, 15, 90, 30);
+        messageButton.setFont(new Font("Roboto", Font.BOLD, 10));
+        messageButton.setBackground(new Color(46, 157, 251));
+        messageButton.setForeground(Color.BLACK);
+        messageButton.addActionListener(e -> JOptionPane.showMessageDialog(null, "Messaging " + name + "!"));
+        friendEntry.add(messageButton);
+
+        rightFriendsListPanel.add(friendEntry);
+        rightFriendsListPanel.revalidate();
+        rightFriendsListPanel.repaint();
+    }
+
+    private void handleSearch() {
+        String query = searchField.getText().trim().toLowerCase();
+        if (query.isEmpty()) {
+            populateFriendsList(allUsers);
+            return;
+        }
+
+        List<UserProfile> filteredUsers = new ArrayList<>();
+        for (UserProfile user : allUsers) {
+            if (user.getUsername().toLowerCase().contains(query) || user.getUniversity().toLowerCase().contains(query)) {
+                filteredUsers.add(user);
+            }
+        }
+
+        if (filteredUsers.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No users found matching: " + query);
+        }
+
+        populateFriendsList(filteredUsers);
     }
 }
