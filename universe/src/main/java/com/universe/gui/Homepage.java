@@ -37,6 +37,8 @@ public class Homepage extends JFrame {
     private List<UserProfile> allUsers; // Store all users fetched from the database
     private List<UserProfile> addedFriends; // Store added friends
 
+    private JLabel noFriendsLabel; // Label for "No friends added yet"
+
     /**
      * Launch the application.
      */
@@ -152,7 +154,7 @@ public class Homepage extends JFrame {
         JScrollPane scrollPane = new JScrollPane(friendsListPanel);
         scrollPane.setBounds(15, 75, 240, 390);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         friendsPanel.add(scrollPane);
 
         contentPane.add(friendsPanel);
@@ -211,6 +213,11 @@ public class Homepage extends JFrame {
         rightScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         friendsPanelRight.add(rightScrollPane);
 
+        // "No friends added yet" label
+        noFriendsLabel = new JLabel("No friends added yet!", JLabel.CENTER);
+        noFriendsLabel.setFont(new Font("Roboto", Font.PLAIN, 16));
+        rightFriendsListPanel.add(noFriendsLabel);
+
         contentPane.add(friendsPanelRight);
     }
 
@@ -233,7 +240,7 @@ public class Homepage extends JFrame {
 
         if (users != null && !users.isEmpty()) {
             for (UserProfile user : users) {
-                addFriendEntry(user.getUsername(), user.getUniversity(), "src/main/resources/icons/sandra.png");
+                addFriendEntry(user);
             }
         } else {
             JLabel noUsersLabel = new JLabel("No users found!", JLabel.CENTER);
@@ -246,52 +253,80 @@ public class Homepage extends JFrame {
         friendsListPanel.repaint();
     }
 
-    private void addFriendEntry(String name, String university, String imagePath) {
+    private void addFriendEntry(UserProfile user) {
         JPanel friendEntry = new JPanel();
         friendEntry.setPreferredSize(new Dimension(230, 60));
         friendEntry.setBackground(new Color(230, 230, 230));
         friendEntry.setLayout(null);
 
-        JLabel friendPic = new JLabel(new ImageIcon(imagePath)); // Profile picture
+        JLabel friendPic = new JLabel(new ImageIcon("src/main/resources/icons/sandra.png")); // Profile picture
         friendPic.setBounds(5, 5, 50, 50);
         friendEntry.add(friendPic);
 
-        JLabel friendName = new JLabel(name);
+        JLabel friendName = new JLabel(user.getUsername());
         friendName.setFont(new Font("Roboto", Font.BOLD, 14));
         friendName.setBounds(70, 5, 120, 20);
         friendEntry.add(friendName);
 
-        JLabel friendUniversity = new JLabel(university);
+        JLabel friendUniversity = new JLabel(user.getUniversity());
         friendUniversity.setFont(new Font("Roboto", Font.PLAIN, 12));
         friendUniversity.setBounds(70, 30, 120, 20);
         friendEntry.add(friendUniversity);
 
-        JButton addButton = new JButton("Add");
-        addButton.setBounds(190, 15, 30, 30);
+        JButton addButton = new JButton(addedFriends.contains(user) ? "Added" : "Add");
+        addButton.setBounds(190, 15, 60, 30);
         addButton.setFont(new Font("Roboto", Font.BOLD, 10));
         addButton.setBackground(new Color(46, 157, 251));
-        addButton.setForeground(Color.WHITE);
-        addButton.addActionListener(e -> {
-            JOptionPane.showMessageDialog(null, name + " added as a friend!");
-            addToFriendsPanel(name, university);
-        });
+        addButton.setForeground(Color.BLACK);
+        addButton.addActionListener(e -> handleAddOrRemoveFriend(user, addButton));
         friendEntry.add(addButton);
 
         friendsListPanel.add(friendEntry);
     }
 
-    private void addToFriendsPanel(String name, String university) {
+    private void handleAddOrRemoveFriend(UserProfile user, JButton button) {
+        if (addedFriends.contains(user)) {
+            // Remove friend
+            addedFriends.remove(user);
+            updateRightFriendsList();
+            button.setText("Add");
+            button.setBackground(Color.BLUE);
+        } else {
+            // Add friend
+            addedFriends.add(user);
+            updateRightFriendsList();
+            button.setText("Added");
+            button.setBackground(Color.GREEN);
+        }
+    }
+
+    private void updateRightFriendsList() {
+        rightFriendsListPanel.removeAll();
+
+        if (addedFriends.isEmpty()) {
+            rightFriendsListPanel.add(noFriendsLabel);
+        } else {
+            for (UserProfile friend : addedFriends) {
+                addToRightFriendsPanel(friend);
+            }
+        }
+
+        rightFriendsListPanel.revalidate();
+        rightFriendsListPanel.repaint();
+    }
+
+    private void addToRightFriendsPanel(UserProfile user) {
         JPanel friendEntry = new JPanel();
         friendEntry.setPreferredSize(new Dimension(470, 60));
         friendEntry.setBackground(new Color(230, 230, 230));
         friendEntry.setLayout(null);
 
-        JLabel friendName = new JLabel(name);
+        JLabel friendName = new JLabel(user.getUsername());
         friendName.setFont(new Font("Roboto", Font.BOLD, 14));
         friendName.setBounds(10, 5, 300, 20);
         friendEntry.add(friendName);
 
-        JLabel friendUniversity = new JLabel(university);
+        JLabel friendUniversity = new JLabel(user.getUniversity());
         friendUniversity.setFont(new Font("Roboto", Font.PLAIN, 12));
         friendUniversity.setBounds(10, 30, 300, 20);
         friendEntry.add(friendUniversity);
@@ -300,13 +335,11 @@ public class Homepage extends JFrame {
         messageButton.setBounds(370, 15, 90, 30);
         messageButton.setFont(new Font("Roboto", Font.BOLD, 10));
         messageButton.setBackground(new Color(46, 157, 251));
-        messageButton.setForeground(Color.WHITE);
-        messageButton.addActionListener(e -> JOptionPane.showMessageDialog(null, "Messaging " + name + "!"));
+        messageButton.setForeground(Color.BLACK);
+        messageButton.addActionListener(e -> JOptionPane.showMessageDialog(null, "Messaging " + user.getUsername() + "!"));
         friendEntry.add(messageButton);
 
         rightFriendsListPanel.add(friendEntry);
-        rightFriendsListPanel.revalidate();
-        rightFriendsListPanel.repaint();
     }
 
     private void handleSearch() {
@@ -323,17 +356,6 @@ public class Homepage extends JFrame {
             }
         }
 
-        if (filteredUsers.isEmpty()) {
-            friendsListPanel.removeAll();
-            JLabel noUsersLabel = new JLabel("No users match your search.", JLabel.CENTER);
-            noUsersLabel.setFont(new Font("Roboto", Font.BOLD, 16));
-            noUsersLabel.setForeground(Color.GRAY);
-            friendsListPanel.add(noUsersLabel);
-        } else {
-            populateFriendsList(filteredUsers);
-        }
-
-        friendsListPanel.revalidate();
-        friendsListPanel.repaint();
+        populateFriendsList(filteredUsers);
     }
 }
