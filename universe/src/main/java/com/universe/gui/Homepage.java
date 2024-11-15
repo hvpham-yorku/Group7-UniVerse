@@ -21,6 +21,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.ImageIcon;
 
+import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.universe.FirebaseInitializer;
 import com.universe.FirestoreHandler;
 import com.universe.models.UserProfile;
@@ -219,6 +220,22 @@ public class Homepage extends JFrame {
         rightFriendsListPanel.add(noFriendsLabel);
 
         contentPane.add(friendsPanelRight);
+        
+     // Real-time listener for added friends
+        FirestoreHandler.getFriends((snapshots, e) -> {
+            if (e != null) {
+                System.err.println("Error listening to real-time updates: " + e.getMessage());
+                return;
+            }
+
+            addedFriends.clear(); // Clear the current list
+            for (QueryDocumentSnapshot doc : snapshots.getDocuments()) {
+                UserProfile friend = doc.toObject(UserProfile.class);
+                addedFriends.add(friend); // Update the addedFriends list
+            }
+            updateRightFriendsList(); // Refresh the right panel
+        });
+        
     }
 
     private void addSidebarIcon(JPanel sidebar, String iconPath, String tooltip, int yPosition, java.awt.event.ActionListener action) {
@@ -288,12 +305,14 @@ public class Homepage extends JFrame {
         if (addedFriends.contains(user)) {
             // Remove friend
             addedFriends.remove(user);
+            FirestoreHandler.removeFriend(user); // Update Firestore
             updateRightFriendsList();
             button.setText("Add");
             button.setBackground(Color.BLUE);
         } else {
             // Add friend
             addedFriends.add(user);
+            FirestoreHandler.addFriend(user); // Update Firestore
             updateRightFriendsList();
             button.setText("Added");
             button.setBackground(Color.GREEN);
@@ -358,4 +377,6 @@ public class Homepage extends JFrame {
 
         populateFriendsList(filteredUsers);
     }
+    
+    
 }
