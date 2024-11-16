@@ -53,25 +53,56 @@ public class SignUporIn {
 
 	private void initialize() {
 		frame = new JFrame("Sign Up or Login");
-		frame.setBounds(500, 500, 800, 800);
+		frame.setBounds(100, 100, 900, 600);
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 
+		// Create a background panel
+		JPanel backgroundPanel = new JPanel() {
+			private Image backgroundImage;
+
+			{
+				try {
+					backgroundImage = new ImageIcon("src/main/resources/wallpaper.png").getImage()
+							.getScaledInstance(900, 600, Image.SCALE_SMOOTH);
+				} catch (Exception e) {
+					e.printStackTrace();
+					JOptionPane.showMessageDialog(null, "Failed to load background image.", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+
+			@Override
+			protected void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				if (backgroundImage != null) {
+					g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+				}
+			}
+		};
+
+		backgroundPanel.setLayout(new BorderLayout());
+		frame.setContentPane(backgroundPanel);
+
 		cardLayout = new CardLayout();
 		mainPanel = new JPanel(cardLayout);
-		frame.getContentPane().add(mainPanel);
+		mainPanel.setOpaque(false);
+		backgroundPanel.add(mainPanel, BorderLayout.CENTER);
 
 		JPanel signUpPanel = new JPanel();
 		signUpPanel.setLayout(null);
+		signUpPanel.setOpaque(false);
 		initializeSignUpPanel(signUpPanel);
 
 		JPanel loginPanel = new JPanel();
 		loginPanel.setLayout(null);
+		loginPanel.setOpaque(false);
 		initializeLoginPanel(loginPanel);
 
 		JPanel welcomePanel = new JPanel();
 		welcomePanel.setLayout(null);
+		welcomePanel.setOpaque(false);
 		initializeWelcomePanel(welcomePanel);
 
 		mainPanel.add(signUpPanel, "SignUp");
@@ -82,43 +113,46 @@ public class SignUporIn {
 	}
 
 	private void initializeSignUpPanel(JPanel signUpPanel) {
+		// Adjust vertical and horizontal placement
+		int verticalOffset = 250;
+		int horizontalOffset = 100;
+
 		// Full Name Field
 		textFieldName = new JTextField();
-		textFieldName.setBounds(250, 120, 212, 34);
+		textFieldName.setBounds(horizontalOffset + 250, verticalOffset, 212, 34); // Adjusted X position
 		signUpPanel.add(textFieldName);
 
 		JLabel lblName = new JLabel("Full Name:");
-		lblName.setBounds(150, 125, 76, 16);
+		lblName.setBounds(horizontalOffset + 150, verticalOffset + 5, 76, 16); // Adjusted X position
 		signUpPanel.add(lblName);
 
 		// Email Field
 		textFieldEmail = new JTextField();
-		textFieldEmail.setBounds(250, 180, 212, 34);
+		textFieldEmail.setBounds(horizontalOffset + 250, verticalOffset + 60, 212, 34); // Adjusted X position
 		signUpPanel.add(textFieldEmail);
 
 		JLabel lblEmail = new JLabel("Email:");
-		lblEmail.setBounds(150, 185, 38, 16);
+		lblEmail.setBounds(horizontalOffset + 150, verticalOffset + 65, 38, 16); // Adjusted X position
 		signUpPanel.add(lblEmail);
 
 		// Password Field
 		passwordField = new JPasswordField();
-		passwordField.setBounds(250, 240, 212, 36);
+		passwordField.setBounds(horizontalOffset + 250, verticalOffset + 120, 212, 36); // Adjusted X position
 		signUpPanel.add(passwordField);
 
 		JLabel lblPassword = new JLabel("Password:");
-		lblPassword.setBounds(150, 245, 71, 16);
+		lblPassword.setBounds(horizontalOffset + 150, verticalOffset + 125, 71, 16); // Adjusted X position
 		signUpPanel.add(lblPassword);
 
 		// Sign-Up Button
 		JButton btnSignUp = new JButton("Sign Up");
-		btnSignUp.setBounds(290, 300, 117, 29);
+		btnSignUp.setBounds(horizontalOffset + 290, verticalOffset + 180, 117, 29); // Adjusted X position
 		signUpPanel.add(btnSignUp);
-
 		btnSignUp.addActionListener(this::handleSignUp);
 
 		JLabel lblLoginLink = new JLabel("<html><u>Already have an account? Login</u></html>");
 		lblLoginLink.setForeground(Color.BLUE);
-		lblLoginLink.setBounds(250, 350, 200, 30);
+		lblLoginLink.setBounds(horizontalOffset + 250, verticalOffset + 230, 200, 30); // Adjusted X position
 		signUpPanel.add(lblLoginLink);
 
 		lblLoginLink.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -129,24 +163,28 @@ public class SignUporIn {
 	}
 
 	private void initializeLoginPanel(JPanel loginPanel) {
+		// Adjust horizontal and vertical placement
+		int horizontalOffset = 100;
+		int verticalOffset = 075;
+
 		JLabel lblEmail = new JLabel("Email:");
-		lblEmail.setBounds(150, 180, 100, 30);
+		lblEmail.setBounds(horizontalOffset + 150, 180 + verticalOffset, 100, 30); // Adjusted X and Y position
 		loginPanel.add(lblEmail);
 
 		JTextField emailField = new JTextField();
-		emailField.setBounds(250, 180, 212, 30);
+		emailField.setBounds(horizontalOffset + 250, 180 + verticalOffset, 212, 30); // Adjusted X and Y position
 		loginPanel.add(emailField);
 
 		JLabel lblPassword = new JLabel("Password:");
-		lblPassword.setBounds(150, 240, 100, 30);
+		lblPassword.setBounds(horizontalOffset + 150, 240 + verticalOffset, 100, 30); // Adjusted X and Y position
 		loginPanel.add(lblPassword);
 
 		JPasswordField passwordField = new JPasswordField();
-		passwordField.setBounds(250, 240, 212, 30);
+		passwordField.setBounds(horizontalOffset + 250, 240 + verticalOffset, 212, 30); // Adjusted X and Y position
 		loginPanel.add(passwordField);
 
 		JButton btnLogin = new JButton("Login");
-		btnLogin.setBounds(290, 300, 100, 30);
+		btnLogin.setBounds(horizontalOffset + 290, 300 + verticalOffset, 100, 30); // Adjusted X and Y position
 		loginPanel.add(btnLogin);
 
 		btnLogin.addActionListener(e -> {
@@ -165,7 +203,7 @@ public class SignUporIn {
 
 		JLabel lblSignUpLink = new JLabel("<html><u>Don't have an account? Sign Up</u></html>");
 		lblSignUpLink.setForeground(Color.BLUE);
-		lblSignUpLink.setBounds(250, 350, 200, 30);
+		lblSignUpLink.setBounds(horizontalOffset + 250, 350 + verticalOffset, 200, 30); // Adjusted X and Y position
 		loginPanel.add(lblSignUpLink);
 
 		lblSignUpLink.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -176,64 +214,73 @@ public class SignUporIn {
 	}
 
 	private void initializeWelcomePanel(JPanel welcomePanel) {
-		// Profile Picture Section
+		// Offsets for positioning
+		int verticalOffset = 250; // Slightly raise everything
+		int leftColumnX = 50; // Left column starting X position
+		int rightColumnX = 400; // Right column starting X position
+		int centerX = 350; // Center X for Save Profile button
+		int fieldHeight = 25; // Standard height for fields
+		int labelWidth = 120; // Width for labels
+		int fieldWidth = 200; // Width for fields
+
+		// Profile Picture Section (Left)
 		JLabel lblProfilePic = new JLabel("Profile Picture:");
-		lblProfilePic.setBounds(150, 20, 100, 20);
+		lblProfilePic.setBounds(leftColumnX, verticalOffset, labelWidth, fieldHeight);
 		welcomePanel.add(lblProfilePic);
 
 		profilePicLabel = new JLabel();
-		profilePicLabel.setBounds(250, 20, 100, 100);
+		profilePicLabel.setBounds(leftColumnX + labelWidth, verticalOffset, 100, 100);
 		profilePicLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		welcomePanel.add(profilePicLabel);
 
 		JButton btnAddPic = new JButton("Add Picture");
-		btnAddPic.setBounds(370, 60, 120, 30);
+		btnAddPic.setBounds(leftColumnX + labelWidth, verticalOffset + 110, 100, fieldHeight); // Directly below the
+																								// picture
 		welcomePanel.add(btnAddPic);
-
 		btnAddPic.addActionListener(e -> handleAddPicture());
 
-		// User Name Label
+		// Name and Email (Left)
 		lblUserName = new JLabel("Name: ");
 		lblUserName.setFont(new Font("Arial", Font.BOLD, 16));
-		lblUserName.setBounds(200, 140, 300, 20);
+		lblUserName.setBounds(leftColumnX, verticalOffset + 150, labelWidth + 200, fieldHeight);
 		welcomePanel.add(lblUserName);
 
 		lblUserEmail = new JLabel("Email: ");
 		lblUserEmail.setFont(new Font("Arial", Font.BOLD, 16));
-		lblUserEmail.setBounds(200, 170, 300, 20);
+		lblUserEmail.setBounds(leftColumnX, verticalOffset + 180, labelWidth + 200, fieldHeight);
 		welcomePanel.add(lblUserEmail);
 
-		// Date of Birth
+		// Date of Birth (Right)
 		JLabel lblDob = new JLabel("Date of Birth:");
-		lblDob.setBounds(150, 210, 100, 20);
+		lblDob.setBounds(rightColumnX, verticalOffset, labelWidth, fieldHeight);
 		welcomePanel.add(lblDob);
 
 		try {
 			MaskFormatter dateMask = new MaskFormatter("##/##/####");
 			dateMask.setPlaceholderCharacter('_');
 			dobField = new JFormattedTextField(dateMask);
-			dobField.setBounds(250, 210, 150, 25);
+			dobField.setBounds(rightColumnX + labelWidth, verticalOffset, fieldWidth, fieldHeight);
 			welcomePanel.add(dobField);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		// Bio
+		// Bio (Right)
 		JLabel lblBio = new JLabel("Bio:");
-		lblBio.setBounds(150, 250, 100, 20);
+		lblBio.setBounds(rightColumnX, verticalOffset + 40, labelWidth, fieldHeight);
 		welcomePanel.add(lblBio);
 
 		bioTextField = new JTextField();
-		bioTextField.setBounds(250, 250, 300, 25);
+		bioTextField.setBounds(rightColumnX + labelWidth, verticalOffset + 40, fieldWidth, fieldHeight);
 		welcomePanel.add(bioTextField);
 
-		// City
+		// City Dropdown (Right)
 		JLabel lblCity = new JLabel("City:");
-		lblCity.setBounds(150, 290, 50, 20);
+		lblCity.setBounds(rightColumnX, verticalOffset + 80, labelWidth, fieldHeight);
 		welcomePanel.add(lblCity);
 
 		choiceCity = new Choice();
-		choiceCity.setBounds(250, 290, 200, 25);
+		choiceCity.setBounds(rightColumnX + labelWidth, verticalOffset + 80, fieldWidth, fieldHeight);
 		String[] cities = { "Toronto", "Ottawa", "Mississauga", "Brampton", "Hamilton", "London", "Markham", "Vaughan",
 				"Kitchener", "Windsor", "Richmond Hill", "Oakville", "Burlington", "Sudbury", "Oshawa",
 				"St. Catharines", "Barrie", "Cambridge", "Kingston", "Guelph", "Thunder Bay", "Waterloo", "Pickering",
@@ -243,13 +290,13 @@ public class SignUporIn {
 		}
 		welcomePanel.add(choiceCity);
 
-		// University
+		// University Dropdown (Right)
 		JLabel lblUniversity = new JLabel("University:");
-		lblUniversity.setBounds(150, 330, 100, 20);
+		lblUniversity.setBounds(rightColumnX, verticalOffset + 120, labelWidth, fieldHeight);
 		welcomePanel.add(lblUniversity);
 
 		choiceUniversity = new Choice();
-		choiceUniversity.setBounds(250, 330, 200, 25);
+		choiceUniversity.setBounds(rightColumnX + labelWidth, verticalOffset + 120, fieldWidth, fieldHeight);
 		String[] universities = { "University of Toronto", "York University", "McMaster University",
 				"University of Waterloo", "Western University", "Queen's University", "University of Ottawa",
 				"Carleton University", "University of Guelph", "Lakehead University", "Trent University",
@@ -260,26 +307,24 @@ public class SignUporIn {
 		}
 		welcomePanel.add(choiceUniversity);
 
-		// Interests
+		// Interests Section (Right)
 		JLabel lblInterests = new JLabel("Interests:");
-		lblInterests.setBounds(150, 370, 100, 20);
+		lblInterests.setBounds(rightColumnX, verticalOffset + 160, labelWidth, fieldHeight);
 		welcomePanel.add(lblInterests);
 
 		lblInterestsSummary = new JLabel("None selected");
-		lblInterestsSummary.setBounds(250, 370, 300, 20);
+		lblInterestsSummary.setBounds(rightColumnX + labelWidth, verticalOffset + 160, fieldWidth, fieldHeight);
 		welcomePanel.add(lblInterestsSummary);
 
 		JButton btnSelectInterests = new JButton("Select Interests");
-		btnSelectInterests.setBounds(250, 400, 150, 30);
+		btnSelectInterests.setBounds(rightColumnX + labelWidth, verticalOffset + 190, 150, fieldHeight);
 		welcomePanel.add(btnSelectInterests);
-
 		btnSelectInterests.addActionListener(e -> showInterestSelectionDialog());
 
-		// Save Button
+		// Save Profile Button (Center-Bottom)
 		JButton btnSave = new JButton("Save Profile");
-		btnSave.setBounds(290, 450, 150, 30);
+		btnSave.setBounds(centerX, verticalOffset + 250, 150, fieldHeight); // Centered at the bottom
 		welcomePanel.add(btnSave);
-
 		btnSave.addActionListener(e -> handleSave(e));
 	}
 
