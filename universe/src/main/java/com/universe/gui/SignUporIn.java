@@ -188,18 +188,31 @@ public class SignUporIn {
 		loginPanel.add(btnLogin);
 
 		btnLogin.addActionListener(e -> {
-			String email = emailField.getText();
-			String password = new String(passwordField.getPassword());
-			String passwordHash = Integer.toHexString(password.hashCode()); // Hash the entered password
+		    String email = emailField.getText();
+		    String password = new String(passwordField.getPassword());
+		    String passwordHash = Integer.toHexString(password.hashCode()); // Hash the entered password
 
-			boolean isAuthenticated = FirestoreHandler.authenticateUser(email, passwordHash);
-			if (isAuthenticated) {
-				JOptionPane.showMessageDialog(frame, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-				cardLayout.show(mainPanel, "Welcome"); // Redirect to Welcome/Profile page
-			} else {
-				JOptionPane.showMessageDialog(frame, "Invalid email or password.", "Error", JOptionPane.ERROR_MESSAGE);
-			}
+		    boolean isAuthenticated = FirestoreHandler.authenticateUser(email, passwordHash);
+		    if (isAuthenticated) {
+		        JOptionPane.showMessageDialog(frame, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+		        
+		        // Dispose of the current frame
+		        frame.dispose();
+		        
+		        // Open the Homepage
+		        EventQueue.invokeLater(() -> {
+		            try {
+		                Homepage homepage = new Homepage();
+		                homepage.setVisible(true);
+		            } catch (Exception ex) {
+		                ex.printStackTrace();
+		            }
+		        });
+		    } else {
+		        JOptionPane.showMessageDialog(frame, "Invalid email or password.", "Error", JOptionPane.ERROR_MESSAGE);
+		    }
 		});
+
 
 		JLabel lblSignUpLink = new JLabel("<html><u>Don't have an account? Sign Up</u></html>");
 		lblSignUpLink.setForeground(Color.BLUE);
