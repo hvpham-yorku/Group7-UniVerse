@@ -1,23 +1,36 @@
 package com.universe;
 
 import com.google.api.core.ApiFuture;
+
 import com.google.cloud.firestore.*;
-import com.google.firebase.cloud.FirestoreClient;
 import com.universe.models.UserProfile;
 
+//import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
+//import com.google.cloud.firestore.*;
+import com.google.firebase.cloud.FirestoreClient;
+//import com.universe.models.UserProfile;
+
+//import java.util.ArrayList;
+import java.util.HashMap;
+//import java.util.List;
+import java.util.Map;
+//import java.util.concurrent.ExecutionException;
 
 public class FirestoreHandler {
 
 	private static final String COLLECTION_NAME = "UserProfile";
+	 private static final String FRIENDS_COLLECTION = "friends"; //kennie modified
+	 // Firestore instance
+	    private static Firestore db = FirestoreClient.getFirestore(); //kennie modified
 
 	public static void addUserData(UserProfile user) {
 		Firestore db = FirestoreClient.getFirestore();
 		CollectionReference users = db.collection(COLLECTION_NAME);
+		
 
 		ApiFuture<WriteResult> writeResult = users.document(user.getUserId()).set(user);
 		try {
@@ -103,6 +116,45 @@ public class FirestoreHandler {
             System.err.println("Error adding contact: " + e.getMessage());
         }
     }
+	
+	/** Kennie
+     * Add a friend to the Firestore database.
+     */
+	public static void addFriend(UserProfile user) {
+	    DocumentReference docRef = db.collection(FRIENDS_COLLECTION).document(user.getUsername());
+	    ApiFuture<WriteResult> future = docRef.set(user);
+
+	    try {
+	        WriteResult result = future.get(); // Wait for the operation to complete
+	        System.out.println("Friend added at: " + result.getUpdateTime());
+	    } catch (InterruptedException | ExecutionException e) {
+	        System.err.println("Error adding friend: " + e.getMessage());
+	    }
+	}
+
+    /** Kennie
+     * Remove a friend from the Firestore database.
+     */
+	public static void removeFriend(UserProfile user) {
+	    DocumentReference docRef = db.collection(FRIENDS_COLLECTION).document(user.getUsername());
+	    ApiFuture<WriteResult> future = docRef.delete();
+
+	    try {
+	        WriteResult result = future.get(); // Wait for the operation to complete
+	        System.out.println("Friend removed at: " + result.getUpdateTime());
+	    } catch (InterruptedException | ExecutionException e) {
+	        System.err.println("Error removing friend: " + e.getMessage());
+	    }
+	}
+
+    
+    /**
+     * Get all friends in the Firestore database.
+     */
+    public static void getFriends(EventListener<QuerySnapshot> listener) {
+        db.collection(FRIENDS_COLLECTION).addSnapshotListener(listener);
+    }
+    
 	
 	public static List<UserProfile> getUserContacts(String userId) {
         Firestore db = FirestoreClient.getFirestore();
@@ -193,4 +245,38 @@ public class FirestoreHandler {
 			System.err.println("Error saving message: " + e.getMessage());
 		}
 	}
+	public static List<UserProfile> getAllUsers() {
+	    Firestore db = FirestoreClient.getFirestore();
+	    List<UserProfile> users = new ArrayList<>();
+	    try {
+	        ApiFuture<QuerySnapshot> future = db.collection("UserProfile").get();
+	        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+	        for (DocumentSnapshot document : documents) {
+	            users.add(document.toObject(UserProfile.class));
+	        }
+	    } catch (InterruptedException | ExecutionException e) {
+	        e.printStackTrace();
+	    }
+	    return users;
+	}
+	
+	/** Kennie
+     * Fetch a one-time list of all friends from Firestore.
+     */
+    public static List<UserProfile> getFriendsSync() {
+        List<UserProfile> friends = new ArrayList<>();
+        try {
+            ApiFuture<QuerySnapshot> future = db.collection(FRIENDS_COLLECTION).get();
+            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+            for (DocumentSnapshot doc : documents) {
+                UserProfile friend = doc.toObject(UserProfile.class);
+                friends.add(friend);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            System.err.println("Error fetching friends: " + e.getMessage());
+        }
+        return friends;
+    }
+
+	
 }
