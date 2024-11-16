@@ -449,41 +449,52 @@ public class SignUporIn {
 	}
 
 	private void handleSave(ActionEvent e) {
-		if (currentUserId == null) {
-			JOptionPane.showMessageDialog(frame, "No user logged in to save data for.", "Error",
-					JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+	    if (currentUserId == null) {
+	        JOptionPane.showMessageDialog(frame, "No user logged in to save data for.", "Error",
+	                JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
-		String username = lblUserName.getText().replace("Name: ", "");
-		String email = lblUserEmail.getText().replace("Email: ", "");
-		String dateOfBirth = dobField.getText();
-		String bio = bioTextField.getText();
-		String province = choiceCity.getSelectedItem();
-		String university = choiceUniversity.getSelectedItem();
+	    String username = lblUserName.getText().replace("Name: ", "");
+	    String email = lblUserEmail.getText().replace("Email: ", "");
+	    String dateOfBirth = dobField.getText();
+	    String bio = bioTextField.getText();
+	    String city = choiceCity.getSelectedItem();
+	    String university = choiceUniversity.getSelectedItem();
 
-		// Get selected interests
-		String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
-		List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
+	    // Get selected interests
+	    String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
+	    List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
 
-		// Fetch existing user data to preserve passwordHash
-		UserProfile existingUser = FirestoreHandler.getUserData(currentUserId);
-		if (existingUser == null) {
-			JOptionPane.showMessageDialog(frame, "User data not found in Firestore.", "Error",
-					JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+	    // Fetch existing user data to preserve passwordHash
+	    UserProfile existingUser = FirestoreHandler.getUserData(currentUserId);
+	    if (existingUser == null) {
+	        JOptionPane.showMessageDialog(frame, "User data not found in Firestore.", "Error",
+	                JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
-		// Create updated user profile while preserving the passwordHash
-		UserProfile updatedUser = new UserProfile(currentUserId, username, email, bio, dateOfBirth, province,
-				university, interests, existingUser.getPasswordHash() // Preserve passwordHash
-		);
+	    // Create updated user profile while preserving the passwordHash
+	    UserProfile updatedUser = new UserProfile(currentUserId, username, email, bio, dateOfBirth, city,
+	            university, interests, existingUser.getPasswordHash() // Preserve passwordHash
+	    );
 
-		// Update Firestore
-		FirestoreHandler.updateUserData(updatedUser);
+	    // Update Firestore
+	    FirestoreHandler.updateUserData(updatedUser);
 
-		JOptionPane.showMessageDialog(frame, "Profile updated successfully!", "Success",
-				JOptionPane.INFORMATION_MESSAGE);
+	    JOptionPane.showMessageDialog(frame, "Profile updated successfully!", "Success",
+	            JOptionPane.INFORMATION_MESSAGE);
+
+	    // Dispose of the current frame and open the Homepage
+	    frame.dispose();
+
+	    EventQueue.invokeLater(() -> {
+	        try {
+	            Homepage homepage = new Homepage();
+	            homepage.setVisible(true);
+	        } catch (Exception ex) {
+	            ex.printStackTrace();
+	        }
+	    });
 	}
-
 }
