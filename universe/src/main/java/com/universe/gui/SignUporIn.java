@@ -1,17 +1,40 @@
 package com.universe.gui;
 
-import com.universe.FirebaseInitializer;
-import com.universe.models.UserProfile;
-import com.universe.FirestoreHandler;
-
-import javax.swing.*;
-import javax.swing.text.MaskFormatter;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Choice;
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.text.MaskFormatter;
+
+import com.universe.FirebaseInitializer;
+import com.universe.FirestoreHandler;
+import com.universe.models.UserProfile;
+import com.universe.utils.SessionManager;
 
 public class SignUporIn {
 
@@ -148,7 +171,34 @@ public class SignUporIn {
 		JButton btnSignUp = new JButton("Sign Up");
 		btnSignUp.setBounds(horizontalOffset + 290, verticalOffset + 180, 117, 29); // Adjusted X position
 		signUpPanel.add(btnSignUp);
-		btnSignUp.addActionListener(this::handleSignUp);
+//		btnSignUp.addActionListener(this::handleSignUp);
+		btnSignUp.addActionListener(e -> {
+		    String username = textFieldName.getText();
+		    String email = textFieldEmail.getText();
+		    String password = new String(passwordField.getPassword());
+
+		    if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+		        JOptionPane.showMessageDialog(frame, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
+		        return;
+		    }
+
+		    // Generate user ID and save it in Firestore
+		    String userId = String.valueOf(System.currentTimeMillis());
+		    String passwordHash = Integer.toHexString(password.hashCode());
+		    UserProfile user = new UserProfile(userId, username, email, passwordHash);
+		    FirestoreHandler.addUserData(user);
+
+		    // Store the user ID globally
+		    SessionManager.currentUserId = userId;
+		    SessionManager.currentUser = username;
+
+		    // Navigate to the Homepage
+		    Homepage homepage = new Homepage(); // No need to pass userId anymore
+		    homepage.setVisible(true);
+		    frame.dispose(); // Close the sign-up window
+		});
+
+
 
 		JLabel lblLoginLink = new JLabel("<html><u>Already have an account? Login</u></html>");
 		lblLoginLink.setForeground(Color.BLUE);
@@ -187,31 +237,60 @@ public class SignUporIn {
 		btnLogin.setBounds(horizontalOffset + 290, 300 + verticalOffset, 100, 30); // Adjusted X and Y position
 		loginPanel.add(btnLogin);
 
+//		btnLogin.addActionListener(e -> {
+//		    String email = emailField.getText();
+//		    String password = new String(passwordField.getPassword());
+//		    String passwordHash = Integer.toHexString(password.hashCode()); // Hash the entered password
+//
+//		    boolean isAuthenticated = FirestoreHandler.authenticateUser(email, passwordHash);
+//		    if (isAuthenticated) {
+//		        JOptionPane.showMessageDialog(frame, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+//		        
+//		        // Dispose of the current frame
+//		        frame.dispose();
+//		        
+//		        // Open the Homepage
+//		        EventQueue.invokeLater(() -> {
+//		            try {
+//		                Homepage homepage = new Homepage();
+//		                homepage.setVisible(true);
+//						homepage.setLocationRelativeTo(null);
+//		            } catch (Exception ex) {
+//		                ex.printStackTrace();
+//		            }
+//		        });
+//		    } else {
+//		        JOptionPane.showMessageDialog(frame, "Invalid email or password.", "Error", JOptionPane.ERROR_MESSAGE);
+//		    }
+//		});
 		btnLogin.addActionListener(e -> {
 		    String email = emailField.getText();
 		    String password = new String(passwordField.getPassword());
-		    String passwordHash = Integer.toHexString(password.hashCode()); // Hash the entered password
+		    String passwordHash = Integer.toHexString(password.hashCode()); // Hash the password
 
-		    boolean isAuthenticated = FirestoreHandler.authenticateUser(email, passwordHash);
-		    if (isAuthenticated) {
-		        JOptionPane.showMessageDialog(frame, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-		        
-		        // Dispose of the current frame
-		        frame.dispose();
-		        
-		        // Open the Homepage
-		        EventQueue.invokeLater(() -> {
-		            try {
-		                Homepage homepage = new Homepage();
-		                homepage.setVisible(true);
-		            } catch (Exception ex) {
-		                ex.printStackTrace();
-		            }
-		        });
+		    if (FirestoreHandler.authenticateUser(email, passwordHash)) {
+		        // Fetch the UserProfile directly using email
+		        UserProfile userProfile = FirestoreHandler.findUserByEmail(email);
+
+		        if (userProfile != null) {
+		            // Store the username and ID globally
+		            SessionManager.currentUserId = userProfile.getUserId();
+		            SessionManager.currentUser = userProfile.getUsername();
+
+		            // Navigate to the Homepage
+		            Homepage homepage = new Homepage();
+		            homepage.setVisible(true);
+		            frame.dispose(); // Close the login window
+		        } else {
+		            JOptionPane.showMessageDialog(frame, "Error retrieving user profile.", "Error", JOptionPane.ERROR_MESSAGE);
+		        }
 		    } else {
 		        JOptionPane.showMessageDialog(frame, "Invalid email or password.", "Error", JOptionPane.ERROR_MESSAGE);
 		    }
 		});
+
+
+
 
 
 		JLabel lblSignUpLink = new JLabel("<html><u>Don't have an account? Sign Up</u></html>");
@@ -492,6 +571,7 @@ public class SignUporIn {
 	        try {
 	            Homepage homepage = new Homepage();
 	            homepage.setVisible(true);
+				homepage.setLocationRelativeTo(null);
 	        } catch (Exception ex) {
 	            ex.printStackTrace();
 	        }
