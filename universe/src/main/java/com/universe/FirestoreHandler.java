@@ -1,7 +1,7 @@
 package com.universe;
 
 import com.google.api.core.ApiFuture;
-
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 import com.universe.models.UserProfile;
 
@@ -12,6 +12,9 @@ import java.util.concurrent.ExecutionException;
 
 //import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.cloud.firestore.ListenerRegistration;
+
+
 //import com.universe.models.UserProfile;
 
 //import java.util.ArrayList;
@@ -23,7 +26,9 @@ import java.util.Map;
 public class FirestoreHandler {
 
 	private static final String COLLECTION_NAME = "UserProfile";
-	 private static final String FRIENDS_COLLECTION = "friends"; //kennie modified
+	 private static final String FRIENDS_COLLECTION = "friends"; 
+	    private static final String CHATS_COLLECTION = "chats";
+//kennie modified
 	 // Firestore instance
 	    private static Firestore db = FirestoreClient.getFirestore(); //kennie modified
 
@@ -202,49 +207,138 @@ public class FirestoreHandler {
         return null; // Return null if user is not found
     }
 	
-	public static List<Map<String, String>> getChatHistory(String userId, String contactId) {
-	    Firestore db = FirestoreClient.getFirestore();
-	    CollectionReference messagesRef = db.collection("chats").document(userId + "_" + contactId).collection("messages");
-	    ApiFuture<QuerySnapshot> future = messagesRef.get();
+	// Save Messages in Firestore for Both Directions
+    public static void saveMessages(String userId, String contactId, String messageContent) {
+        Firestore db = FirestoreClient.getFirestore();
 
-	    List<Map<String, String>> messages = new ArrayList<>();
-	    try {
-	        QuerySnapshot messagesSnapshot = future.get();
-	        for (DocumentSnapshot document : messagesSnapshot.getDocuments()) {
-	            String content = document.getString("content");
-	            String senderId = document.getString("senderId");
-	            Map<String, String> messageData = new HashMap<>();
-	            messageData.put("content", content);
-	            messageData.put("senderId", senderId);
-	            messages.add(messageData);
-	        }
-	    } catch (InterruptedException | ExecutionException e) {
-	        System.err.println("Error fetching chat history: " + e.getMessage());
-	    }
-	    return messages;
-	}
+        // Create message data
+        Map<String, Object> messageData = new HashMap<>();
+        messageData.put("content", messageContent);
+        messageData.put("senderId", userId);
+        messageData.put("timestamp", FieldValue.serverTimestamp());
+
+        // Save message in both userId_contactId and contactId_userId
+        saveMessageInChat(userId + "_" + contactId, messageData);
+        saveMessageInChat(contactId + "_" + userId, messageData);
+    }
+
+    // Helper Method to Save Message in a Specific Chat
+    private static void saveMessageInChat(String chatId, Map<String, Object> messageData) {
+        CollectionReference messagesRef = db.collection(CHATS_COLLECTION).document(chatId).collection("messages");
+        ApiFuture<DocumentReference> writeResult = messagesRef.add(messageData);
+        try {
+            DocumentReference documentReference = writeResult.get();
+            System.out.println("Message stored in chat " + chatId + " with document ID: " + documentReference.getId());
+        } catch (InterruptedException | ExecutionException e) {
+            System.err.println("Error saving message in chat " + chatId + ": " + e.getMessage());
+        }
+    }
+
+    // Get Chat History from Firestore
+    public static List<Map<String, Object>> getChatHistory(String userId, String contactId) {
+        Firestore db = FirestoreClient.getFirestore();
+        List<Map<String, Object>> messages = new ArrayList<>();
+
+        // Combine chatId and reverseChatId for bidirectional history
+        String chatId = userId + "_" + contactId;
+        String reverseChatId = contactId + "_" + userId;
+
+        // Fetch messages from both directions
+        messages.addAll(fetchMessagesFromChat(chatId));
+        messages.addAll(fetchMessagesFromChat(reverseChatId));
+
+        // Sort messages by timestamp to maintain chronological order
+        messages.sort((m1, m2) -> {
+            Timestamp t1 = (Timestamp) m1.get("timestamp");
+            Timestamp t2 = (Timestamp) m2.get("timestamp");
+
+            // Handle null cases
+            if (t1 == null && t2 == null) return 0;
+            if (t1 == null) return -1;
+            if (t2 == null) return 1;
+
+            return t1.compareTo(t2);
+        });
+
+        return messages;
+    }
+
+
+
+    // Helper Method to Fetch Messages from a Specific Chat
+    private static List<Map<String, Object>> fetchMessagesFromChat(String chatId) {
+        CollectionReference messagesRef = db.collection("chats").document(chatId).collection("messages");
+        ApiFuture<QuerySnapshot> future = messagesRef.get();
+
+        List<Map<String, Object>> messages = new ArrayList<>();
+        try {
+            QuerySnapshot messagesSnapshot = future.get();
+            for (DocumentSnapshot document : messagesSnapshot.getDocuments()) {
+                String content = document.getString("content");
+                String senderId = document.getString("senderId");
+                Timestamp timestamp = document.getTimestamp("timestamp"); // Fetch as Timestamp
+
+                Map<String, Object> messageData = new HashMap<>();
+                messageData.put("content", content);
+                messageData.put("senderId", senderId);
+                messageData.put("timestamp", timestamp); // Store as Timestamp in the map
+
+                messages.add(messageData);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            System.err.println("Error fetching messages from chat " + chatId + ": " + e.getMessage());
+        }
+
+        return messages;
+    }
+
+
+
+
+	
+//	public static List<Map<String, String>> getChatHistory(String userId, String contactId) {
+//	    Firestore db = FirestoreClient.getFirestore();
+//	    CollectionReference messagesRef = db.collection("chats").document(userId + "_" + contactId).collection("messages");
+//	    ApiFuture<QuerySnapshot> future = messagesRef.get();
+//
+//	    List<Map<String, String>> messages = new ArrayList<>();
+//	    try {
+//	        QuerySnapshot messagesSnapshot = future.get();
+//	        for (DocumentSnapshot document : messagesSnapshot.getDocuments()) {
+//	            String content = document.getString("content");
+//	            String senderId = document.getString("senderId");
+//	            Map<String, String> messageData = new HashMap<>();
+//	            messageData.put("content", content);
+//	            messageData.put("senderId", senderId);
+//	            messages.add(messageData);
+//	        }
+//	    } catch (InterruptedException | ExecutionException e) {
+//	        System.err.println("Error fetching chat history: " + e.getMessage());
+//	    }
+//	    return messages;
+//	}
 
 	//Ensuring messages are being saved in database and adding a saved messaged message into the console.
-	public static void saveMessages(String userId, String contactId, String messages)
-	{
-		Firestore db = FirestoreClient.getFirestore();
-		CollectionReference messagesRef = db.collection("chats").document(userId + "_" + contactId).collection("messages");
-		Map<String, Object> messageData = new HashMap<>();
-		messageData.put("content", messages);
-		messageData.put("senderId", userId);
-		messageData.put("timestamp", FieldValue.serverTimestamp());
-		
-		ApiFuture<DocumentReference> writeResult = messagesRef.add(messageData);
-		try
-		{
-			DocumentReference documentReference = writeResult.get();
-			System.out.println("Message stored in document ID: " + documentReference.getId());
-		}
-		catch(InterruptedException | ExecutionException e)
-		{
-			System.err.println("Error saving message: " + e.getMessage());
-		}
-	}
+//	public static void saveMessages(String userId, String contactId, String messages)
+//	{
+//		Firestore db = FirestoreClient.getFirestore();
+//		CollectionReference messagesRef = db.collection("chats").document(userId + "_" + contactId).collection("messages");
+//		Map<String, Object> messageData = new HashMap<>();
+//		messageData.put("content", messages);
+//		messageData.put("senderId", userId);
+//		messageData.put("timestamp", FieldValue.serverTimestamp());
+//		
+//		ApiFuture<DocumentReference> writeResult = messagesRef.add(messageData);
+//		try
+//		{
+//			DocumentReference documentReference = writeResult.get();
+//			System.out.println("Message stored in document ID: " + documentReference.getId());
+//		}
+//		catch(InterruptedException | ExecutionException e)
+//		{
+//			System.err.println("Error saving message: " + e.getMessage());
+//		}
+//	}
 	public static List<UserProfile> getAllUsers() {
 	    Firestore db = FirestoreClient.getFirestore();
 	    List<UserProfile> users = new ArrayList<>();
@@ -277,6 +371,56 @@ public class FirestoreHandler {
         }
         return friends;
     }
+
+    public static String getUserIdByEmail(String email) {
+        Firestore db = FirestoreClient.getFirestore(); // Get Firestore instance
+        CollectionReference users = db.collection(COLLECTION_NAME); // Reference to the "UserProfile" collection
+
+        try {
+            // Query Firestore to find a document with the given email
+            ApiFuture<QuerySnapshot> future = users.whereEqualTo("email", email).get();
+            QuerySnapshot snapshot = future.get(); // Get the query results
+
+            // If a user is found, return their userId
+            if (!snapshot.isEmpty()) {
+                DocumentSnapshot document = snapshot.getDocuments().get(0); // Get the first matching document
+                return document.getId(); // Return the document ID (userId)
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            System.err.println("Error fetching user ID by email: " + e.getMessage());
+        }
+
+        return null; // Return null if no user is found or an error occurs
+    }
+    
+    public static UserProfile findUserByEmail(String email) {
+        Firestore db = FirestoreClient.getFirestore();
+        CollectionReference users = db.collection(COLLECTION_NAME);
+
+        try {
+            // Search by email
+            ApiFuture<QuerySnapshot> future = users.whereEqualTo("email", email).get();
+            QuerySnapshot snapshot = future.get();
+            if (!snapshot.isEmpty()) {
+                DocumentSnapshot document = snapshot.getDocuments().get(0);
+                return document.toObject(UserProfile.class); // Return the full UserProfile object
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            System.err.println("Error finding user: " + e.getMessage());
+        }
+
+        return null; // Return null if user is not found
+    }
+    public static ListenerRegistration addChatListener(String chatId, EventListener<QuerySnapshot> listener) {
+        // Get the reference to the messages collection for the chat
+        CollectionReference messagesRef = db.collection("chats").document(chatId).collection("messages");
+
+        // Attach a snapshot listener to the collection (ordered by timestamp)
+        return messagesRef.orderBy("timestamp", Query.Direction.ASCENDING)
+                .addSnapshotListener(listener);
+    }
+
+
 
 	
 }
