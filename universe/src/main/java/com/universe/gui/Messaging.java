@@ -309,7 +309,16 @@ public class Messaging extends JFrame {
         }
     }
 
+
 //    public void switchChat(String contactId, String contactName) {
+//        // Check if the contact is in the friends list
+//        boolean isFriend = friendsList.stream().anyMatch(friend -> friend.getUserId().equals(contactId));
+//
+//        if (!isFriend) {
+//            JOptionPane.showMessageDialog(this, "You can only message people you have added as friends.", "Access Denied", JOptionPane.WARNING_MESSAGE);
+//            return;
+//        }
+//
 //        currentChatContactId = contactId;
 //
 //        // Clear the chat panel for the new chat
@@ -348,14 +357,6 @@ public class Messaging extends JFrame {
 //        setTitle("Chatting with " + contactName);
 //    }
     public void switchChat(String contactId, String contactName) {
-        // Check if the contact is in the friends list
-        boolean isFriend = friendsList.stream().anyMatch(friend -> friend.getUserId().equals(contactId));
-
-        if (!isFriend) {
-            JOptionPane.showMessageDialog(this, "You can only message people you have added as friends.", "Access Denied", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
         currentChatContactId = contactId;
 
         // Clear the chat panel for the new chat
@@ -364,6 +365,7 @@ public class Messaging extends JFrame {
         // Remove the previous listener if one exists
         if (chatListener != null) {
             chatListener.remove();
+            chatListener = null; // Set to null to avoid stale references
         }
 
         // Set up a new real-time listener for the selected chat
@@ -376,6 +378,7 @@ public class Messaging extends JFrame {
 
             // Populate the chat panel with updated messages
             if (snapshots != null && !snapshots.isEmpty()) {
+                chatHistoryPanel.removeAll(); // Clear chat to avoid duplicates
                 for (DocumentSnapshot document : snapshots.getDocuments()) {
                     String content = document.getString("content");
                     String senderId = document.getString("senderId");
@@ -393,6 +396,7 @@ public class Messaging extends JFrame {
         // Update the UI title with the contact name
         setTitle("Chatting with " + contactName);
     }
+
 
 
     

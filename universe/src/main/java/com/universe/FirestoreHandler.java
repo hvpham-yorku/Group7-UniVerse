@@ -227,19 +227,52 @@ public class FirestoreHandler {
     }
 	
 	// Save Messages in Firestore for Both Directions
-    public static void saveMessages(String userId, String contactId, String messageContent) {
-        Firestore db = FirestoreClient.getFirestore();
+//    public static void saveMessages(String userId, String contactId, String messageContent) {
+//        Firestore db = FirestoreClient.getFirestore();
+//
+//        // Create message data
+//        Map<String, Object> messageData = new HashMap<>();
+//        messageData.put("content", messageContent);
+//        messageData.put("senderId", userId);
+//        messageData.put("timestamp", FieldValue.serverTimestamp());
+//
+//        // Save message in both userId_contactId and contactId_userId
+//        saveMessageInChat(userId + "_" + contactId, messageData);
+//        saveMessageInChat(contactId + "_" + userId, messageData);
+//    }
+	public static void saveMessages(String userId, String contactId, String messageContent) {
+	    Firestore db = FirestoreClient.getFirestore();
 
-        // Create message data
-        Map<String, Object> messageData = new HashMap<>();
-        messageData.put("content", messageContent);
-        messageData.put("senderId", userId);
-        messageData.put("timestamp", FieldValue.serverTimestamp());
+	    // Create a unique message ID (e.g., timestamp + userId)
+	    String messageId = userId + "_" + System.currentTimeMillis();
 
-        // Save message in both userId_contactId and contactId_userId
-        saveMessageInChat(userId + "_" + contactId, messageData);
-        saveMessageInChat(contactId + "_" + userId, messageData);
-    }
+	    // Create message data
+	    Map<String, Object> messageData = new HashMap<>();
+	    messageData.put("content", messageContent);
+	    messageData.put("senderId", userId);
+	    messageData.put("timestamp", FieldValue.serverTimestamp());
+
+	    // Check if message already exists before saving
+	    CollectionReference messagesRef = db.collection("chats").document(userId + "_" + contactId).collection("messages");
+	    ApiFuture<DocumentSnapshot> existingMessage = messagesRef.document(messageId).get();
+
+	    try {
+	        if (!existingMessage.get().exists()) {
+	            // Save message in both userId_contactId and contactId_userId
+	            saveMessageInChat(userId + "_" + contactId, messageId, messageData);
+	            saveMessageInChat(contactId + "_" + userId, messageId, messageData);
+	        }
+	    } catch (InterruptedException | ExecutionException e) {
+	        System.err.println("Error checking existing message: " + e.getMessage());
+	    }
+	}
+
+	private static void saveMessageInChat(String chatId, String messageId, Map<String, Object> messageData) {
+	    CollectionReference messagesRef = db.collection("chats").document(chatId).collection("messages");
+	    messagesRef.document(messageId).set(messageData);
+	}
+
+	
 
     // Helper Method to Save Message in a Specific Chat
     private static void saveMessageInChat(String chatId, Map<String, Object> messageData) {
