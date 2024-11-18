@@ -259,20 +259,6 @@ public class Messaging extends JFrame {
         }
     }
 
-//    private void handleAddContact(String searchQuery) {
-//        UserProfile user = FirestoreHandler.findUserByEmailOrUsername(searchQuery);
-//        if (user != null) {
-//            if (!user.getUserId().equals(currentUserId)) {
-//                FirestoreHandler.addContact(currentUserId, user.getUserId(), user.getUsername());
-//                JOptionPane.showMessageDialog(this, "Contact added.");
-//                populateContacts();
-//            } else {
-//                JOptionPane.showMessageDialog(this, "Cannot add yourself.");
-//            }
-//        } else {
-//            JOptionPane.showMessageDialog(this, "User not found.");
-//        }
-//    }
     private void handleAddContact(String searchQuery) {
         if (searchQuery.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please enter a search query.", "Invalid Search", JOptionPane.WARNING_MESSAGE);
