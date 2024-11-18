@@ -296,49 +296,6 @@ public class FirestoreHandler {
 
 
 	
-//	public static List<Map<String, String>> getChatHistory(String userId, String contactId) {
-//	    Firestore db = FirestoreClient.getFirestore();
-//	    CollectionReference messagesRef = db.collection("chats").document(userId + "_" + contactId).collection("messages");
-//	    ApiFuture<QuerySnapshot> future = messagesRef.get();
-//
-//	    List<Map<String, String>> messages = new ArrayList<>();
-//	    try {
-//	        QuerySnapshot messagesSnapshot = future.get();
-//	        for (DocumentSnapshot document : messagesSnapshot.getDocuments()) {
-//	            String content = document.getString("content");
-//	            String senderId = document.getString("senderId");
-//	            Map<String, String> messageData = new HashMap<>();
-//	            messageData.put("content", content);
-//	            messageData.put("senderId", senderId);
-//	            messages.add(messageData);
-//	        }
-//	    } catch (InterruptedException | ExecutionException e) {
-//	        System.err.println("Error fetching chat history: " + e.getMessage());
-//	    }
-//	    return messages;
-//	}
-
-	//Ensuring messages are being saved in database and adding a saved messaged message into the console.
-//	public static void saveMessages(String userId, String contactId, String messages)
-//	{
-//		Firestore db = FirestoreClient.getFirestore();
-//		CollectionReference messagesRef = db.collection("chats").document(userId + "_" + contactId).collection("messages");
-//		Map<String, Object> messageData = new HashMap<>();
-//		messageData.put("content", messages);
-//		messageData.put("senderId", userId);
-//		messageData.put("timestamp", FieldValue.serverTimestamp());
-//		
-//		ApiFuture<DocumentReference> writeResult = messagesRef.add(messageData);
-//		try
-//		{
-//			DocumentReference documentReference = writeResult.get();
-//			System.out.println("Message stored in document ID: " + documentReference.getId());
-//		}
-//		catch(InterruptedException | ExecutionException e)
-//		{
-//			System.err.println("Error saving message: " + e.getMessage());
-//		}
-//	}
 	public static List<UserProfile> getAllUsers() {
 	    Firestore db = FirestoreClient.getFirestore();
 	    List<UserProfile> users = new ArrayList<>();
