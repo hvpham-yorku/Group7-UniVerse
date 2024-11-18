@@ -416,7 +416,11 @@ public class Homepage extends JFrame {
             parentFrame.dispose();
         });
         addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {
-            JOptionPane.showMessageDialog(parentFrame, "Messages clicked!");
+        	  Messaging messaging = new Messaging();
+        	  messaging.setVisible(true);
+	            messaging.setLocationRelativeTo(null);
+
+              parentFrame.dispose();
         });
         addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> {
             JOptionPane.showMessageDialog(parentFrame, "Notifications clicked!");
