@@ -21,6 +21,7 @@ public class Messaging extends JFrame {
     private JPanel contactsList; // Contacts panel
     private JPanel chatHistoryPanel; // Chat history panel
     private JScrollPane chatScrollPane; // Scrollable chat history
+    private List<UserProfile> friendsList; // List of friends for the current user
 
     // Firestore real-time listener
     private ListenerRegistration chatListener;
@@ -45,10 +46,12 @@ public class Messaging extends JFrame {
         // Initialize user session
         currentUserId = SessionManager.currentUserId;
 
+
         if (currentUserId == null || currentUserId.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No user logged in.", "Error", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
+        friendsList = FirestoreHandler.getUserContacts(currentUserId); // Fetch friends from Firestore
 
         // Frame setup
         setTitle("Messaging App");
@@ -208,14 +211,30 @@ public class Messaging extends JFrame {
         return chatPanel;
     }
 
+
+//    private void populateContacts() {
+//        contactsList.removeAll();
+//
+//        if (friendsList != null && !friendsList.isEmpty()) {
+//            for (UserProfile friend : friendsList) {
+//                JPanel contactPanel = createContactPanel(friend);
+//                contactsList.add(contactPanel);
+//            }
+//        } else {
+//            JLabel noContactsLabel = new JLabel("No contacts found.");
+//            noContactsLabel.setForeground(Color.GRAY);
+//            contactsList.add(noContactsLabel);
+//        }
+//
+//        contactsList.revalidate();
+//        contactsList.repaint();
+//    }
     private void populateContacts() {
         contactsList.removeAll();
 
-        // Example contact list retrieval
-        List<UserProfile> contacts = FirestoreHandler.getUserContacts(currentUserId);
-        if (contacts != null && !contacts.isEmpty()) {
-            for (UserProfile contact : contacts) {
-                JPanel contactPanel = createContactPanel(contact);
+        if (friendsList != null && !friendsList.isEmpty()) {
+            for (UserProfile friend : friendsList) {
+                JPanel contactPanel = createContactPanel(friend);
                 contactsList.add(contactPanel);
             }
         } else {
@@ -228,6 +247,9 @@ public class Messaging extends JFrame {
         contactsList.repaint();
     }
 
+
+    
+    
     private JPanel createContactPanel(UserProfile contact) {
         JPanel contactPanel = new JPanel(new BorderLayout());
         contactPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
@@ -254,22 +276,86 @@ public class Messaging extends JFrame {
         }
     }
 
+//    private void handleAddContact(String searchQuery) {
+//        UserProfile user = FirestoreHandler.findUserByEmailOrUsername(searchQuery);
+//        if (user != null) {
+//            if (!user.getUserId().equals(currentUserId)) {
+//                FirestoreHandler.addContact(currentUserId, user.getUserId(), user.getUsername());
+//                JOptionPane.showMessageDialog(this, "Contact added.");
+//                populateContacts();
+//            } else {
+//                JOptionPane.showMessageDialog(this, "Cannot add yourself.");
+//            }
+//        } else {
+//            JOptionPane.showMessageDialog(this, "User not found.");
+//        }
+//    }
     private void handleAddContact(String searchQuery) {
-        UserProfile user = FirestoreHandler.findUserByEmailOrUsername(searchQuery);
-        if (user != null) {
-            if (!user.getUserId().equals(currentUserId)) {
-                FirestoreHandler.addContact(currentUserId, user.getUserId(), user.getUsername());
-                JOptionPane.showMessageDialog(this, "Contact added.");
-                populateContacts();
-            } else {
-                JOptionPane.showMessageDialog(this, "Cannot add yourself.");
-            }
+        if (searchQuery.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a search query.", "Invalid Search", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Check if the search query matches any friend in the friends list
+        UserProfile matchedFriend = friendsList.stream()
+                .filter(friend -> friend.getUsername().equalsIgnoreCase(searchQuery) || friend.getEmail().equalsIgnoreCase(searchQuery))
+                .findFirst()
+                .orElse(null);
+
+        if (matchedFriend != null) {
+            JOptionPane.showMessageDialog(this, "This user is already in your contacts.", "Already Added", JOptionPane.INFORMATION_MESSAGE);
         } else {
-            JOptionPane.showMessageDialog(this, "User not found.");
+            JOptionPane.showMessageDialog(this, "You can only search for users who are your friends.", "Access Denied", JOptionPane.WARNING_MESSAGE);
         }
     }
 
+//    public void switchChat(String contactId, String contactName) {
+//        currentChatContactId = contactId;
+//
+//        // Clear the chat panel for the new chat
+//        chatHistoryPanel.removeAll();
+//
+//        // Remove the previous listener if one exists
+//        if (chatListener != null) {
+//            chatListener.remove();
+//        }
+//
+//        // Set up a new real-time listener for the selected chat
+//        String chatId = currentUserId + "_" + contactId; // Chat ID format
+//        chatListener = FirestoreHandler.addChatListener(chatId, (snapshots, e) -> {
+//            if (e != null) {
+//                System.err.println("Error listening for chat updates: " + e.getMessage());
+//                return;
+//            }
+//
+//            // Populate the chat panel with updated messages
+//            if (snapshots != null && !snapshots.isEmpty()) {
+//                for (DocumentSnapshot document : snapshots.getDocuments()) {
+//                    String content = document.getString("content");
+//                    String senderId = document.getString("senderId");
+//                    boolean isUserMessage = senderId.equals(currentUserId);
+//
+//                    displayMessage(content, isUserMessage);
+//                }
+//            }
+//
+//            // Refresh the chat panel UI
+//            chatHistoryPanel.revalidate();
+//            chatHistoryPanel.repaint();
+//        });
+//
+//        // Update the UI title with the contact name
+//        setTitle("Chatting with " + contactName);
+//    }
     public void switchChat(String contactId, String contactName) {
+        // Check if the contact is in the friends list
+        boolean isFriend = friendsList.stream().anyMatch(friend -> friend.getUserId().equals(contactId));
+
+        if (!isFriend) {
+            JOptionPane.showMessageDialog(this, "You can only message people you have added as friends.", "Access Denied", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         currentChatContactId = contactId;
 
         // Clear the chat panel for the new chat
@@ -307,6 +393,7 @@ public class Messaging extends JFrame {
         // Update the UI title with the contact name
         setTitle("Chatting with " + contactName);
     }
+
 
     
     private void displayMessage(String message, boolean isUserMessage) {
