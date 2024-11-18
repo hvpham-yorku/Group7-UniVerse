@@ -131,17 +131,34 @@ public class FirestoreHandler {
 	/** Kennie
      * Add a friend to the Firestore database.
      */
-	public static void addFriend(UserProfile user) {
-	    DocumentReference docRef = db.collection(FRIENDS_COLLECTION).document(user.getUsername());
-	    ApiFuture<WriteResult> future = docRef.set(user);
+//	public static void addFriend(UserProfile user) {
+//	    DocumentReference docRef = db.collection(FRIENDS_COLLECTION).document(user.getUsername());
+//	    ApiFuture<WriteResult> future = docRef.set(user);
+//
+//	    try {
+//	        WriteResult result = future.get(); // Wait for the operation to complete
+//	        System.out.println("Friend added at: " + result.getUpdateTime());
+//	    } catch (InterruptedException | ExecutionException e) {
+//	        System.err.println("Error adding friend: " + e.getMessage());
+//	    }
+//	}
+	public static void addFriend(String userId, String contactUserId, String contactUsername, String contactUniversity) {
+	    CollectionReference contactsRef = db.collection("UserProfile").document(userId).collection("contacts");
 
+	    Map<String, Object> contactData = new HashMap<>();
+	    contactData.put("contactUserId", contactUserId);
+	    contactData.put("username", contactUsername);
+	    contactData.put("university", contactUniversity);
+
+	    ApiFuture<WriteResult> writeResult = contactsRef.document(contactUserId).set(contactData);
 	    try {
-	        WriteResult result = future.get(); // Wait for the operation to complete
-	        System.out.println("Friend added at: " + result.getUpdateTime());
+	        System.out.println("Contact added successfully at: " + writeResult.get().getUpdateTime());
 	    } catch (InterruptedException | ExecutionException e) {
-	        System.err.println("Error adding friend: " + e.getMessage());
+	        System.err.println("Error adding contact: " + e.getMessage());
 	    }
 	}
+
+
 
     /** Kennie
      * Remove a friend from the Firestore database.
@@ -167,25 +184,55 @@ public class FirestoreHandler {
     }
     
 	
-	public static List<UserProfile> getUserContacts(String userId) {
-        Firestore db = FirestoreClient.getFirestore();
-        CollectionReference contactsRef = db.collection(COLLECTION_NAME).document(userId).collection("contacts");
-        ApiFuture<QuerySnapshot> future = contactsRef.get();
+//	public static List<UserProfile> getUserContacts(String userId) {
+//        Firestore db = FirestoreClient.getFirestore();
+//        CollectionReference contactsRef = db.collection(COLLECTION_NAME).document(userId).collection("contacts");
+//        ApiFuture<QuerySnapshot> future = contactsRef.get();
+//
+//        List<UserProfile> contacts = new ArrayList<>();
+//        try {
+//            QuerySnapshot contactsSnapshot = future.get();
+//            for (QueryDocumentSnapshot document : contactsSnapshot.getDocuments()) {
+//                String contactUserId = document.getString("contactUserId");
+//                String username = document.getString("username");
+//                contacts.add(new UserProfile(contactUserId, username, "", "")); // Only basic info for contacts
+//            }
+//        } catch (InterruptedException | ExecutionException e) {
+//            System.err.println("Error fetching contacts: " + e.getMessage());
+//        }
+//        return contacts;
+//    }
+//	
+    public static List<UserProfile> getUserContacts(String userId) {
+        CollectionReference contactsRef = db.collection("UserProfile").document(userId).collection("contacts");
 
         List<UserProfile> contacts = new ArrayList<>();
         try {
-            QuerySnapshot contactsSnapshot = future.get();
+            QuerySnapshot contactsSnapshot = contactsRef.get().get();
             for (QueryDocumentSnapshot document : contactsSnapshot.getDocuments()) {
                 String contactUserId = document.getString("contactUserId");
                 String username = document.getString("username");
-                contacts.add(new UserProfile(contactUserId, username, "", "")); // Only basic info for contacts
+                String university = document.getString("university");
+
+                contacts.add(new UserProfile(contactUserId, username, "", "", university));
             }
         } catch (InterruptedException | ExecutionException e) {
             System.err.println("Error fetching contacts: " + e.getMessage());
         }
         return contacts;
     }
-	
+
+
+
+    
+    //just added
+    public static void getFriends(EventListener<QuerySnapshot> listener, String userId) {
+        CollectionReference contactsRef = db.collection("UserProfile").document(userId).collection("contacts");
+        contactsRef.addSnapshotListener(listener);
+    }
+
+
+
 	public static UserProfile findUserByEmailOrUsername(String query) {
         Firestore db = FirestoreClient.getFirestore();
         CollectionReference users = db.collection(COLLECTION_NAME);
