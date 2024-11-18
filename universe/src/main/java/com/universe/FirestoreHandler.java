@@ -5,31 +5,29 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 import com.universe.models.UserProfile;
 
-//import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-//import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.cloud.firestore.ListenerRegistration;
 
 
-//import com.universe.models.UserProfile;
 
-//import java.util.ArrayList;
 import java.util.HashMap;
-//import java.util.List;
 import java.util.Map;
-//import java.util.concurrent.ExecutionException;
+import com.google.cloud.firestore.*;
+import com.universe.models.UserProfile;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class FirestoreHandler {
 
 	private static final String COLLECTION_NAME = "UserProfile";
 	 private static final String FRIENDS_COLLECTION = "friends"; 
 	    private static final String CHATS_COLLECTION = "chats";
-//kennie modified
-	 // Firestore instance
 	    private static Firestore db = FirestoreClient.getFirestore(); //kennie modified
 
 	public static void addUserData(UserProfile user) {
@@ -122,28 +120,32 @@ public class FirestoreHandler {
         }
     }
 	
-	/** Kennie
-     * Add a friend to the Firestore database.
-     */
-	public static void addFriend(UserProfile user) {
-	    DocumentReference docRef = db.collection(FRIENDS_COLLECTION).document(user.getUsername());
-	    ApiFuture<WriteResult> future = docRef.set(user);
 
+	public static void addFriend(String userId, String contactUserId, String contactUsername, String contactUniversity) {
+	    CollectionReference contactsRef = db.collection("UserProfile").document(userId).collection("contacts");
+
+	    Map<String, Object> contactData = new HashMap<>();
+	    contactData.put("contactUserId", contactUserId);
+	    contactData.put("username", contactUsername);
+	    contactData.put("university", contactUniversity);
+
+	    ApiFuture<WriteResult> writeResult = contactsRef.document(contactUserId).set(contactData);
 	    try {
-	        WriteResult result = future.get(); // Wait for the operation to complete
-	        System.out.println("Friend added at: " + result.getUpdateTime());
+	        System.out.println("Contact added successfully at: " + writeResult.get().getUpdateTime());
 	    } catch (InterruptedException | ExecutionException e) {
-	        System.err.println("Error adding friend: " + e.getMessage());
+	        System.err.println("Error adding contact: " + e.getMessage());
 	    }
 	}
 
-    /** Kennie
-     * Remove a friend from the Firestore database.
-     */
-	public static void removeFriend(UserProfile user) {
-	    DocumentReference docRef = db.collection(FRIENDS_COLLECTION).document(user.getUsername());
-	    ApiFuture<WriteResult> future = docRef.delete();
 
+
+	public static void removeFriend(String userId, String contactUserId) {
+	    DocumentReference docRef = db.collection("UserProfile")
+	                                 .document(userId)
+	                                 .collection("contacts")
+	                                 .document(contactUserId);
+
+	    ApiFuture<WriteResult> future = docRef.delete();
 	    try {
 	        WriteResult result = future.get(); // Wait for the operation to complete
 	        System.out.println("Friend removed at: " + result.getUpdateTime());
@@ -152,6 +154,7 @@ public class FirestoreHandler {
 	    }
 	}
 
+
     
     /**
      * Get all friends in the Firestore database.
@@ -159,27 +162,43 @@ public class FirestoreHandler {
     public static void getFriends(EventListener<QuerySnapshot> listener) {
         db.collection(FRIENDS_COLLECTION).addSnapshotListener(listener);
     }
-    
-	
-	public static List<UserProfile> getUserContacts(String userId) {
-        Firestore db = FirestoreClient.getFirestore();
-        CollectionReference contactsRef = db.collection(COLLECTION_NAME).document(userId).collection("contacts");
-        ApiFuture<QuerySnapshot> future = contactsRef.get();
+
+    public static List<UserProfile> getUserContacts(String userId) {
+        CollectionReference contactsRef = db.collection("UserProfile").document(userId).collection("contacts");
 
         List<UserProfile> contacts = new ArrayList<>();
         try {
-            QuerySnapshot contactsSnapshot = future.get();
+            QuerySnapshot contactsSnapshot = contactsRef.get().get();
             for (QueryDocumentSnapshot document : contactsSnapshot.getDocuments()) {
                 String contactUserId = document.getString("contactUserId");
                 String username = document.getString("username");
-                contacts.add(new UserProfile(contactUserId, username, "", "")); // Only basic info for contacts
+                String university = document.getString("university");
+
+                // Check if this friend is already in the list
+                boolean alreadyExists = contacts.stream().anyMatch(contact -> contact.getUserId().equals(contactUserId));
+                if (!alreadyExists) {
+                    contacts.add(new UserProfile(contactUserId, username, "", "", university));
+                }
             }
         } catch (InterruptedException | ExecutionException e) {
             System.err.println("Error fetching contacts: " + e.getMessage());
         }
         return contacts;
     }
-	
+
+
+
+    
+    public static void getFriends(EventListener<QuerySnapshot> listener, String userId) {
+        CollectionReference contactsRef = db.collection("UserProfile")
+                                            .document(userId)
+                                            .collection("contacts");
+        contactsRef.addSnapshotListener(listener);
+    }
+
+
+
+
 	public static UserProfile findUserByEmailOrUsername(String query) {
         Firestore db = FirestoreClient.getFirestore();
         CollectionReference users = db.collection(COLLECTION_NAME);
@@ -292,24 +311,21 @@ public class FirestoreHandler {
         return messages;
     }
 
-
-
-
-	
-	public static List<UserProfile> getAllUsers() {
-	    Firestore db = FirestoreClient.getFirestore();
-	    List<UserProfile> users = new ArrayList<>();
-	    try {
-	        ApiFuture<QuerySnapshot> future = db.collection("UserProfile").get();
-	        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-	        for (DocumentSnapshot document : documents) {
-	            users.add(document.toObject(UserProfile.class));
-	        }
-	    } catch (InterruptedException | ExecutionException e) {
-	        e.printStackTrace();
-	    }
-	    return users;
-	}
+    public static List<UserProfile> getAllUsers() {
+        Firestore db = FirestoreClient.getFirestore();
+        List<UserProfile> users = new ArrayList<>();
+        try {
+            ApiFuture<QuerySnapshot> future = db.collection(COLLECTION_NAME).get();
+            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+            for (DocumentSnapshot document : documents) {
+                UserProfile user = document.toObject(UserProfile.class);
+                users.add(user);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            System.err.println("Error fetching users: " + e.getMessage());
+        }
+        return users;
+    }
 	
 	/** Kennie
      * Fetch a one-time list of all friends from Firestore.
