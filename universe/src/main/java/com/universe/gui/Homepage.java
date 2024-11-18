@@ -1,3 +1,4 @@
+
 package com.universe.gui;
 
 import java.awt.Color;
@@ -27,17 +28,18 @@ import com.universe.FirebaseInitializer;
 import com.universe.FirestoreHandler;
 import com.universe.models.UserProfile;
 import com.universe.utils.SessionManager;
+
 public class Homepage extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
     private JPanel friendsListPanel; // Left panel for searching users
-    private JPanel friendsPanelRight; // Panel on the right for added friends
-    private JPanel rightFriendsListPanel; // Scrollable panel for added friends
+    private JPanel rightFriendsListPanel; // Panel on the right for added friends
     private JTextField searchField;
 
     private List<UserProfile> allUsers; // Store all users fetched from the database
-    private List<UserProfile> addedFriends; // Store added friends
+    private List<UserProfile> addedFriends; // Store added friends for the logged-in user
+    private UserProfile currentUser; // Logged-in user's profile
 
     private JLabel noFriendsLabel; // Label for "No friends added yet"
 
@@ -63,50 +65,88 @@ public class Homepage extends JFrame {
      * Create the frame.
      */
     public Homepage() {
-    	String currentUserId = SessionManager.currentUserId; // Get the logged-in user's ID
-	    System.out.println("Logged-in User ID: " + currentUserId);
+        // Fetch the current user's details
+        String currentUserId = SessionManager.currentUserId;
+        if (currentUserId == null || currentUserId.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No user logged in.", "Error", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        }
 
-	    // Build your homepage UI here
-	    JLabel welcomeLabel = new JLabel("Welcome, " + SessionManager.currentUser);
-	   
-	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	setBounds(100, 100, 900, 600);
-	setResizable(false); // Prevent resizing
-	contentPane = new JPanel();
-	contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-	contentPane.setLayout(null);
-	contentPane.setBackground(new Color(210, 236, 255));
-	setContentPane(contentPane);
-	setLocationRelativeTo(null);
+        currentUser = FirestoreHandler.getUserData(currentUserId);
+        if (currentUser == null) {
+            JOptionPane.showMessageDialog(null, "Error fetching user data.", "Error", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        }
 
+        setTitle("Welcome, " + currentUser.getUsername() + "!");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setBounds(100, 100, 900, 600);
+        setResizable(false); // Prevent resizing
 
-	// Initialize added friends list
-	addedFriends = new ArrayList<>();
+        contentPane = new JPanel();
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        contentPane.setLayout(null);
+        contentPane.setBackground(new Color(210, 236, 255));
+        setContentPane(contentPane);
+        setLocationRelativeTo(null);
 
-	// Welcome message panel
-	JPanel welcomePanel = new JPanel();
-	welcomePanel.setBounds(100, 10, 770, 60);
-	welcomePanel.setBackground(Color.WHITE);
-	welcomePanel.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
-	welcomePanel.setLayout(null);
-//	JLabel welcomeLabel = new JLabel("Hi John Doe, Welcome to UniVerse!", JLabel.CENTER);
-	welcomeLabel.setFont(new Font("Inria Sans", Font.BOLD, 20));
-	welcomeLabel.setForeground(new Color(31, 162, 255));
-	welcomeLabel.setBounds(0, 5, 770, 50);
-	welcomePanel.add(welcomeLabel);
-	contentPane.add(welcomePanel);
+        // Initialize added friends list
+        addedFriends = new ArrayList<>();
 
+        // Welcome panel
+        JPanel welcomePanel = new JPanel();
+        welcomePanel.setBounds(100, 10, 770, 60);
+        welcomePanel.setBackground(Color.WHITE);
+        welcomePanel.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
+        welcomePanel.setLayout(null);
+        JLabel welcomeLabel = new JLabel("Hi " + currentUser.getUsername() + ", Welcome to UniVerse!", JLabel.CENTER);
+        welcomeLabel.setFont(new Font("Inria Sans", Font.BOLD, 20));
+        welcomeLabel.setForeground(new Color(31, 162, 255));
+        welcomeLabel.setBounds(0, 5, 770, 50);
+        welcomePanel.add(welcomeLabel);
+        contentPane.add(welcomePanel);
+
+        // Sidebar
         JPanel sidebar = createSidebar(this);
         contentPane.add(sidebar);
 
-        // Friends List Panel
+        // Create panels in the correct order
+        createRightFriendsPanel(); // Initialize rightFriendsListPanel
+        createFriendsPanel();      // Initialize friends list panel
+
+        // Populate added friends from Firestore
+        addedFriends = FirestoreHandler.getUserContacts(currentUserId);
+        updateRightFriendsList(); // Now it will no longer throw NullPointerException
+    
+
+        FirestoreHandler.getFriends((snapshots, e) -> {
+            if (e != null) {
+                System.err.println("Error listening to real-time updates: " + e.getMessage());
+                return;
+            }
+
+            addedFriends.clear(); // Clear the current list
+            for (QueryDocumentSnapshot doc : snapshots.getDocuments()) {
+                String contactUserId = doc.getString("contactUserId");
+                String username = doc.getString("username");
+                String university = doc.getString("university");
+
+                addedFriends.add(new UserProfile(contactUserId, username, "", "", university));
+            }
+            updateRightFriendsList(); // Refresh the UI
+        }, SessionManager.currentUserId);
+
+
+    }
+
+    private void createFriendsPanel() {
         JPanel friendsPanel = new JPanel();
         friendsPanel.setBounds(100, 80, 270, 480);
         friendsPanel.setBackground(Color.WHITE);
         friendsPanel.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
         friendsPanel.setLayout(null);
 
-        JLabel searchLabel = new JLabel("Add or search for friends!");
+        JLabel searchLabel = new JLabel("Search for friends:");
         searchLabel.setBounds(15, 10, 200, 20);
         searchLabel.setFont(new Font("Roboto", Font.BOLD, 14));
         friendsPanel.add(searchLabel);
@@ -118,11 +158,11 @@ public class Homepage extends JFrame {
         friendsPanel.add(searchField);
 
         // Search button
-        JButton searchButton = new JButton("Go");
+        JButton searchButton = new JButton("Search");
         searchButton.setBounds(200, 35, 60, 30);
         searchButton.setFont(new Font("Roboto", Font.BOLD, 12));
         searchButton.setBackground(new Color(46, 157, 251));
-        searchButton.setForeground(Color.BLACK);
+        searchButton.setForeground(Color.WHITE);
         searchButton.setFocusPainted(false);
         friendsPanel.add(searchButton);
 
@@ -134,11 +174,10 @@ public class Homepage extends JFrame {
         JScrollPane scrollPane = new JScrollPane(friendsListPanel);
         scrollPane.setBounds(15, 75, 240, 390);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         friendsPanel.add(scrollPane);
 
         contentPane.add(friendsPanel);
-        
 
         // Populate friends list from the database
         allUsers = FirestoreHandler.getAllUsers();
@@ -162,69 +201,47 @@ public class Homepage extends JFrame {
                 handleSearch();
             }
         });
-        
+    }
 
-        // Right Panel for Logo and Friends
-        friendsPanelRight = new JPanel();
+    private void createRightFriendsPanel() {
+        JPanel friendsPanelRight = new JPanel();
         friendsPanelRight.setBounds(380, 80, 490, 480);
         friendsPanelRight.setBackground(Color.WHITE);
         friendsPanelRight.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
         friendsPanelRight.setLayout(null);
 
-        // Logo Section
-        JLabel logoLabel = new JLabel(new ImageIcon(new ImageIcon("src/main/resources/icons/logo5.png").getImage()
-                .getScaledInstance(200, 100, Image.SCALE_SMOOTH)));
-        logoLabel.setBounds(145, 10, 200, 100);
-        friendsPanelRight.add(logoLabel);
-
-        // Friends Section
-        JLabel friendsTitleLabel = new JLabel("Friends", JLabel.CENTER);
+        JLabel friendsTitleLabel = new JLabel("Your Friends", JLabel.CENTER);
         friendsTitleLabel.setFont(new Font("Roboto", Font.BOLD, 18));
-        friendsTitleLabel.setBounds(0, 120, 490, 30);
+        friendsTitleLabel.setBounds(0, 10, 490, 30);
         friendsTitleLabel.setOpaque(true);
         friendsTitleLabel.setBackground(new Color(46, 157, 251));
         friendsTitleLabel.setForeground(Color.WHITE);
         friendsPanelRight.add(friendsTitleLabel);
 
-        // Scrollable Friends List
+        // Initialize rightFriendsListPanel here
         rightFriendsListPanel = new JPanel();
-        rightFriendsListPanel.setLayout(new BoxLayout(rightFriendsListPanel, BoxLayout.Y_AXIS)); // BoxLayout for dynamic height
+        rightFriendsListPanel.setLayout(new BoxLayout(rightFriendsListPanel, BoxLayout.Y_AXIS));
         rightFriendsListPanel.setBackground(Color.WHITE);
 
         JScrollPane rightScrollPane = new JScrollPane(rightFriendsListPanel);
-        rightScrollPane.setBounds(10, 160, 470, 310);
+        rightScrollPane.setBounds(10, 50, 470, 410);
         rightScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         friendsPanelRight.add(rightScrollPane);
 
-        // "No friends added yet" label
-        noFriendsLabel = new JLabel("No friends added yet!", JLabel.CENTER);
-        noFriendsLabel.setFont(new Font("Roboto", Font.PLAIN, 16));
-        rightFriendsListPanel.add(noFriendsLabel);
-
+        // Add to contentPane
         contentPane.add(friendsPanelRight);
-
-        // Real-time listener for added friends
-        FirestoreHandler.getFriends((snapshots, e) -> {
-            if (e != null) {
-                System.err.println("Error listening to real-time updates: " + e.getMessage());
-                return;
-            }
-
-            addedFriends.clear(); // Clear the current list
-            for (QueryDocumentSnapshot doc : snapshots.getDocuments()) {
-                UserProfile friend = doc.toObject(UserProfile.class);
-                addedFriends.add(friend); // Update the addedFriends list
-            }
-            updateRightFriendsList(); // Refresh the right panel
-        });
     }
-    
+
+
     private void populateFriendsList(List<UserProfile> users) {
         friendsListPanel.removeAll();
 
         if (users != null && !users.isEmpty()) {
             for (UserProfile user : users) {
-                addFriendEntry(user); // Add each user entry to the left panel
+                // Exclude the current user from the friends list
+                if (!user.getUserId().equals(currentUser.getUserId())) {
+                    addFriendEntry(user);
+                }
             }
         } else {
             JLabel noUsersLabel = new JLabel("No users found!", JLabel.CENTER);
@@ -237,81 +254,45 @@ public class Homepage extends JFrame {
         friendsListPanel.repaint();
     }
 
-
-    private void addFriendEntry(UserProfile user) {
-        JPanel friendEntry = new JPanel();
-        friendEntry.setPreferredSize(new Dimension(230, 60));
-        friendEntry.setBackground(new Color(230, 230, 230));
-        friendEntry.setLayout(null);
-
-        JLabel friendPic = new JLabel(new ImageIcon("src/main/resources/icons/sandra.png")); // Profile picture
-        friendPic.setBounds(5, 5, 50, 50);
-        friendEntry.add(friendPic);
-
-        JLabel friendName = new JLabel(user.getUsername());
-        friendName.setFont(new Font("Roboto", Font.BOLD, 14));
-        friendName.setBounds(70, 5, 120, 20);
-        friendEntry.add(friendName);
-
-        JLabel friendUniversity = new JLabel(user.getUniversity());
-        friendUniversity.setFont(new Font("Roboto", Font.PLAIN, 12));
-        friendUniversity.setBounds(70, 30, 120, 20);
-        friendEntry.add(friendUniversity);
-
-        JButton profileButton = new JButton("Profile");
-        profileButton.setBounds(180, 10, 70, 30);
-        profileButton.setFont(new Font("Roboto", Font.BOLD, 10));
-        profileButton.setBackground(new Color(46, 157, 251));
-        profileButton.setForeground(Color.BLACK);
-        profileButton.addActionListener(e -> showProfilePopup(user));
-        friendEntry.add(profileButton);
-
-        friendsListPanel.add(friendEntry);
-    }
-
-    private void showProfilePopup(UserProfile user) {
-        JPanel profilePanel = new JPanel();
-        profilePanel.setLayout(new BoxLayout(profilePanel, BoxLayout.Y_AXIS));
-        profilePanel.add(new JLabel("Name: " + user.getUsername()));
-        profilePanel.add(new JLabel("University: " + user.getUniversity()));
-        profilePanel.add(new JLabel("City: " + user.getProvince()));
-        profilePanel.add(new JLabel("Interest: " + user.getInterests()));
-        profilePanel.add(new JLabel("Date of Birth: " + user.getDateOfBirth()));
-        profilePanel.add(new JLabel("Email: " + user.getEmail()));
-
-        int option = JOptionPane.showOptionDialog(
-                this,
-                profilePanel,
-                "User Profile",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.INFORMATION_MESSAGE,
-                null,
-                new String[]{"Add Friend", "Cancel"},
-                "Cancel"
-        );
-
-        if (option == JOptionPane.OK_OPTION) {
-            addedFriends.add(user);
-            FirestoreHandler.addFriend(user);
-            updateRightFriendsList();
-        }
-    }
-
-
     private void updateRightFriendsList() {
-        rightFriendsListPanel.removeAll();
+        if (rightFriendsListPanel == null) {
+            System.err.println("Error: rightFriendsListPanel is not initialized!");
+            return;
+        }
+
+        rightFriendsListPanel.removeAll(); // Clear current UI
 
         if (addedFriends.isEmpty()) {
-            rightFriendsListPanel.add(noFriendsLabel);
+            rightFriendsListPanel.add(noFriendsLabel); // Show "No friends added" message
         } else {
             for (UserProfile friend : addedFriends) {
-                addToRightFriendsPanel(friend);
+                addToRightFriendsPanel(friend); // Add each friend
             }
         }
 
         rightFriendsListPanel.revalidate();
         rightFriendsListPanel.repaint();
     }
+
+
+    private void handleSearch() {
+        String query = searchField.getText().trim().toLowerCase();
+
+        if (query.isEmpty()) {
+            populateFriendsList(allUsers);
+            return;
+        }
+
+        List<UserProfile> filteredUsers = new ArrayList<>();
+        for (UserProfile user : allUsers) {
+            if (user.getUsername() != null && user.getUsername().toLowerCase().contains(query)) {
+                filteredUsers.add(user);
+            }
+        }
+
+        populateFriendsList(filteredUsers);
+    }
+
 
     private void addToRightFriendsPanel(UserProfile user) {
         JPanel friendEntry = new JPanel();
@@ -332,16 +313,24 @@ public class Homepage extends JFrame {
         JButton messageButton = new JButton("Message");
         messageButton.setBounds(290, 15, 90, 30);
         messageButton.setFont(new Font("Roboto", Font.BOLD, 10));
-        messageButton.setBackground(new Color(46, 157, 251));
-        messageButton.setForeground(Color.BLACK);
-        messageButton.addActionListener(e -> JOptionPane.showMessageDialog(null, "Messaging " + user.getUsername() + "!"));
+        messageButton.setBackground(new Color(52, 152, 219)); // Blue color
+        messageButton.setForeground(Color.WHITE);
+        messageButton.addActionListener(e -> {
+            // Open the Messaging page with the selected contact
+            Messaging messagingPage = new Messaging();
+            messagingPage.setVisible(true);
+            messagingPage.setLocationRelativeTo(null);
+
+            messagingPage.switchChat(user.getUserId(), user.getUsername()); // Pass userId and username to Messaging
+            dispose(); // Close the Homepage
+        });
         friendEntry.add(messageButton);
 
         JButton removeButton = new JButton("Remove");
         removeButton.setBounds(390, 15, 100, 30);
         removeButton.setFont(new Font("Roboto", Font.BOLD, 10));
-        removeButton.setBackground(new Color(200, 50, 50));
-        removeButton.setForeground(Color.BLACK);
+        removeButton.setBackground(new Color(231, 76, 60)); // Red color
+        removeButton.setForeground(Color.WHITE);
         removeButton.addActionListener(e -> {
             addedFriends.remove(user);
             FirestoreHandler.removeFriend(user);
@@ -352,46 +341,56 @@ public class Homepage extends JFrame {
         rightFriendsListPanel.add(friendEntry);
     }
 
-    private void handleSearch() {
-        String query = searchField.getText().trim().toLowerCase(); // Convert query to lowercase for case-insensitive search
 
-        if (query.isEmpty()) {
-            // If the search field is empty, display all users
-            populateFriendsList(allUsers);
-            return;
+
+    private void addFriendEntry(UserProfile user) {
+        JPanel friendEntry = new JPanel();
+        friendEntry.setPreferredSize(new Dimension(230, 60));
+        friendEntry.setBackground(new Color(230, 230, 230));
+        friendEntry.setLayout(null);
+
+        JLabel friendName = new JLabel(user.getUsername());
+        friendName.setFont(new Font("Roboto", Font.BOLD, 14));
+        friendName.setBounds(10, 5, 120, 20);
+        friendEntry.add(friendName);
+
+        JLabel friendUniversity = new JLabel(user.getUniversity());
+        friendUniversity.setFont(new Font("Roboto", Font.PLAIN, 12));
+        friendUniversity.setBounds(10, 30, 120, 20);
+        friendEntry.add(friendUniversity);
+
+        // Check if the user is already in the addedFriends list
+        boolean isAlreadyAdded = addedFriends.stream().anyMatch(friend -> friend.getUserId().equals(user.getUserId()));
+
+        JButton addButton = new JButton("Add Friend");
+        addButton.setBounds(150, 10, 80, 30);
+        addButton.setFont(new Font("Roboto", Font.BOLD, 10));
+        addButton.setBackground(isAlreadyAdded ? new Color(169, 169, 169) : new Color(46, 204, 113)); // Gray if already added
+        addButton.setForeground(Color.WHITE);
+        addButton.setEnabled(!isAlreadyAdded); // Disable button if already added
+
+        // Add friend only if not already added
+        if (!isAlreadyAdded) {
+            addButton.addActionListener(e -> {
+                FirestoreHandler.addFriend(
+                    SessionManager.currentUserId, // The ID of the current user
+                    user.getUserId(),             // The ID of the friend being added
+                    user.getUsername(),           // The username of the friend
+                    user.getUniversity()          // The university of the friend
+                );
+                JOptionPane.showMessageDialog(null, "Friend added!");
+
+                // Update addedFriends list and refresh the right panel
+                addedFriends.add(user); // Manually add to local list
+                updateRightFriendsList(); // Update the UI
+                addButton.setEnabled(false); // Disable the button after adding
+                addButton.setBackground(new Color(169, 169, 169)); // Set to gray after adding
+            });
         }
 
-        List<UserProfile> filteredUsers = new ArrayList<>();
-
-        for (UserProfile user : allUsers) {
-            // Check if the query matches any user field
-            boolean matches = false;
-
-            if (user.getUsername() != null && user.getUsername().toLowerCase().contains(query)) {
-                matches = true;
-            } else if (user.getUniversity() != null && user.getUniversity().toLowerCase().contains(query)) {
-                matches = true;
-            } else if (user.getProvince() != null && user.getProvince().toLowerCase().contains(query)) {
-                matches = true;
-            } else if (user.getInterests() != null) {
-                // Check if the query matches any interest
-                for (String interest : user.getInterests()) {
-                    if (interest != null && interest.toLowerCase().contains(query)) {
-                        matches = true;
-                        break;
-                    }
-                }
-            }
-
-            if (matches) {
-                filteredUsers.add(user);
-            }
-        }
-
-        populateFriendsList(filteredUsers); // Update the friends list with filtered users
+        friendEntry.add(addButton);
+        friendsListPanel.add(friendEntry);
     }
-
-
 
 
     private JPanel createSidebar(JFrame parentFrame) {
@@ -399,12 +398,6 @@ public class Homepage extends JFrame {
         sidebar.setBounds(10, 10, 70, 540);
         sidebar.setBackground(Color.WHITE);
         sidebar.setLayout(null);
-
-        JLabel profileLabel = new JLabel("Profile");
-        profileLabel.setFont(new Font("Roboto", Font.BOLD, 14));
-        profileLabel.setForeground(new Color(97, 97, 97));
-        profileLabel.setBounds(10, 5, 50, 20);
-        sidebar.add(profileLabel);
 
         JLabel profilePic = new JLabel(new ImageIcon("src/main/resources/icons/profile.png"));
         profilePic.setBounds(5, 25, 60, 60);
@@ -416,11 +409,10 @@ public class Homepage extends JFrame {
             parentFrame.dispose();
         });
         addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {
-        	  Messaging messaging = new Messaging();
-        	  messaging.setVisible(true);
-	            messaging.setLocationRelativeTo(null);
-
-              parentFrame.dispose();
+            Messaging messaging = new Messaging();
+            messaging.setVisible(true);
+            messaging.setLocationRelativeTo(null);
+            parentFrame.dispose();
         });
         addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> {
             JOptionPane.showMessageDialog(parentFrame, "Notifications clicked!");

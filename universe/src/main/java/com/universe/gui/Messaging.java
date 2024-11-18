@@ -1,10 +1,11 @@
 package com.universe.gui;
 
 import java.awt.*;
-import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
+import java.util.List;
+import com.google.cloud.firestore.ListenerRegistration;
+import com.universe.utils.SessionManager;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.ListenerRegistration;
 import com.universe.FirebaseInitializer;
@@ -83,61 +84,65 @@ public class Messaging extends JFrame {
     }
 
     private JPanel createSidebar() {
-        JPanel sidebarPanel = new JPanel();
-        sidebarPanel.setLayout(new BoxLayout(sidebarPanel, BoxLayout.Y_AXIS));
-        sidebarPanel.setPreferredSize(new Dimension(80, 0));
-        sidebarPanel.setBackground(new Color(240, 240, 240));
+        JPanel sidebar = new JPanel();
+        sidebar.setPreferredSize(new Dimension(80, 0)); // Fixed width for the sidebar
+        sidebar.setBackground(Color.WHITE);
+        sidebar.setLayout(null);
 
-        // Profile Picture at the top
-        JLabel profilePicture = new JLabel(new ImageIcon("path/to/profilePicture.png"));
-        profilePicture.setAlignmentX(Component.CENTER_ALIGNMENT);
-        profilePicture.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        sidebarPanel.add(profilePicture);
+        // Profile label above the profile picture
+        JLabel profileLabel = new JLabel("Profile");
+        profileLabel.setFont(new Font("Roboto", Font.BOLD, 14));
+        profileLabel.setForeground(new Color(97, 97, 97)); // Gray color
+        profileLabel.setBounds(10, 5, 60, 20);
+        sidebar.add(profileLabel);
 
-        // Sidebar buttons
-        sidebarPanel.add(createSidebarButton("/icons/icons8-home-50.png", "home"));
-        sidebarPanel.add(createSidebarButton("/icons/icons8-chat-48.png", "chat"));
-        sidebarPanel.add(createSidebarButton("/icons/icons8-notification-50.png", "notifications"));
-        sidebarPanel.add(createSidebarButton("/icons/icons8-community-48.png", "community"));
-        sidebarPanel.add(createSidebarButton("/icons/icons8-settings-50.png", "settings"));
-        sidebarPanel.add(createSidebarButton("/icons/icons8-exit-48.png", "exit"));
+        // Profile picture
+        JLabel profilePic = new JLabel(new ImageIcon("src/main/resources/icons/profile.png"));
+        profilePic.setBounds(10, 25, 60, 60);
+        sidebar.add(profilePic);
 
-        return sidebarPanel;
+        // Add sidebar icons and actions
+        addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> navigateToHomepage());
+        addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {});
+        addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240,
+                e -> JOptionPane.showMessageDialog(this, "Notifications clicked!"));
+        addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310,
+                e -> JOptionPane.showMessageDialog(this, "Community clicked!"));
+        addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380,
+                e -> JOptionPane.showMessageDialog(this, "Settings clicked!"));
+        addSidebarIcon(sidebar, "src/main/resources/icons/leave.png", "Logout", 450, e -> handleLogout());
+
+        return sidebar;
     }
 
-    private JButton createSidebarButton(String iconPath, String actionCommand) {
-        JButton button = new JButton(new ImageIcon(getClass().getResource(iconPath)));
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setBackground(Color.WHITE);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        button.setFocusPainted(false);
-        button.setActionCommand(actionCommand);
-        button.addActionListener(e -> handleSidebarAction(e.getActionCommand()));
-        return button;
+    private void addSidebarIcon(JPanel sidebar, String iconPath, String tooltip, int yPosition, java.awt.event.ActionListener action) {
+        ImageIcon originalIcon = new ImageIcon(iconPath);
+        Image resizedImage = originalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        ImageIcon resizedIcon = new ImageIcon(resizedImage);
+        JButton iconButton = new JButton(resizedIcon);
+        iconButton.setBounds(10, yPosition, 60, 60);
+        iconButton.setBackground(Color.WHITE);
+        iconButton.setBorder(BorderFactory.createEmptyBorder());
+        iconButton.setFocusPainted(false);
+        iconButton.setToolTipText(tooltip);
+        iconButton.addActionListener(action);
+        sidebar.add(iconButton);
     }
 
-    private void handleSidebarAction(String actionCommand) {
-        switch (actionCommand) {
-            case "home":
-                JOptionPane.showMessageDialog(this, "Home clicked.");
-                break;
-            case "chat":
-                JOptionPane.showMessageDialog(this, "Chat clicked.");
-                break;
-            case "notifications":
-                JOptionPane.showMessageDialog(this, "Notifications clicked.");
-                break;
-            case "settings":
-                JOptionPane.showMessageDialog(this, "Settings clicked.");
-                break;
-            case "exit":
-                int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit?", "Exit", JOptionPane.YES_NO_OPTION);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    System.exit(0);
-                }
-                break;
-            default:
-                JOptionPane.showMessageDialog(this, "Unknown action.");
+    private void navigateToHomepage() {
+        EventQueue.invokeLater(() -> {
+            Homepage homepage = new Homepage();
+            homepage.setVisible(true);
+            homepage.setLocationRelativeTo(null); // Center the new window
+        });
+        dispose(); // Close current page
+    }
+
+    private void handleLogout() {
+        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit?", "Exit Confirmation",
+                JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            System.exit(0); // Exit the app
         }
     }
 
@@ -204,50 +209,13 @@ public class Messaging extends JFrame {
     }
 
     private void populateContacts() {
-        contactsList.removeAll(); // Clear existing contacts before loading new ones
+        contactsList.removeAll();
 
+        // Example contact list retrieval
         List<UserProfile> contacts = FirestoreHandler.getUserContacts(currentUserId);
-        if (contacts != null) {
+        if (contacts != null && !contacts.isEmpty()) {
             for (UserProfile contact : contacts) {
-                String contactId = contact.getUserId();
-                String contactName = contact.getUsername();
-
-                // Create a panel for each contact
-                JPanel contactPanel = new JPanel(new BorderLayout());
-                contactPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230))); // Add a divider
-                contactPanel.setPreferredSize(new Dimension(200, 60)); // Adjust height for a messaging app feel
-                contactPanel.setBackground(Color.WHITE);
-
-                // Profile Picture/Icon
-                JLabel profilePicture = new JLabel(new ImageIcon("path/to/defaultProfileIcon.png")); // Placeholder image
-                profilePicture.setPreferredSize(new Dimension(50, 50)); // Adjust icon size
-                contactPanel.add(profilePicture, BorderLayout.WEST);
-
-                // Name and Status
-                JPanel nameStatusPanel = new JPanel();
-                nameStatusPanel.setLayout(new BoxLayout(nameStatusPanel, BoxLayout.Y_AXIS));
-                nameStatusPanel.setBackground(Color.WHITE);
-
-                JLabel nameLabel = new JLabel(contactName);
-                nameLabel.setFont(new Font("Arial", Font.BOLD, 14)); // Bold for the name
-                nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-                JLabel statusLabel = new JLabel("Last seen recently"); // Placeholder for status/last message
-                statusLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-                statusLabel.setForeground(Color.GRAY);
-                statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-                nameStatusPanel.add(nameLabel);
-                nameStatusPanel.add(statusLabel);
-                contactPanel.add(nameStatusPanel, BorderLayout.CENTER);
-
-                // Add click listener to open a chat with the selected contact
-                contactPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-                    public void mouseClicked(java.awt.event.MouseEvent evt) {
-                        switchChat(contactId, contactName);
-                    }
-                });
-
+                JPanel contactPanel = createContactPanel(contact);
                 contactsList.add(contactPanel);
             }
         } else {
@@ -260,6 +228,31 @@ public class Messaging extends JFrame {
         contactsList.repaint();
     }
 
+    private JPanel createContactPanel(UserProfile contact) {
+        JPanel contactPanel = new JPanel(new BorderLayout());
+        contactPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
+        contactPanel.setBackground(Color.WHITE);
+
+        JLabel nameLabel = new JLabel(contact.getUsername());
+        nameLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        contactPanel.add(nameLabel, BorderLayout.CENTER);
+
+        contactPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                switchChat(contact.getUserId(), contact.getUsername());
+            }
+        });
+
+        return contactPanel;
+    }
+
+    private void sendMessage(String messageContent) {
+        if (currentChatContactId != null && !currentChatContactId.isEmpty()) {
+            FirestoreHandler.saveMessages(currentUserId, currentChatContactId, messageContent);
+        } else {
+            JOptionPane.showMessageDialog(this, "No contact selected.");
+        }
+    }
 
     private void handleAddContact(String searchQuery) {
         UserProfile user = FirestoreHandler.findUserByEmailOrUsername(searchQuery);
@@ -276,7 +269,7 @@ public class Messaging extends JFrame {
         }
     }
 
-    private void switchChat(String contactId, String contactName) {
+    public void switchChat(String contactId, String contactName) {
         currentChatContactId = contactId;
 
         // Clear the chat panel for the new chat
@@ -295,9 +288,6 @@ public class Messaging extends JFrame {
                 return;
             }
 
-            // Clear the chat history panel before adding updated messages
-            chatHistoryPanel.removeAll();
-
             // Populate the chat panel with updated messages
             if (snapshots != null && !snapshots.isEmpty()) {
                 for (DocumentSnapshot document : snapshots.getDocuments()) {
@@ -305,7 +295,7 @@ public class Messaging extends JFrame {
                     String senderId = document.getString("senderId");
                     boolean isUserMessage = senderId.equals(currentUserId);
 
-                    addMessageToChat(content, isUserMessage);
+                    displayMessage(content, isUserMessage);
                 }
             }
 
@@ -318,32 +308,17 @@ public class Messaging extends JFrame {
         setTitle("Chatting with " + contactName);
     }
 
-    private void sendMessage(String messageContent) {
-        if (currentChatContactId != null && !currentChatContactId.isEmpty()) {
-            // Save the message to Firestore
-            FirestoreHandler.saveMessages(currentUserId, currentChatContactId, messageContent);
-
-            // The listener will automatically update the chat UI
-        } else {
-            JOptionPane.showMessageDialog(this, "No contact selected.");
-        }
-    }
-
-    private void addMessageToChat(String message, boolean isUserMessage) {
-        // Create a panel to hold the message bubble
+    
+    private void displayMessage(String message, boolean isUserMessage) {
         JPanel messagePanel = new JPanel(new FlowLayout(isUserMessage ? FlowLayout.RIGHT : FlowLayout.LEFT));
         messagePanel.setBackground(Color.WHITE); // Match chat background
 
         // Create the message bubble
         JLabel messageLabel = new JLabel("<html><div style='padding: 8px; max-width: 200px;'>" + message + "</div></html>");
         messageLabel.setOpaque(true);
-        messageLabel.setBackground(isUserMessage ? new Color(54, 125, 225) : new Color(240, 240, 240)); // Different colors for sender and receiver
+        messageLabel.setBackground(isUserMessage ? new Color(54, 125, 225) : new Color(240, 240, 240)); // Different colors for sent and received messages
         messageLabel.setForeground(isUserMessage ? Color.WHITE : Color.BLACK);
         messageLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10)); // Padding inside the bubble
-
-        // Set size constraints for the bubble
-        messageLabel.setPreferredSize(new Dimension(200, messageLabel.getPreferredSize().height));
-        messageLabel.setMaximumSize(new Dimension(200, messageLabel.getPreferredSize().height));
 
         // Add the bubble to the message panel
         messagePanel.add(messageLabel);
@@ -355,6 +330,9 @@ public class Messaging extends JFrame {
         // Refresh the chat panel
         chatHistoryPanel.revalidate();
         chatHistoryPanel.repaint();
+
+        // Scroll to the latest message
+        SwingUtilities.invokeLater(() -> chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum()));
     }
 
 }
