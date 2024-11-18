@@ -163,10 +163,24 @@ public class FirestoreHandler {
     /** Kennie
      * Remove a friend from the Firestore database.
      */
-	public static void removeFriend(UserProfile user) {
-	    DocumentReference docRef = db.collection(FRIENDS_COLLECTION).document(user.getUsername());
-	    ApiFuture<WriteResult> future = docRef.delete();
+//	public static void removeFriend(UserProfile user) {
+//	    DocumentReference docRef = db.collection(FRIENDS_COLLECTION).document(user.getUsername());
+//	    ApiFuture<WriteResult> future = docRef.delete();
+//
+//	    try {
+//	        WriteResult result = future.get(); // Wait for the operation to complete
+//	        System.out.println("Friend removed at: " + result.getUpdateTime());
+//	    } catch (InterruptedException | ExecutionException e) {
+//	        System.err.println("Error removing friend: " + e.getMessage());
+//	    }
+//	}
+	public static void removeFriend(String userId, String contactUserId) {
+	    DocumentReference docRef = db.collection("UserProfile")
+	                                 .document(userId)
+	                                 .collection("contacts")
+	                                 .document(contactUserId);
 
+	    ApiFuture<WriteResult> future = docRef.delete();
 	    try {
 	        WriteResult result = future.get(); // Wait for the operation to complete
 	        System.out.println("Friend removed at: " + result.getUpdateTime());
@@ -174,6 +188,7 @@ public class FirestoreHandler {
 	        System.err.println("Error removing friend: " + e.getMessage());
 	    }
 	}
+
 
     
     /**
@@ -214,7 +229,11 @@ public class FirestoreHandler {
                 String username = document.getString("username");
                 String university = document.getString("university");
 
-                contacts.add(new UserProfile(contactUserId, username, "", "", university));
+                // Check if this friend is already in the list
+                boolean alreadyExists = contacts.stream().anyMatch(contact -> contact.getUserId().equals(contactUserId));
+                if (!alreadyExists) {
+                    contacts.add(new UserProfile(contactUserId, username, "", "", university));
+                }
             }
         } catch (InterruptedException | ExecutionException e) {
             System.err.println("Error fetching contacts: " + e.getMessage());
@@ -225,11 +244,13 @@ public class FirestoreHandler {
 
 
     
-    //just added
     public static void getFriends(EventListener<QuerySnapshot> listener, String userId) {
-        CollectionReference contactsRef = db.collection("UserProfile").document(userId).collection("contacts");
+        CollectionReference contactsRef = db.collection("UserProfile")
+                                            .document(userId)
+                                            .collection("contacts");
         contactsRef.addSnapshotListener(listener);
     }
+
 
 
 

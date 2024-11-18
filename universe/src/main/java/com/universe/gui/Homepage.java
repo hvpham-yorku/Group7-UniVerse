@@ -81,7 +81,7 @@ public class Homepage extends JFrame {
         setTitle("Welcome, " + currentUser.getUsername() + "!");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 900, 600);
-        setResizable(false); // Prevent resizing
+        setResizable(false);
 
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -90,8 +90,11 @@ public class Homepage extends JFrame {
         setContentPane(contentPane);
         setLocationRelativeTo(null);
 
-        // Initialize added friends list
-        addedFriends = new ArrayList<>();
+        // Initialize the added friends list
+        addedFriends = FirestoreHandler.getUserContacts(currentUserId);
+        if (addedFriends == null) {
+            addedFriends = new ArrayList<>();
+        }
 
         // Welcome panel
         JPanel welcomePanel = new JPanel();
@@ -114,25 +117,31 @@ public class Homepage extends JFrame {
         createRightFriendsPanel(); // Initialize rightFriendsListPanel
         createFriendsPanel();      // Initialize friends list panel
 
-        // Populate added friends from Firestore
-        addedFriends = FirestoreHandler.getUserContacts(currentUserId);
-        updateRightFriendsList(); // Now it will no longer throw NullPointerException
-    
+        // Populate added friends and update the right panel
+        updateRightFriendsList();
 
+        // Set up a real-time listener for friends updates
         FirestoreHandler.getFriends((snapshots, e) -> {
             if (e != null) {
                 System.err.println("Error listening to real-time updates: " + e.getMessage());
                 return;
             }
 
-            addedFriends.clear(); // Clear the current list
-            for (QueryDocumentSnapshot doc : snapshots.getDocuments()) {
-                String contactUserId = doc.getString("contactUserId");
-                String username = doc.getString("username");
-                String university = doc.getString("university");
+            synchronized (addedFriends) {
+                addedFriends.clear(); // Clear the list before adding
 
-                addedFriends.add(new UserProfile(contactUserId, username, "", "", university));
+                for (QueryDocumentSnapshot doc : snapshots.getDocuments()) {
+                    String contactUserId = doc.getString("contactUserId");
+                    String username = doc.getString("username");
+                    String university = doc.getString("university");
+
+                    // Avoid adding duplicates
+                    if (addedFriends.stream().noneMatch(friend -> friend.getUserId().equals(contactUserId))) {
+                        addedFriends.add(new UserProfile(contactUserId, username, "", "", university));
+                    }
+                }
             }
+
             updateRightFriendsList(); // Refresh the UI
         }, SessionManager.currentUserId);
 
@@ -254,25 +263,34 @@ public class Homepage extends JFrame {
         friendsListPanel.repaint();
     }
 
+
     private void updateRightFriendsList() {
-        if (rightFriendsListPanel == null) {
-            System.err.println("Error: rightFriendsListPanel is not initialized!");
-            return;
-        }
+        rightFriendsListPanel.removeAll();
 
-        rightFriendsListPanel.removeAll(); // Clear current UI
+        synchronized (addedFriends) {
+            List<UserProfile> uniqueFriends = addedFriends.stream().distinct().toList();
 
-        if (addedFriends.isEmpty()) {
-            rightFriendsListPanel.add(noFriendsLabel); // Show "No friends added" message
-        } else {
-            for (UserProfile friend : addedFriends) {
-                addToRightFriendsPanel(friend); // Add each friend
+            if (uniqueFriends.isEmpty()) {
+                if (noFriendsLabel == null) {
+                    noFriendsLabel = new JLabel("No friends added yet!", JLabel.CENTER);
+                    noFriendsLabel.setFont(new Font("Roboto", Font.BOLD, 16));
+                    noFriendsLabel.setForeground(Color.GRAY);
+                }
+                rightFriendsListPanel.add(noFriendsLabel);
+            } else {
+                for (UserProfile friend : uniqueFriends) {
+                    addToRightFriendsPanel(friend);
+                }
             }
         }
 
         rightFriendsListPanel.revalidate();
         rightFriendsListPanel.repaint();
     }
+
+
+
+
 
 
     private void handleSearch() {
@@ -310,18 +328,18 @@ public class Homepage extends JFrame {
         friendUniversity.setBounds(10, 30, 300, 20);
         friendEntry.add(friendUniversity);
 
+        // "Message" button
         JButton messageButton = new JButton("Message");
         messageButton.setBounds(290, 15, 90, 30);
         messageButton.setFont(new Font("Roboto", Font.BOLD, 10));
-        messageButton.setBackground(new Color(52, 152, 219)); // Blue color
-        messageButton.setForeground(Color.WHITE);
+        messageButton.setBackground(new Color(46, 157, 251)); // Blue color
+        messageButton.setForeground(Color.BLACK);
         messageButton.addActionListener(e -> {
             // Open the Messaging page with the selected contact
             Messaging messagingPage = new Messaging();
+            messagingPage.switchChat(user.getUserId(), user.getUsername()); // Pass userId and username
             messagingPage.setVisible(true);
             messagingPage.setLocationRelativeTo(null);
-
-            messagingPage.switchChat(user.getUserId(), user.getUsername()); // Pass userId and username to Messaging
             dispose(); // Close the Homepage
         });
         friendEntry.add(messageButton);
@@ -330,17 +348,18 @@ public class Homepage extends JFrame {
         removeButton.setBounds(390, 15, 100, 30);
         removeButton.setFont(new Font("Roboto", Font.BOLD, 10));
         removeButton.setBackground(new Color(231, 76, 60)); // Red color
-        removeButton.setForeground(Color.WHITE);
+        removeButton.setForeground(Color.BLACK);
         removeButton.addActionListener(e -> {
-            addedFriends.remove(user);
-            FirestoreHandler.removeFriend(user);
-            updateRightFriendsList();
+            synchronized (addedFriends) {
+                addedFriends.remove(user);
+            }
+            FirestoreHandler.removeFriend(SessionManager.currentUserId, user.getUserId());
+            refreshRightPanelAfterDelay();
         });
         friendEntry.add(removeButton);
 
         rightFriendsListPanel.add(friendEntry);
     }
-
 
 
     private void addFriendEntry(UserProfile user) {
@@ -359,38 +378,72 @@ public class Homepage extends JFrame {
         friendUniversity.setBounds(10, 30, 120, 20);
         friendEntry.add(friendUniversity);
 
-        // Check if the user is already in the addedFriends list
-        boolean isAlreadyAdded = addedFriends.stream().anyMatch(friend -> friend.getUserId().equals(user.getUserId()));
+        // Profile button
+        JButton profileButton = new JButton("Profile");
+        profileButton.setBounds(150, 10, 70, 30);
+        profileButton.setFont(new Font("Roboto", Font.BOLD, 10));
+        profileButton.setBackground(new Color(46, 157, 251)); // Blue color
+        profileButton.setForeground(Color.BLACK);
+        profileButton.addActionListener(e -> showProfilePopup(user));
+        friendEntry.add(profileButton);
 
-        JButton addButton = new JButton("Add Friend");
-        addButton.setBounds(150, 10, 80, 30);
-        addButton.setFont(new Font("Roboto", Font.BOLD, 10));
-        addButton.setBackground(isAlreadyAdded ? new Color(169, 169, 169) : new Color(46, 204, 113)); // Gray if already added
-        addButton.setForeground(Color.WHITE);
-        addButton.setEnabled(!isAlreadyAdded); // Disable button if already added
-
-        // Add friend only if not already added
-        if (!isAlreadyAdded) {
-            addButton.addActionListener(e -> {
-                FirestoreHandler.addFriend(
-                    SessionManager.currentUserId, // The ID of the current user
-                    user.getUserId(),             // The ID of the friend being added
-                    user.getUsername(),           // The username of the friend
-                    user.getUniversity()          // The university of the friend
-                );
-                JOptionPane.showMessageDialog(null, "Friend added!");
-
-                // Update addedFriends list and refresh the right panel
-                addedFriends.add(user); // Manually add to local list
-                updateRightFriendsList(); // Update the UI
-                addButton.setEnabled(false); // Disable the button after adding
-                addButton.setBackground(new Color(169, 169, 169)); // Set to gray after adding
-            });
-        }
-
-        friendEntry.add(addButton);
         friendsListPanel.add(friendEntry);
     }
+
+
+    private void refreshRightPanelAfterDelay() {
+        // Use a Swing Timer for the delay (e.g., 300ms)
+        new javax.swing.Timer(300, e -> {
+            updateRightFriendsList();
+        }).start();
+    }
+
+    private void showProfilePopup(UserProfile user) {
+        JPanel profilePanel = new JPanel();
+        profilePanel.setLayout(new BoxLayout(profilePanel, BoxLayout.Y_AXIS));
+        profilePanel.add(new JLabel("Name: " + user.getUsername()));
+        profilePanel.add(new JLabel("University: " + user.getUniversity()));
+        profilePanel.add(new JLabel("City: " + user.getProvince()));
+        profilePanel.add(new JLabel("Interest: " + user.getInterests()));
+        profilePanel.add(new JLabel("Date of Birth: " + user.getDateOfBirth()));
+        profilePanel.add(new JLabel("Email: " + user.getEmail()));
+
+        int option = JOptionPane.showOptionDialog(
+            this,
+            profilePanel,
+            "User Profile",
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.INFORMATION_MESSAGE,
+            null,
+            new String[]{"Add Friend", "Close"},
+            "Close"
+        );
+
+        if (option == JOptionPane.OK_OPTION) {
+            // Check if the user is already added
+            synchronized (addedFriends) {
+                boolean isAlreadyAdded = addedFriends.stream().anyMatch(friend -> friend.getUserId().equals(user.getUserId()));
+                if (isAlreadyAdded) {
+                    // Notify the user that the friend is already added
+                    JOptionPane.showMessageDialog(
+                        this,
+                        user.getUsername() + " is already added as a friend!",
+                        "Friend Already Added",
+                        JOptionPane.WARNING_MESSAGE
+                    );
+                } else {
+                    // Add the friend to the Firestore and update UI
+                    FirestoreHandler.addFriend(SessionManager.currentUserId, user.getUserId(), user.getUsername(), user.getUniversity());
+                    addedFriends.add(user);
+                    refreshRightPanelAfterDelay();
+                    JOptionPane.showMessageDialog(this, user.getUsername() + " has been added as a friend!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        }
+    }
+
+    
+
 
 
     private JPanel createSidebar(JFrame parentFrame) {
