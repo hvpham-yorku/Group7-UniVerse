@@ -1,17 +1,40 @@
 package com.universe.gui;
 
-import com.universe.FirebaseInitializer;
-import com.universe.models.UserProfile;
-import com.universe.FirestoreHandler;
-
-import javax.swing.*;
-import javax.swing.text.MaskFormatter;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Choice;
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.text.MaskFormatter;
+
+import com.universe.FirebaseInitializer;
+import com.universe.FirestoreHandler;
+import com.universe.models.UserProfile;
+import com.universe.utils.SessionManager;
 
 public class SignUporIn {
 
@@ -148,7 +171,38 @@ public class SignUporIn {
 		JButton btnSignUp = new JButton("Sign Up");
 		btnSignUp.setBounds(horizontalOffset + 290, verticalOffset + 180, 117, 29); // Adjusted X position
 		signUpPanel.add(btnSignUp);
-		btnSignUp.addActionListener(this::handleSignUp);
+
+		btnSignUp.addActionListener(e -> {
+		    String username = textFieldName.getText();
+		    String email = textFieldEmail.getText();
+		    String password = new String(passwordField.getPassword());
+
+		    if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+		        JOptionPane.showMessageDialog(frame, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
+		        return;
+		    }
+
+		    // Generate user ID and save it in Firestore
+		    String userId = String.valueOf(System.currentTimeMillis());
+		    String passwordHash = Integer.toHexString(password.hashCode());
+		    UserProfile user = new UserProfile(userId, username, email, passwordHash);
+		    FirestoreHandler.addUserData(user);
+
+		    // Store user information in SessionManager
+		    SessionManager.currentUserId = userId;
+		    SessionManager.currentUser = username;
+
+		    // Update Welcome Panel with user details
+		    lblUserName.setText("Name: " + username);
+		    lblUserEmail.setText("Email: " + email);
+
+		    // Navigate to the Welcome panel
+		    JOptionPane.showMessageDialog(frame, "Sign up successful! Please complete your profile.", "Success", JOptionPane.INFORMATION_MESSAGE);
+		    cardLayout.show(mainPanel, "Welcome");
+		});
+
+
+
 
 		JLabel lblLoginLink = new JLabel("<html><u>Already have an account? Login</u></html>");
 		lblLoginLink.setForeground(Color.BLUE);
@@ -188,18 +242,34 @@ public class SignUporIn {
 		loginPanel.add(btnLogin);
 
 		btnLogin.addActionListener(e -> {
-			String email = emailField.getText();
-			String password = new String(passwordField.getPassword());
-			String passwordHash = Integer.toHexString(password.hashCode()); // Hash the entered password
+		    String email = emailField.getText();
+		    String password = new String(passwordField.getPassword());
+		    String passwordHash = Integer.toHexString(password.hashCode()); // Hash the password
 
-			boolean isAuthenticated = FirestoreHandler.authenticateUser(email, passwordHash);
-			if (isAuthenticated) {
-				JOptionPane.showMessageDialog(frame, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-				cardLayout.show(mainPanel, "Welcome"); // Redirect to Welcome/Profile page
-			} else {
-				JOptionPane.showMessageDialog(frame, "Invalid email or password.", "Error", JOptionPane.ERROR_MESSAGE);
-			}
+		    if (FirestoreHandler.authenticateUser(email, passwordHash)) {
+		        // Fetch the UserProfile directly using email
+		        UserProfile userProfile = FirestoreHandler.findUserByEmail(email);
+
+		        if (userProfile != null) {
+		            // Store the username and ID globally
+		            SessionManager.currentUserId = userProfile.getUserId();
+		            SessionManager.currentUser = userProfile.getUsername();
+
+		            // Navigate to the Homepage
+		            Homepage homepage = new Homepage();
+		            homepage.setVisible(true);
+		            frame.dispose(); // Close the login window
+		        } else {
+		            JOptionPane.showMessageDialog(frame, "Error retrieving user profile.", "Error", JOptionPane.ERROR_MESSAGE);
+		        }
+		    } else {
+		        JOptionPane.showMessageDialog(frame, "Invalid email or password.", "Error", JOptionPane.ERROR_MESSAGE);
+		    }
 		});
+
+
+
+
 
 		JLabel lblSignUpLink = new JLabel("<html><u>Don't have an account? Sign Up</u></html>");
 		lblSignUpLink.setForeground(Color.BLUE);
@@ -435,42 +505,53 @@ public class SignUporIn {
 		cardLayout.show(mainPanel, "Welcome");
 	}
 
+
 	private void handleSave(ActionEvent e) {
-		if (currentUserId == null) {
-			JOptionPane.showMessageDialog(frame, "No user logged in to save data for.", "Error",
-					JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+	    if (SessionManager.currentUserId == null) {
+	        JOptionPane.showMessageDialog(frame, "No user logged in to save data for.", "Error", JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
-		String username = lblUserName.getText().replace("Name: ", "");
-		String email = lblUserEmail.getText().replace("Email: ", "");
-		String dateOfBirth = dobField.getText();
-		String bio = bioTextField.getText();
-		String province = choiceCity.getSelectedItem();
-		String university = choiceUniversity.getSelectedItem();
+	    String username = lblUserName.getText().replace("Name: ", "");
+	    String email = lblUserEmail.getText().replace("Email: ", "");
+	    String dateOfBirth = dobField.getText();
+	    String bio = bioTextField.getText();
+	    String city = choiceCity.getSelectedItem();
+	    String university = choiceUniversity.getSelectedItem();
 
-		// Get selected interests
-		String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
-		List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
+	    // Get selected interests
+	    String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
+	    List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
 
-		// Fetch existing user data to preserve passwordHash
-		UserProfile existingUser = FirestoreHandler.getUserData(currentUserId);
-		if (existingUser == null) {
-			JOptionPane.showMessageDialog(frame, "User data not found in Firestore.", "Error",
-					JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+	    // Fetch existing user data to preserve passwordHash
+	    UserProfile existingUser = FirestoreHandler.getUserData(SessionManager.currentUserId);
+	    if (existingUser == null) {
+	        JOptionPane.showMessageDialog(frame, "User data not found in Firestore.", "Error", JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
-		// Create updated user profile while preserving the passwordHash
-		UserProfile updatedUser = new UserProfile(currentUserId, username, email, bio, dateOfBirth, province,
-				university, interests, existingUser.getPasswordHash() // Preserve passwordHash
-		);
+	    // Create updated user profile while preserving the passwordHash
+	    UserProfile updatedUser = new UserProfile(
+	        SessionManager.currentUserId, username, email, bio, dateOfBirth, city, university, interests, existingUser.getPasswordHash()
+	    );
 
-		// Update Firestore
-		FirestoreHandler.updateUserData(updatedUser);
+	    // Update Firestore
+	    FirestoreHandler.updateUserData(updatedUser);
 
-		JOptionPane.showMessageDialog(frame, "Profile updated successfully!", "Success",
-				JOptionPane.INFORMATION_MESSAGE);
+	    JOptionPane.showMessageDialog(frame, "Profile updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+	    // Navigate to the Homepage
+	    frame.dispose(); // Close the profile update window
+	    EventQueue.invokeLater(() -> {
+	        try {
+	            Homepage homepage = new Homepage();
+	            homepage.setVisible(true);
+	            homepage.setLocationRelativeTo(null);
+	        } catch (Exception ex) {
+	            ex.printStackTrace();
+	        }
+	    });
 	}
+
 
 }
