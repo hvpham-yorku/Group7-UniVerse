@@ -212,23 +212,6 @@ public class Messaging extends JFrame {
     }
 
 
-//    private void populateContacts() {
-//        contactsList.removeAll();
-//
-//        if (friendsList != null && !friendsList.isEmpty()) {
-//            for (UserProfile friend : friendsList) {
-//                JPanel contactPanel = createContactPanel(friend);
-//                contactsList.add(contactPanel);
-//            }
-//        } else {
-//            JLabel noContactsLabel = new JLabel("No contacts found.");
-//            noContactsLabel.setForeground(Color.GRAY);
-//            contactsList.add(noContactsLabel);
-//        }
-//
-//        contactsList.revalidate();
-//        contactsList.repaint();
-//    }
     private void populateContacts() {
         contactsList.removeAll();
 
