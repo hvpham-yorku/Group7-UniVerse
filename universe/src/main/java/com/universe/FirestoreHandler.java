@@ -22,6 +22,12 @@ import java.util.HashMap;
 //import java.util.List;
 import java.util.Map;
 //import java.util.concurrent.ExecutionException;
+import com.google.cloud.firestore.*;
+import com.universe.models.UserProfile;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class FirestoreHandler {
 
@@ -339,20 +345,21 @@ public class FirestoreHandler {
 //			System.err.println("Error saving message: " + e.getMessage());
 //		}
 //	}
-	public static List<UserProfile> getAllUsers() {
-	    Firestore db = FirestoreClient.getFirestore();
-	    List<UserProfile> users = new ArrayList<>();
-	    try {
-	        ApiFuture<QuerySnapshot> future = db.collection("UserProfile").get();
-	        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-	        for (DocumentSnapshot document : documents) {
-	            users.add(document.toObject(UserProfile.class));
-	        }
-	    } catch (InterruptedException | ExecutionException e) {
-	        e.printStackTrace();
-	    }
-	    return users;
-	}
+    public static List<UserProfile> getAllUsers() {
+        Firestore db = FirestoreClient.getFirestore();
+        List<UserProfile> users = new ArrayList<>();
+        try {
+            ApiFuture<QuerySnapshot> future = db.collection(COLLECTION_NAME).get();
+            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+            for (DocumentSnapshot document : documents) {
+                UserProfile user = document.toObject(UserProfile.class);
+                users.add(user);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            System.err.println("Error fetching users: " + e.getMessage());
+        }
+        return users;
+    }
 	
 	/** Kennie
      * Fetch a one-time list of all friends from Firestore.
