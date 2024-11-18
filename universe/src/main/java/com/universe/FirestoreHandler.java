@@ -227,19 +227,6 @@ public class FirestoreHandler {
     }
 	
 	// Save Messages in Firestore for Both Directions
-//    public static void saveMessages(String userId, String contactId, String messageContent) {
-//        Firestore db = FirestoreClient.getFirestore();
-//
-//        // Create message data
-//        Map<String, Object> messageData = new HashMap<>();
-//        messageData.put("content", messageContent);
-//        messageData.put("senderId", userId);
-//        messageData.put("timestamp", FieldValue.serverTimestamp());
-//
-//        // Save message in both userId_contactId and contactId_userId
-//        saveMessageInChat(userId + "_" + contactId, messageData);
-//        saveMessageInChat(contactId + "_" + userId, messageData);
-//    }
 	public static void saveMessages(String userId, String contactId, String messageContent) {
 	    Firestore db = FirestoreClient.getFirestore();
 
