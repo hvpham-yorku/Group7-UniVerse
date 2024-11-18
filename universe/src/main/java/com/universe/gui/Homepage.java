@@ -294,21 +294,36 @@ public class Homepage extends JFrame {
 
 
     private void handleSearch() {
-        String query = searchField.getText().trim().toLowerCase();
-
+        String query = searchField.getText().trim().toLowerCase(); // Convert query to lowercase for case-insensitive search
         if (query.isEmpty()) {
+            // If the search field is empty, display all users
             populateFriendsList(allUsers);
             return;
         }
-
         List<UserProfile> filteredUsers = new ArrayList<>();
         for (UserProfile user : allUsers) {
+            // Check if the query matches any user field
+            boolean matches = false;
             if (user.getUsername() != null && user.getUsername().toLowerCase().contains(query)) {
+                matches = true;
+            } else if (user.getUniversity() != null && user.getUniversity().toLowerCase().contains(query)) {
+                matches = true;
+            } else if (user.getProvince() != null && user.getProvince().toLowerCase().contains(query)) {
+                matches = true;
+            } else if (user.getInterests() != null) {
+                // Check if the query matches any interest
+                for (String interest : user.getInterests()) {
+                    if (interest != null && interest.toLowerCase().contains(query)) {
+                        matches = true;
+                        break;
+                    }
+                }
+            }
+            if (matches) {
                 filteredUsers.add(user);
             }
         }
-
-        populateFriendsList(filteredUsers);
+        populateFriendsList(filteredUsers); // Update the friends list with filtered users
     }
 
 
