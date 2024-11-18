@@ -171,31 +171,7 @@ public class SignUporIn {
 		JButton btnSignUp = new JButton("Sign Up");
 		btnSignUp.setBounds(horizontalOffset + 290, verticalOffset + 180, 117, 29); // Adjusted X position
 		signUpPanel.add(btnSignUp);
-//		btnSignUp.addActionListener(e -> {
-//		    String username = textFieldName.getText();
-//		    String email = textFieldEmail.getText();
-//		    String password = new String(passwordField.getPassword());
-//
-//		    if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-//		        JOptionPane.showMessageDialog(frame, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
-//		        return;
-//		    }
-// 
-//		    // Generate user ID and save it in Firestore
-//		    String userId = String.valueOf(System.currentTimeMillis());
-//		    String passwordHash = Integer.toHexString(password.hashCode());
-//		    UserProfile user = new UserProfile(userId, username, email, passwordHash);
-//		    FirestoreHandler.addUserData(user);
-//
-//		    // Store the user ID globally
-//		    SessionManager.currentUserId = userId;
-//		    SessionManager.currentUser = username;
-//
-//		    // Navigate to the Homepage
-//		    Homepage homepage = new Homepage(); // No need to pass userId anymore
-//		    homepage.setVisible(true);
-//		    frame.dispose(); // Close the sign-up window
-//		});
+
 		btnSignUp.addActionListener(e -> {
 		    String username = textFieldName.getText();
 		    String email = textFieldEmail.getText();
@@ -265,32 +241,6 @@ public class SignUporIn {
 		btnLogin.setBounds(horizontalOffset + 290, 300 + verticalOffset, 100, 30); // Adjusted X and Y position
 		loginPanel.add(btnLogin);
 
-//		btnLogin.addActionListener(e -> {
-//		    String email = emailField.getText();
-//		    String password = new String(passwordField.getPassword());
-//		    String passwordHash = Integer.toHexString(password.hashCode()); // Hash the entered password
-//
-//		    boolean isAuthenticated = FirestoreHandler.authenticateUser(email, passwordHash);
-//		    if (isAuthenticated) {
-//		        JOptionPane.showMessageDialog(frame, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-//		        
-//		        // Dispose of the current frame
-//		        frame.dispose();
-//		        
-//		        // Open the Homepage
-//		        EventQueue.invokeLater(() -> {
-//		            try {
-//		                Homepage homepage = new Homepage();
-//		                homepage.setVisible(true);
-//						homepage.setLocationRelativeTo(null);
-//		            } catch (Exception ex) {
-//		                ex.printStackTrace();
-//		            }
-//		        });
-//		    } else {
-//		        JOptionPane.showMessageDialog(frame, "Invalid email or password.", "Error", JOptionPane.ERROR_MESSAGE);
-//		    }
-//		});
 		btnLogin.addActionListener(e -> {
 		    String email = emailField.getText();
 		    String password = new String(passwordField.getPassword());
@@ -555,56 +505,7 @@ public class SignUporIn {
 		cardLayout.show(mainPanel, "Welcome");
 	}
 
-//	private void handleSave(ActionEvent e) {
-//	    if (currentUserId == null) {
-//	        JOptionPane.showMessageDialog(frame, "No user logged in to save data for.", "Error",
-//	                JOptionPane.ERROR_MESSAGE);
-//	        return;
-//	    }
-//
-//	    String username = lblUserName.getText().replace("Name: ", "");
-//	    String email = lblUserEmail.getText().replace("Email: ", "");
-//	    String dateOfBirth = dobField.getText();
-//	    String bio = bioTextField.getText();
-//	    String city = choiceCity.getSelectedItem();
-//	    String university = choiceUniversity.getSelectedItem();
-//
-//	    // Get selected interests
-//	    String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
-//	    List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
-//
-//	    // Fetch existing user data to preserve passwordHash
-//	    UserProfile existingUser = FirestoreHandler.getUserData(currentUserId);
-//	    if (existingUser == null) {
-//	        JOptionPane.showMessageDialog(frame, "User data not found in Firestore.", "Error",
-//	                JOptionPane.ERROR_MESSAGE);
-//	        return;
-//	    }
-//
-//	    // Create updated user profile while preserving the passwordHash
-//	    UserProfile updatedUser = new UserProfile(currentUserId, username, email, bio, dateOfBirth, city,
-//	            university, interests, existingUser.getPasswordHash() // Preserve passwordHash
-//	    );
-//
-//	    // Update Firestore
-//	    FirestoreHandler.updateUserData(updatedUser);
-//
-//	    JOptionPane.showMessageDialog(frame, "Profile updated successfully!", "Success",
-//	            JOptionPane.INFORMATION_MESSAGE);
-//
-//	    // Dispose of the current frame and open the Homepage
-//	    frame.dispose();
-//
-//	    EventQueue.invokeLater(() -> {
-//	        try {
-//	            Homepage homepage = new Homepage();
-//	            homepage.setVisible(true);
-//				homepage.setLocationRelativeTo(null);
-//	        } catch (Exception ex) {
-//	            ex.printStackTrace();
-//	        }
-//	    });
-//	}
+
 	private void handleSave(ActionEvent e) {
 	    if (SessionManager.currentUserId == null) {
 	        JOptionPane.showMessageDialog(frame, "No user logged in to save data for.", "Error", JOptionPane.ERROR_MESSAGE);
