@@ -5,23 +5,17 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 import com.universe.models.UserProfile;
 
-//import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-//import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.cloud.firestore.ListenerRegistration;
 
 
-//import com.universe.models.UserProfile;
 
-//import java.util.ArrayList;
 import java.util.HashMap;
-//import java.util.List;
 import java.util.Map;
-//import java.util.concurrent.ExecutionException;
 import com.google.cloud.firestore.*;
 import com.universe.models.UserProfile;
 
@@ -34,8 +28,6 @@ public class FirestoreHandler {
 	private static final String COLLECTION_NAME = "UserProfile";
 	 private static final String FRIENDS_COLLECTION = "friends"; 
 	    private static final String CHATS_COLLECTION = "chats";
-//kennie modified
-	 // Firestore instance
 	    private static Firestore db = FirestoreClient.getFirestore(); //kennie modified
 
 	public static void addUserData(UserProfile user) {
@@ -128,20 +120,7 @@ public class FirestoreHandler {
         }
     }
 	
-	/** Kennie
-     * Add a friend to the Firestore database.
-     */
-//	public static void addFriend(UserProfile user) {
-//	    DocumentReference docRef = db.collection(FRIENDS_COLLECTION).document(user.getUsername());
-//	    ApiFuture<WriteResult> future = docRef.set(user);
-//
-//	    try {
-//	        WriteResult result = future.get(); // Wait for the operation to complete
-//	        System.out.println("Friend added at: " + result.getUpdateTime());
-//	    } catch (InterruptedException | ExecutionException e) {
-//	        System.err.println("Error adding friend: " + e.getMessage());
-//	    }
-//	}
+
 	public static void addFriend(String userId, String contactUserId, String contactUsername, String contactUniversity) {
 	    CollectionReference contactsRef = db.collection("UserProfile").document(userId).collection("contacts");
 
@@ -160,20 +139,6 @@ public class FirestoreHandler {
 
 
 
-    /** Kennie
-     * Remove a friend from the Firestore database.
-     */
-//	public static void removeFriend(UserProfile user) {
-//	    DocumentReference docRef = db.collection(FRIENDS_COLLECTION).document(user.getUsername());
-//	    ApiFuture<WriteResult> future = docRef.delete();
-//
-//	    try {
-//	        WriteResult result = future.get(); // Wait for the operation to complete
-//	        System.out.println("Friend removed at: " + result.getUpdateTime());
-//	    } catch (InterruptedException | ExecutionException e) {
-//	        System.err.println("Error removing friend: " + e.getMessage());
-//	    }
-//	}
 	public static void removeFriend(String userId, String contactUserId) {
 	    DocumentReference docRef = db.collection("UserProfile")
 	                                 .document(userId)
@@ -197,27 +162,7 @@ public class FirestoreHandler {
     public static void getFriends(EventListener<QuerySnapshot> listener) {
         db.collection(FRIENDS_COLLECTION).addSnapshotListener(listener);
     }
-    
-	
-//	public static List<UserProfile> getUserContacts(String userId) {
-//        Firestore db = FirestoreClient.getFirestore();
-//        CollectionReference contactsRef = db.collection(COLLECTION_NAME).document(userId).collection("contacts");
-//        ApiFuture<QuerySnapshot> future = contactsRef.get();
-//
-//        List<UserProfile> contacts = new ArrayList<>();
-//        try {
-//            QuerySnapshot contactsSnapshot = future.get();
-//            for (QueryDocumentSnapshot document : contactsSnapshot.getDocuments()) {
-//                String contactUserId = document.getString("contactUserId");
-//                String username = document.getString("username");
-//                contacts.add(new UserProfile(contactUserId, username, "", "")); // Only basic info for contacts
-//            }
-//        } catch (InterruptedException | ExecutionException e) {
-//            System.err.println("Error fetching contacts: " + e.getMessage());
-//        }
-//        return contacts;
-//    }
-//	
+
     public static List<UserProfile> getUserContacts(String userId) {
         CollectionReference contactsRef = db.collection("UserProfile").document(userId).collection("contacts");
 
@@ -366,53 +311,6 @@ public class FirestoreHandler {
         return messages;
     }
 
-
-
-
-	
-//	public static List<Map<String, String>> getChatHistory(String userId, String contactId) {
-//	    Firestore db = FirestoreClient.getFirestore();
-//	    CollectionReference messagesRef = db.collection("chats").document(userId + "_" + contactId).collection("messages");
-//	    ApiFuture<QuerySnapshot> future = messagesRef.get();
-//
-//	    List<Map<String, String>> messages = new ArrayList<>();
-//	    try {
-//	        QuerySnapshot messagesSnapshot = future.get();
-//	        for (DocumentSnapshot document : messagesSnapshot.getDocuments()) {
-//	            String content = document.getString("content");
-//	            String senderId = document.getString("senderId");
-//	            Map<String, String> messageData = new HashMap<>();
-//	            messageData.put("content", content);
-//	            messageData.put("senderId", senderId);
-//	            messages.add(messageData);
-//	        }
-//	    } catch (InterruptedException | ExecutionException e) {
-//	        System.err.println("Error fetching chat history: " + e.getMessage());
-//	    }
-//	    return messages;
-//	}
-
-	//Ensuring messages are being saved in database and adding a saved messaged message into the console.
-//	public static void saveMessages(String userId, String contactId, String messages)
-//	{
-//		Firestore db = FirestoreClient.getFirestore();
-//		CollectionReference messagesRef = db.collection("chats").document(userId + "_" + contactId).collection("messages");
-//		Map<String, Object> messageData = new HashMap<>();
-//		messageData.put("content", messages);
-//		messageData.put("senderId", userId);
-//		messageData.put("timestamp", FieldValue.serverTimestamp());
-//		
-//		ApiFuture<DocumentReference> writeResult = messagesRef.add(messageData);
-//		try
-//		{
-//			DocumentReference documentReference = writeResult.get();
-//			System.out.println("Message stored in document ID: " + documentReference.getId());
-//		}
-//		catch(InterruptedException | ExecutionException e)
-//		{
-//			System.err.println("Error saving message: " + e.getMessage());
-//		}
-//	}
     public static List<UserProfile> getAllUsers() {
         Firestore db = FirestoreClient.getFirestore();
         List<UserProfile> users = new ArrayList<>();
