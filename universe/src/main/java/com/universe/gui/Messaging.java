@@ -269,7 +269,7 @@ public class Messaging extends JFrame {
         }
     }
 
-    private void switchChat(String contactId, String contactName) {
+    public void switchChat(String contactId, String contactName) {
         currentChatContactId = contactId;
 
         // Clear the chat panel for the new chat
@@ -307,6 +307,7 @@ public class Messaging extends JFrame {
         // Update the UI title with the contact name
         setTitle("Chatting with " + contactName);
     }
+
     
     private void displayMessage(String message, boolean isUserMessage) {
         JPanel messagePanel = new JPanel(new FlowLayout(isUserMessage ? FlowLayout.RIGHT : FlowLayout.LEFT));

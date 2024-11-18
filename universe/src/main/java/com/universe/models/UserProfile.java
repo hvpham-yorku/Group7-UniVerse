@@ -12,8 +12,27 @@ public class UserProfile {
 	private String province;
 	private String university;
 	private List<String> interests;
+	private String contactUserId; // This field is needed to map the Firestore data
+
+	// Getter and Setter for contactUserId
+	public String getContactUserId() {
+	    return contactUserId;
+	}
+
+	public void setContactUserId(String contactUserId) {
+	    this.contactUserId = contactUserId;
+	}
+
 
 	public UserProfile() {
+	}
+
+	public UserProfile(String userId, String username, String email, String passwordHash, String university) {
+	    this.userId = userId;
+	    this.username = username;
+	    this.email = email;
+	    this.passwordHash = passwordHash;
+	    this.university = university;
 	}
 
 	public UserProfile(String userId, String username, String email, String passwordHash) {
@@ -135,5 +154,6 @@ public class UserProfile {
 	            ", interests=" + interests +
 	            '}';
 	}
-
 }
+
+	

@@ -196,9 +196,9 @@ public class SignUporIn {
 		    lblUserName.setText("Name: " + username);
 		    lblUserEmail.setText("Email: " + email);
 
-		    // Navigate to the Welcome panel
-		    JOptionPane.showMessageDialog(frame, "Sign up successful! Please complete your profile.", "Success", JOptionPane.INFORMATION_MESSAGE);
-		    cardLayout.show(mainPanel, "Welcome");
+		    // Inform the user and navigate to the Update Profile (Welcome) panel
+		    JOptionPane.showMessageDialog(frame, "Sign up successful! Please update your profile.", "Success", JOptionPane.INFORMATION_MESSAGE);
+		    cardLayout.show(mainPanel, "Welcome"); // Switch to Welcome (Update Profile) panel
 		});
 
 
@@ -240,6 +240,7 @@ public class SignUporIn {
 		JButton btnLogin = new JButton("Login");
 		btnLogin.setBounds(horizontalOffset + 290, 300 + verticalOffset, 100, 30); // Adjusted X and Y position
 		loginPanel.add(btnLogin);
+
 
 		btnLogin.addActionListener(e -> {
 		    String email = emailField.getText();
@@ -541,17 +542,14 @@ public class SignUporIn {
 	    JOptionPane.showMessageDialog(frame, "Profile updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
 	    // Navigate to the Homepage
-	    frame.dispose(); // Close the profile update window
 	    EventQueue.invokeLater(() -> {
-	        try {
-	            Homepage homepage = new Homepage();
-	            homepage.setVisible(true);
-	            homepage.setLocationRelativeTo(null);
-	        } catch (Exception ex) {
-	            ex.printStackTrace();
-	        }
+	        Homepage homepage = new Homepage();
+	        homepage.setVisible(true);
+	        homepage.setLocationRelativeTo(null);
+	        frame.dispose(); // Close the Update Profile window
 	    });
 	}
+
 
 
 }
