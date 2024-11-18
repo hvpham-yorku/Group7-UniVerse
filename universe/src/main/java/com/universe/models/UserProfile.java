@@ -135,5 +135,6 @@ public class UserProfile {
 	            ", interests=" + interests +
 	            '}';
 	}
+}
 
 	
