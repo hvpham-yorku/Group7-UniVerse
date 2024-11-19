@@ -9,7 +9,7 @@
 **Participants:** Elyse Dhaliwal, Olajonlu Timi Akinbaleye, Sarimah Chindah, Kosy Oraka, Kennie Oraka
 
 **Release Goal for Sprint 1**
-
+***
 The primary objective of this release is to deliver a foundational version of UniVerse that enables the user to:
 
 - Create an account securely and log in.
