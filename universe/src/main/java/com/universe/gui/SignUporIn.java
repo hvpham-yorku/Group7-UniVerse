@@ -31,7 +31,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.text.MaskFormatter;
 
-import com.universe.FirebaseInitializer;
 import com.universe.FirestoreHandler;
 import com.universe.models.UserProfile;
 import com.universe.utils.SessionManager;
@@ -56,10 +55,8 @@ public class SignUporIn {
 	private String currentUserId;
 
 	public static void main(String[] args) {
-		// Initialize Firebase
-		FirebaseInitializer.initializeFirebase();
-
-		// Launch the GUI
+	
+	// Launch the GUI
 		EventQueue.invokeLater(() -> {
 			try {
 				SignUporIn window = new SignUporIn();
