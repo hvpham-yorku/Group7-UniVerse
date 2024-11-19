@@ -472,9 +472,9 @@ public class Homepage extends JFrame {
         sidebar.add(profilePic);
 
         addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> {
-            Homepage homepage = new Homepage();
-            homepage.setVisible(true);
-            parentFrame.dispose();
+            // Homepage homepage = new Homepage();
+            // homepage.setVisible(true);
+            // parentFrame.dispose();
         });
         addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {
             Messaging messaging = new Messaging();
