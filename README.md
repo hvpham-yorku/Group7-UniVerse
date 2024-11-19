@@ -30,7 +30,7 @@ mvn clean install
 
 3. Run the Application
 ```
-mvn exec:java -Dexec.mainClass="com.universe.gui.UniVerse"
+mvn exec:java -Dexec.mainClass="com.universe.UniVerse"
 ```
 
 4. Testing:
