@@ -1,4 +1,5 @@
 **Release Planning Meeting (RPM)**
+***
 
 **Date:** Nov 11th,2024
 
@@ -7,6 +8,7 @@
 **Location:** Held on Discord
 
 **Participants:** Elyse Dhaliwal, Olajonlu Timi Akinbaleye, Sarimah Chindah, Kosy Oraka, Kennie Oraka
+***
 
 **Release Goal for Sprint 1**
 ***
