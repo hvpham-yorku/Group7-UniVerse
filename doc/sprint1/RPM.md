@@ -10,105 +10,93 @@
 **Participants:** Elyse Dhaliwal, Olajonlu Timi Akinbaleye, Sarimah Chindah, Kosy Oraka, Kennie Oraka
 ***
 
-**Overall Release Goal**
-The goal of the overall release is to deliver a complete version of UniVerse that allows university students to seamlessly connect, communicate, and engage with their peers. The application will provide:
+**Release Goal for Sprint 1**
 
-1. **Secure and Personalized Accounts**
-   Where users can create accounts, personalize profiles, and manage their 
-   information securely.
-   
-2. **Effortless Peer Discovery**
-   Users can discoer and connect with others based on their shared interests and 
-   profiles 
+The primary objective of this release is to deliver a foundational version of UniVerse that enables the user to:
 
- 3. **Real-time Messaging**
-    Messaging with friends, including conversation history storage
+- Create an account securely and log in.
 
-4. **Active Engagement**
-   Users can receive notifications for matches & messages
-   
-5. **Community Involvement**
-   Users can explore and join communities for shared hobbies and goals
+- Update and personalize their profiles with key details such as a profile picture, bio section, their university and interests. 
 
-6. **User-Friendly Navigation**
-    An inuitive interface that ensures seamless switching between features with a 
-    sidebar feature
+- Users can discover, add and manage friends based on their shared interests.
 
-7. **Reliable Backend Infrastructure**
-    Database integration that supports efficient storage and retrieval of user- 
-    specific data.
+- Engage in one-on-one messaging with friends, including the ability to view conversation history. 
+
+This sprint focuses on implementing a fully functioning backend for storing all user-related data, including profiles, connections and messages to provide a user-specific experience!
 
 ***
 **Project Scope:**
 
-**1. Signup/Login Page**
+**Signup/Login Page**
 
-**In scope for Sprint 1**
-**Key Deliverables**
-- Secure account creation with email & password.
-- Profile personalization with bio, profile picture, university, city and interests
+**Key Features:**
 
-**User Stories:** https://trello.com/c/8WBKSQtI/17-user-profile-creation-personalization-and-management-create-new-profile-page 
+- Assigned Role: Timi 
+
+- Create an account with a username as your name, email and a secure password.
+
+- Update profile details, such as including:
+   - A profile picture
+   - Birthday
+   - Bio
+   - City & University
+   - Interests (selected from a predefined list)
+   - Log in using email and password
+
+User stories that were covered - also tracked on Trello:
+
+1. As a user, I want to create an account with a password and email so that I can log in safely and the system will remember by details.
+
+2. As a user, I want to personalize my profile with a bio, profile picture, and interest so that others can understand who I am and my hobbies. 
 ***
+**Home Page**
 
-**2. Friend Discovery**
+**Key Features:**
 
-**In scope for Sprint 1**
-**Key Deliverables**
-- Search for connections based on shared interests
-- View suggested matches with detailed profiles
+- Assigned Role: Timi, Kosy & Kennie 
+
+- Search for friends
+- View suggested matches and their profile details
 - Add or remove friends
+- Select a friend to initiate messaging
 
-**User Stories:** 
-https://trello.com/c/WGIO1zI3/25-see-and-search-for-filter-friends-based-on-different-criteria-homepage 
+User stories that were covered - also tracked on Trello:
 
-https://trello.com/c/Ap415Tvo/28-homepageview-profile-add-remove-friends
-***
+3.  As a user, I want to be able to switch between the home page and the messaging page seamlessly.
 
-**3. Messaging**
+4.  As a user, I want to see profile details of suggested matches before decided to add them
 
-**In scope for Sprint 1**
-**Key Deliverables**
-- Real-time messaging with friends
-- Secure storage and retreival of conversation history
+5. As a user, I want to search for connections and find people who share my hobbies.
 
-**User Stories:** https://trello.com/c/hQs7nMuW/29-communication-with-connections-management-messages-screen
-***
-
-**4. Navigation**
-**In scope for Sprint 1**
-**Key Deliverables**
-- Intuitive sidebar for seamless switching between key features such as Homapge, Messages and Communities.
+6. As a user, I want to see suggested matches based on my interests so that I can connect with like-minded individuals
 
 ***
+**Messaging Page**
 
-**5. Backend Infrastructure**
-**In scope for Sprint 1**
-**Key Deliverables**
-- Scalable and secure database for user accounts, connections & messages
-  
-**User Stories:** 
-https://trello.com/c/8WBKSQtI/17-user-profile-creation-personalization-and-management-create-new-profile-page
+**Key Features:**
 
-https://trello.com/c/hQs7nMuW/29-communication-with-connections-management-messages-screen
-**6. Notifications**
+- Assigned Role: Timi, Elyse & Sarimah
 
-**In scope for Sprint 2**
-**Key Deliverables**
-- Notifications for new matches, messages and scheduled activties
-- Weekly suggestions for connections based on interests
+- Send and receive messages in real time with selected friends
 
-**User Stories:** https://trello.com/c/P3CSN9Zx/30-notifications-management
+- View and retrieve past conversation history
+
+User stories that were covered - also tracked on Trello:
+
+7. As a user, I want to message my connections directly so that I can communicate in a clutter free, one-on-one environment. 
+
+8. As a user, I want my messages to be securely stored so that I can continue conversations without losing chat history.
+   
+9. As a user, I want to be able to switch between the home page and the messaging page seamlessly. 
+
 ***
-**7. Community Exploration**
+**Side Bar Feature/User Story**
+- Assigned role: To be integrated with each page and collaboraters mentioned above  
+- Allow for users to seamlessly navigate through the home page and messaging page using feature specified icons on a side bar.
 
-**In scope for Sprint 2**
-**Key Deliverables**
-- Explore communities based on shared interests
-- Join and participate in features or specific communities
-- Browse a "Featured Interests" section to explore trending hobbies
+***
+**Database Configuration**
+**Key Features:**
 
-**User Stories:** https://trello.com/c/Q0JytWsc/31-join-community-page-management
-
-
-
+- Assigned role: everyone can access and make changes as required for each page. 
+- Ensure that all accounts, profiles, friends and messages are fully integrated with the database to store, retrieve and manage user-specific data. 
