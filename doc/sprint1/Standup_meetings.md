@@ -1,7 +1,7 @@
 # Sprint 1 Standups
 
 ## [2024-11-11] - Sprint 1 Standup 1
-**Meeting participants:** Kosy, Kennie, Time, Sarimah, and Elyse
+**Meeting participants:** Kosy, Kennie, Timi, Sarimah, and Elyse
 1. **What did you work on since the last standup?**
    - Set up the project environment and configured Firebase for the backend.
    - Worked on creating the login, signup, and user profile pages of the app.
@@ -16,7 +16,7 @@
    - No blockers at the moment.
 
 ## [2024-11-14] - Sprint 1 Standup 2
-**Meeting participants:** Kosy, Kennie, Time, Sarimah, and Elyse
+**Meeting participants:** Kosy, Kennie, Timi, Sarimah, and Elyse
 1. **What did you work on since the last standup?**
    - Completed the user authentication functionality using Firebase and user profile page.
    - Completed working on the Home/Connections page.
@@ -34,7 +34,7 @@
    - Encountered some minor layout issues, but we are working through them.
 
 ## [2024-11-17] - Sprint 1 Standup 3
-**Meeting participants:** Kosy, Kennie, Time, Sarimah, and Elyse
+**Meeting participants:** Kosy, Kennie, Timi, Sarimah, and Elyse
 1. **What did you work on since the last standup?**
    - Completed the messaging page layout and the Home/Connections page layout.
    - Connected all pages (login/signup, user profile, home, and messaging) to make them user-specific.
