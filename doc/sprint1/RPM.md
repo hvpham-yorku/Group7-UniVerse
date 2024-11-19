@@ -11,7 +11,7 @@
 ***
 
 **Release Goal for Sprint 1**
-***
+
 The primary objective of this release is to deliver a foundational version of UniVerse that enables the user to:
 
 - Create an account securely and log in.
@@ -24,8 +24,9 @@ The primary objective of this release is to deliver a foundational version of Un
 
 This sprint focuses on implementing a fully functioning backend for storing all user-related data, including profiles, connections and messages to provide a user-specific experience!
 
-**Project Scope**
 ***
+**Project Scope**
+
 **Signup/Login Page**
 ***
 **Key Features:**
@@ -47,9 +48,9 @@ User stories that were covered - also tracked on Trello:
 1. As a user, I want to create an account with a password and email so that I can log in safely and the system will remember by details.
 
 2. As a user, I want to personalize my profile with a bio, profile picture, and interest so that others can understand who I am and my hobbies. 
-
-**Home Page**
 ***
+**Home Page**
+
 **Key Features:**
 
 - Assigned Role: Timi, Kosy & Kennie 
@@ -67,8 +68,9 @@ User stories that were covered - also tracked on Trello:
 
 5. As a user, I want to see suggested matches based on my interests so that I can connect with like-minded individuals
 
-**Messaging Page**
 ***
+**Messaging Page**
+
 **Key Features:**
 
 - Assigned Role: Timi, Elyse & Sarimah
@@ -83,8 +85,8 @@ User stories that were covered - also tracked on Trello:
 
 7. As a user, I want my messages to be securely stored so that I can continue conversations without losing chat history. 
 
-**Database Configuration**
 ***
+**Database Configuration**
 **Key Features:**
 
 - Assigned role: everyone can access and make changes as required for each page. 
