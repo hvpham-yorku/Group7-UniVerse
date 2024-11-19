@@ -25,10 +25,10 @@ The primary objective of this release is to deliver a foundational version of Un
 This sprint focuses on implementing a fully functioning backend for storing all user-related data, including profiles, connections and messages to provide a user-specific experience!
 
 ***
-**Project Scope**
+**Project Scope:**
 
 **Signup/Login Page**
-***
+
 **Key Features:**
 
 - Assigned Role: Timi 
