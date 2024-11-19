@@ -62,11 +62,13 @@ User stories that were covered - also tracked on Trello:
 
 User stories that were covered - also tracked on Trello:
 
-3. As a user, I want to see profile details of suggested matches before decided to add them
+3.  As a user, I want to be able to switch between the home page and the messaging page seamlessly.
 
-4. As a user, I want to search for connections and find people who share my hobbies.
+4.  As a user, I want to see profile details of suggested matches before decided to add them
 
-5. As a user, I want to see suggested matches based on my interests so that I can connect with like-minded individuals
+5. As a user, I want to search for connections and find people who share my hobbies.
+
+6. As a user, I want to see suggested matches based on my interests so that I can connect with like-minded individuals
 
 ***
 **Messaging Page**
@@ -81,9 +83,16 @@ User stories that were covered - also tracked on Trello:
 
 User stories that were covered - also tracked on Trello:
 
-6. As a user, I want to message my connections directly so that I can communicate in a clutter free, one-on-one environment. 
+7. As a user, I want to message my connections directly so that I can communicate in a clutter free, one-on-one environment. 
 
-7. As a user, I want my messages to be securely stored so that I can continue conversations without losing chat history. 
+8. As a user, I want my messages to be securely stored so that I can continue conversations without losing chat history.
+   
+9. As a user, I want to be able to switch between the home page and the messaging page seamlessly. 
+
+***
+**Side Bar Feature/User Story**
+- Assigned role: To be integrated with each page and collaboraters mentioned above  
+- Allow for users to seamlessly navigate through the home page and messaging page using feature specified icons on a side bar.
 
 ***
 **Database Configuration**
