@@ -48,10 +48,7 @@ The goal of the overall release is to deliver a complete version of UniVerse tha
 - Secure account creation with email & password.
 - Profile personalization with bio, profile picture, university, city and interests
 
-**User Stories that align**
-1. As a new user, I want to create an account with a secure password and verified email so that I can log in safely and recover my account if needed.
-   
-2.  As a user, I want to personalize my profile with a bio, profile picture, and interests so that others can understand who I am and my hobbies.
+**User Stories:** https://trello.com/c/8WBKSQtI/17-user-profile-creation-personalization-and-management-create-new-profile-page 
 ***
 
 **2. Friend Discovery**
@@ -62,8 +59,56 @@ The goal of the overall release is to deliver a complete version of UniVerse tha
 - View suggested matches with detailed profiles
 - Add or remove friends
 
-**User Stories**
-3. User Story: As a user, I want to see suggested matches based on my interests so that I can connect with like-minded individuals.
+**User Stories:** 
+https://trello.com/c/WGIO1zI3/25-see-and-search-for-filter-friends-based-on-different-criteria-homepage 
+
+https://trello.com/c/Ap415Tvo/28-homepageview-profile-add-remove-friends
+***
+
+**3. Messaging**
+
+**In scope for Sprint 1**
+**Key Deliverables**
+- Real-time messaging with friends
+- Secure storage and retreival of conversation history
+
+**User Stories:** https://trello.com/c/hQs7nMuW/29-communication-with-connections-management-messages-screen
+***
+
+**4. Navigation**
+**In scope for Sprint 1**
+**Key Deliverables**
+- Intuitive sidebar for seamless switching between key features such as Homapge, Messages and Communities.
+
+***
+
+**5. Backend Infrastructure**
+**In scope for Sprint 1**
+**Key Deliverables**
+- Scalable and secure database for user accounts, connections & messages
+  
+**User Stories:** 
+https://trello.com/c/8WBKSQtI/17-user-profile-creation-personalization-and-management-create-new-profile-page
+
+https://trello.com/c/hQs7nMuW/29-communication-with-connections-management-messages-screen
+**6. Notifications**
+
+**In scope for Sprint 2**
+**Key Deliverables**
+- Notifications for new matches, messages and scheduled activties
+- Weekly suggestions for connections based on interests
+
+**User Stories:** https://trello.com/c/P3CSN9Zx/30-notifications-management
+***
+**7. Community Exploration**
+
+**In scope for Sprint 2**
+**Key Deliverables**
+- Explore communities based on shared interests
+- Join and participate in features or specific communities
+- Browse a "Featured Interests" section to explore trending hobbies
+
+**User Stories:** https://trello.com/c/Q0JytWsc/31-join-community-page-management
 
 
 
