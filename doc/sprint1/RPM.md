@@ -40,3 +40,30 @@ The goal of the overall release is to deliver a complete version of UniVerse tha
 
 ***
 **Project Scope:**
+
+**1. Signup/Login Page**
+
+**In scope for Sprint 1**
+**Key Deliverables**
+- Secure account creation with email & password.
+- Profile personalization with bio, profile picture, university, city and interests
+
+**User Stories that align**
+1. As a new user, I want to create an account with a secure password and verified email so that I can log in safely and recover my account if needed.
+   
+2.  As a user, I want to personalize my profile with a bio, profile picture, and interests so that others can understand who I am and my hobbies.
+***
+
+**2. Friend Discovery**
+
+**In scope for Sprint 1**
+**Key Deliverables**
+- Search for connections based on shared interests
+- View suggested matches with detailed profiles
+- Add or remove friends
+
+**User Stories**
+3. User Story: As a user, I want to see suggested matches based on my interests so that I can connect with like-minded individuals.
+
+
+
