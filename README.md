@@ -1,7 +1,7 @@
 # UniVerse
 
 note: to have access to firebase you would have to contact me by # or email 
-905-965-6789 or olajonlutimilehin@gmail.com so I can add you to it. : ) 
+905-965-6789 or timmyola@my.yorku.ca so I can add you to it. : ) 
 
 because of Googles policy we are unable to upload our private keys in this repo because it is public. 
 https://1ty.me/8SEfyiikM (if you are not the TA or professor **DO NOT OPEN** as this is a view once link)
