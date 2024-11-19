@@ -55,8 +55,8 @@ public class SignUporIn {
 	private String currentUserId;
 
 	public static void main(String[] args) {
-	
-	// Launch the GUI
+
+		// Launch the GUI
 		EventQueue.invokeLater(() -> {
 			try {
 				SignUporIn window = new SignUporIn();
@@ -170,36 +170,34 @@ public class SignUporIn {
 		signUpPanel.add(btnSignUp);
 
 		btnSignUp.addActionListener(e -> {
-		    String username = textFieldName.getText();
-		    String email = textFieldEmail.getText();
-		    String password = new String(passwordField.getPassword());
+			String username = textFieldName.getText();
+			String email = textFieldEmail.getText();
+			String password = new String(passwordField.getPassword());
 
-		    if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-		        JOptionPane.showMessageDialog(frame, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
-		        return;
-		    }
+			if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+				JOptionPane.showMessageDialog(frame, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 
-		    // Generate user ID and save it in Firestore
-		    String userId = String.valueOf(System.currentTimeMillis());
-		    String passwordHash = Integer.toHexString(password.hashCode());
-		    UserProfile user = new UserProfile(userId, username, email, passwordHash);
-		    FirestoreHandler.addUserData(user);
+			// Generate user ID and save it in Firestore
+			String userId = String.valueOf(System.currentTimeMillis());
+			String passwordHash = Integer.toHexString(password.hashCode());
+			UserProfile user = new UserProfile(userId, username, email, passwordHash);
+			FirestoreHandler.addUserData(user);
 
-		    // Store user information in SessionManager
-		    SessionManager.currentUserId = userId;
-		    SessionManager.currentUser = username;
+			// Store user information in SessionManager
+			SessionManager.currentUserId = userId;
+			SessionManager.currentUser = username;
 
-		    // Update Welcome Panel with user details
-		    lblUserName.setText("Name: " + username);
-		    lblUserEmail.setText("Email: " + email);
+			// Update Welcome Panel with user details
+			lblUserName.setText("Name: " + username);
+			lblUserEmail.setText("Email: " + email);
 
-		    // Inform the user and navigate to the Update Profile (Welcome) panel
-		    JOptionPane.showMessageDialog(frame, "Sign up successful! Please update your profile.", "Success", JOptionPane.INFORMATION_MESSAGE);
-		    cardLayout.show(mainPanel, "Welcome"); // Switch to Welcome (Update Profile) panel
+			// Inform the user and navigate to the Update Profile (Welcome) panel
+			JOptionPane.showMessageDialog(frame, "Sign up successful! Please update your profile.", "Success",
+					JOptionPane.INFORMATION_MESSAGE);
+			cardLayout.show(mainPanel, "Welcome"); // Switch to Welcome (Update Profile) panel
 		});
-
-
-
 
 		JLabel lblLoginLink = new JLabel("<html><u>Already have an account? Login</u></html>");
 		lblLoginLink.setForeground(Color.BLUE);
@@ -238,36 +236,32 @@ public class SignUporIn {
 		btnLogin.setBounds(horizontalOffset + 290, 300 + verticalOffset, 100, 30); // Adjusted X and Y position
 		loginPanel.add(btnLogin);
 
-
 		btnLogin.addActionListener(e -> {
-		    String email = emailField.getText();
-		    String password = new String(passwordField.getPassword());
-		    String passwordHash = Integer.toHexString(password.hashCode()); // Hash the password
+			String email = emailField.getText();
+			String password = new String(passwordField.getPassword());
+			String passwordHash = Integer.toHexString(password.hashCode()); // Hash the password
 
-		    if (FirestoreHandler.authenticateUser(email, passwordHash)) {
-		        // Fetch the UserProfile directly using email
-		        UserProfile userProfile = FirestoreHandler.findUserByEmail(email);
+			if (FirestoreHandler.authenticateUser(email, passwordHash)) {
+				// Fetch the UserProfile directly using email
+				UserProfile userProfile = FirestoreHandler.findUserByEmail(email);
 
-		        if (userProfile != null) {
-		            // Store the username and ID globally
-		            SessionManager.currentUserId = userProfile.getUserId();
-		            SessionManager.currentUser = userProfile.getUsername();
+				if (userProfile != null) {
+					// Store the username and ID globally
+					SessionManager.currentUserId = userProfile.getUserId();
+					SessionManager.currentUser = userProfile.getUsername();
 
-		            // Navigate to the Homepage
-		            Homepage homepage = new Homepage();
-		            homepage.setVisible(true);
-		            frame.dispose(); // Close the login window
-		        } else {
-		            JOptionPane.showMessageDialog(frame, "Error retrieving user profile.", "Error", JOptionPane.ERROR_MESSAGE);
-		        }
-		    } else {
-		        JOptionPane.showMessageDialog(frame, "Invalid email or password.", "Error", JOptionPane.ERROR_MESSAGE);
-		    }
+					// Navigate to the Homepage
+					Homepage homepage = new Homepage();
+					homepage.setVisible(true);
+					frame.dispose(); // Close the login window
+				} else {
+					JOptionPane.showMessageDialog(frame, "Error retrieving user profile.", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			} else {
+				JOptionPane.showMessageDialog(frame, "Invalid email or password.", "Error", JOptionPane.ERROR_MESSAGE);
+			}
 		});
-
-
-
-
 
 		JLabel lblSignUpLink = new JLabel("<html><u>Don't have an account? Sign Up</u></html>");
 		lblSignUpLink.setForeground(Color.BLUE);
@@ -503,50 +497,49 @@ public class SignUporIn {
 		cardLayout.show(mainPanel, "Welcome");
 	}
 
-
 	private void handleSave(ActionEvent e) {
-	    if (SessionManager.currentUserId == null) {
-	        JOptionPane.showMessageDialog(frame, "No user logged in to save data for.", "Error", JOptionPane.ERROR_MESSAGE);
-	        return;
-	    }
+		if (SessionManager.currentUserId == null) {
+			JOptionPane.showMessageDialog(frame, "No user logged in to save data for.", "Error",
+					JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 
-	    String username = lblUserName.getText().replace("Name: ", "");
-	    String email = lblUserEmail.getText().replace("Email: ", "");
-	    String dateOfBirth = dobField.getText();
-	    String bio = bioTextField.getText();
-	    String city = choiceCity.getSelectedItem();
-	    String university = choiceUniversity.getSelectedItem();
+		String username = lblUserName.getText().replace("Name: ", "");
+		String email = lblUserEmail.getText().replace("Email: ", "");
+		String dateOfBirth = dobField.getText();
+		String bio = bioTextField.getText();
+		String city = choiceCity.getSelectedItem();
+		String university = choiceUniversity.getSelectedItem();
 
-	    // Get selected interests
-	    String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
-	    List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
+		// Get selected interests
+		String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
+		List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
 
-	    // Fetch existing user data to preserve passwordHash
-	    UserProfile existingUser = FirestoreHandler.getUserData(SessionManager.currentUserId);
-	    if (existingUser == null) {
-	        JOptionPane.showMessageDialog(frame, "User data not found in Firestore.", "Error", JOptionPane.ERROR_MESSAGE);
-	        return;
-	    }
+		// Fetch existing user data to preserve passwordHash
+		UserProfile existingUser = FirestoreHandler.getUserData(SessionManager.currentUserId);
+		if (existingUser == null) {
+			JOptionPane.showMessageDialog(frame, "User data not found in Firestore.", "Error",
+					JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 
-	    // Create updated user profile while preserving the passwordHash
-	    UserProfile updatedUser = new UserProfile(
-	        SessionManager.currentUserId, username, email, bio, dateOfBirth, city, university, interests, existingUser.getPasswordHash()
-	    );
+		// Create updated user profile while preserving the passwordHash
+		UserProfile updatedUser = new UserProfile(SessionManager.currentUserId, username, email, bio, dateOfBirth, city,
+				university, interests, existingUser.getPasswordHash());
 
-	    // Update Firestore
-	    FirestoreHandler.updateUserData(updatedUser);
+		// Update Firestore
+		FirestoreHandler.updateUserData(updatedUser);
 
-	    JOptionPane.showMessageDialog(frame, "Profile updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(frame, "Profile updated successfully!", "Success",
+				JOptionPane.INFORMATION_MESSAGE);
 
-	    // Navigate to the Homepage
-	    EventQueue.invokeLater(() -> {
-	        Homepage homepage = new Homepage();
-	        homepage.setVisible(true);
-	        homepage.setLocationRelativeTo(null);
-	        frame.dispose(); // Close the Update Profile window
-	    });
+		// Navigate to the Homepage
+		EventQueue.invokeLater(() -> {
+			Homepage homepage = new Homepage();
+			homepage.setVisible(true);
+			homepage.setLocationRelativeTo(null);
+			frame.dispose(); // Close the Update Profile window
+		});
 	}
-
-
 
 }
