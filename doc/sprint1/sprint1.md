@@ -18,6 +18,10 @@ The primary objective of this release is to deliver a foundational version of Un
 - Update and personalize their profiles with key details such as a profile picture, bio section, their university and interests. 
 
 - Users can discover, add and manage friends based on their shared interests.
+  
+- Users are able to able to see the profiles of other users before they add them as friends.
+
+- Users are able to search for friends using criteria such as username, university, city/province, or interests
 
 - Engage in one-on-one messaging with friends, including the ability to view conversation history. 
 
