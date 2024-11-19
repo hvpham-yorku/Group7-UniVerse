@@ -37,5 +37,5 @@
 3. **When do you think you'll be done?**
    - We expect to complete and test the app's features by the end of today.
 4. **Do you have any blockers?**
-   - None currently, but we may need additional testing time depending on the messaging integration.
+   - None currently.
 
