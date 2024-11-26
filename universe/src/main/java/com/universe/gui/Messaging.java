@@ -19,17 +19,26 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
+import org.json.JSONObject;
+
+import com.ConfigLoader;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.ListenerRegistration;
-import com.universe.FirebaseInitializer;
 import com.universe.FirestoreHandler;
 import com.universe.models.UserProfile;
 import com.universe.utils.SessionManager;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.MediaType;
 
 public class Messaging extends JFrame {
 	private static final long serialVersionUID = 1L;
@@ -48,19 +57,10 @@ public class Messaging extends JFrame {
 	private String currentUserId;
 	private String currentChatContactId;
 
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(() -> {
-			try {
-				FirebaseInitializer.initializeFirebase();
-				Messaging frame = new Messaging();
-				frame.setVisible(true);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-	}
 
 	public Messaging() {
+	    System.out.println("Messaging constructor started...");
+
 		// Initialize user session
 		currentUserId = SessionManager.currentUserId;
 
@@ -70,6 +70,9 @@ public class Messaging extends JFrame {
 		}
 		friendsList = FirestoreHandler.getUserContacts(currentUserId); // Fetch friends from Firestore
 
+		 // Add ChatGPT Bot at the top of the list
+	    UserProfile UniVerseBot = new UserProfile("chat_bot", "UniVerse Bot", "chatbot@universe.com");
+	    friendsList.add(0, UniVerseBot); // Pinned at the top
 		// Frame setup
 		setTitle("Messaging App");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -266,14 +269,81 @@ public class Messaging extends JFrame {
 		return contactPanel;
 	}
 
+//	private void sendMessage(String messageContent) {
+//		if (currentChatContactId != null && !currentChatContactId.isEmpty()) {
+//			FirestoreHandler.saveMessages(currentUserId, currentChatContactId, messageContent);
+//		} else {
+//			JOptionPane.showMessageDialog(this, "No contact selected.");
+//		}
+//	}
 	private void sendMessage(String messageContent) {
-		if (currentChatContactId != null && !currentChatContactId.isEmpty()) {
-			FirestoreHandler.saveMessages(currentUserId, currentChatContactId, messageContent);
-		} else {
-			JOptionPane.showMessageDialog(this, "No contact selected.");
-		}
+	    System.out.println("sendMessage called. Message: " + messageContent); // DEBUG LOG
+
+	    if (currentChatContactId != null && !currentChatContactId.isEmpty()) {
+	        System.out.println("Chat Contact ID: " + currentChatContactId); // DEBUG LOG
+
+	        if (currentChatContactId.equals("chat_bot")) {
+	            System.out.println("Sending message to ChatGPT bot..."); // DEBUG LOG
+	            displayMessage(messageContent, true);
+
+	            new Thread(() -> {
+	                System.out.println("Calling getGPTResponse..."); // DEBUG LOG
+	                String botResponse = getGPTResponse(messageContent);
+	                System.out.println("Bot Response: " + botResponse); // DEBUG LOG
+	                SwingUtilities.invokeLater(() -> displayMessage(botResponse, false));
+	            }).start();
+	        } else {
+	            FirestoreHandler.saveMessages(currentUserId, currentChatContactId, messageContent);
+	        }
+	    } else {
+	        System.out.println("No contact selected."); // DEBUG LOG
+	        JOptionPane.showMessageDialog(this, "No contact selected.");
+	    }
 	}
 
+	private String getGPTResponse(String userMessage) {
+		String apiKey = ConfigLoader.getApiKey();
+		
+		String apiUrl = "https://api.openai.com/v1/chat/completions";
+	    
+
+	    // Prepare the JSON payload
+	    String jsonPayload = "{"
+	        + "\"model\": \"gpt-3.5-turbo\","
+	        + "\"messages\": [{\"role\": \"user\", \"content\": \"" + userMessage + "\"}],"
+	        + "\"max_tokens\": 150"
+	        + "}";
+
+	    System.out.println("Payload Sent: " + jsonPayload);
+
+	    // Use OkHttp to send the HTTP POST request
+	    OkHttpClient client = new OkHttpClient();
+	    RequestBody body = RequestBody.create(jsonPayload, MediaType.get("application/json"));
+	    Request request = new Request.Builder()
+	        .url(apiUrl)
+	        .post(body)
+	        .addHeader("Authorization", "Bearer " + apiKey)
+	        .addHeader("Content-Type", "application/json")
+	        .build();
+
+	    try (Response response = client.newCall(request).execute()) {
+	        if (!response.isSuccessful()) {
+	            return "Error: Unable to fetch response from ChatGPT.";
+	        }
+
+	        // Parse the response JSON
+	        String responseBody = response.body().string();
+	        JSONObject jsonObject = new JSONObject(responseBody);
+	        return jsonObject.getJSONArray("choices")
+	                         .getJSONObject(0)
+	                         .getJSONObject("message")
+	                         .getString("content")
+	                         .trim();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return "Sorry, I couldn't process your request right now.";
+	    }
+	}
 	private void handleAddContact(String searchQuery) {
 		if (searchQuery.isEmpty()) {
 			JOptionPane.showMessageDialog(this, "Please enter a search query.", "Invalid Search",
@@ -337,37 +407,40 @@ public class Messaging extends JFrame {
 		// Update the UI title with the contact name
 		setTitle("Chatting with " + contactName);
 	}
-
 	private void displayMessage(String message, boolean isUserMessage) {
-		JPanel messagePanel = new JPanel(new FlowLayout(isUserMessage ? FlowLayout.RIGHT : FlowLayout.LEFT));
-		messagePanel.setBackground(Color.WHITE); // Match chat background
+	    JPanel messagePanel = new JPanel(new FlowLayout(isUserMessage ? FlowLayout.RIGHT : FlowLayout.LEFT));
+	    messagePanel.setBackground(Color.WHITE); // Match chat background
 
-		// Create the message bubble
-		JLabel messageLabel = new JLabel(
-				"<html><div style='padding: 8px; max-width: 200px;'>" + message + "</div></html>");
-		messageLabel.setOpaque(true);
-		messageLabel.setBackground(isUserMessage ? new Color(54, 125, 225) : new Color(240, 240, 240)); // Different
-																										// colors for
-																										// sent and
-																										// received
-																										// messages
-		messageLabel.setForeground(isUserMessage ? Color.WHITE : Color.BLACK);
-		messageLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10)); // Padding inside the bubble
+	    // Create the message bubble
+	    JTextArea messageLabel = new JTextArea(message);
+	    messageLabel.setLineWrap(true);
+	    messageLabel.setWrapStyleWord(true);
+	    messageLabel.setOpaque(true);
+	    messageLabel.setEditable(false);
+	    messageLabel.setBackground(isUserMessage ? new Color(54, 125, 225) : new Color(240, 240, 240)); // Sent/Received colors
+	    messageLabel.setForeground(isUserMessage ? Color.WHITE : Color.BLACK);
+	    messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+	    messageLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Padding inside the bubble
 
-		// Add the bubble to the message panel
-		messagePanel.add(messageLabel);
+	    // Dynamically calculate height and width
+	    int bubbleWidth = 300; // Maximum width of the bubble
+	    messageLabel.setSize(bubbleWidth, Short.MAX_VALUE); // Set a max width to calculate height
+	    int bubbleHeight = messageLabel.getPreferredSize().height; // Calculate the dynamic height
+	    messageLabel.setPreferredSize(new Dimension(bubbleWidth, bubbleHeight)); // Set preferred size dynamically
 
-		// Add some vertical spacing between messages
-		chatHistoryPanel.add(messagePanel);
-		chatHistoryPanel.add(Box.createVerticalStrut(5)); // Space between messages
+	    // Add the bubble to the message panel
+	    messagePanel.add(messageLabel);
 
-		// Refresh the chat panel
-		chatHistoryPanel.revalidate();
-		chatHistoryPanel.repaint();
+	    // Add some vertical spacing between messages
+	    chatHistoryPanel.add(messagePanel);
+	    chatHistoryPanel.add(Box.createVerticalStrut(10)); // Space between messages
 
-		// Scroll to the latest message
-		SwingUtilities.invokeLater(() -> chatScrollPane.getVerticalScrollBar()
-				.setValue(chatScrollPane.getVerticalScrollBar().getMaximum()));
+	    // Refresh the chat panel
+	    chatHistoryPanel.revalidate();
+	    chatHistoryPanel.repaint();
+
+	    // Scroll to the latest message
+	    SwingUtilities.invokeLater(() -> chatScrollPane.getVerticalScrollBar()
+	            .setValue(chatScrollPane.getVerticalScrollBar().getMaximum()));
 	}
-
 }
