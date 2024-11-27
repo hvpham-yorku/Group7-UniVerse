@@ -43,23 +43,6 @@ public class Homepage extends JFrame {
 
 	private JLabel noFriendsLabel; // Label for "No friends added yet"
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(() -> {
-			try {
-				// Initialize Firebase
-				FirebaseInitializer.initializeFirebase();
-
-				// Launch the Homepage
-				Homepage frame = new Homepage();
-				frame.setVisible(true);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-	}
 
 	/**
 	 * Create the frame.
