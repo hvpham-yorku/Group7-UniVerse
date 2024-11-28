@@ -28,19 +28,7 @@ public class FirestoreHandler {
 	private static final String FRIENDS_COLLECTION = "friends";
 	private static final String CHATS_COLLECTION = "chats";
 	private static Firestore db = FirestoreClient.getFirestore(); // kennie modified
-//
-//	public static void addUserData(UserProfile user) {
-//		Firestore db = FirestoreClient.getFirestore();
-//		CollectionReference users = db.collection(COLLECTION_NAME);
-//
-//		ApiFuture<WriteResult> writeResult = users.document(user.getUserId()).set(user);
-//		try {
-//			System.out.println("User added at: " + writeResult.get().getUpdateTime());
-//		} catch (InterruptedException | ExecutionException e) {
-//			e.printStackTrace();
-//		}
-//	}
-	
+
 	public static void addUserData(UserProfile user) {
 	    CollectionReference users = db.collection(COLLECTION_NAME);
 
@@ -64,16 +52,6 @@ public class FirestoreHandler {
 	    }
 	}
 
-//	public static void updateUserData(UserProfile user) {
-//		Firestore db = FirestoreClient.getFirestore();
-//		DocumentReference docRef = db.collection(COLLECTION_NAME).document(user.getUserId());
-//		ApiFuture<WriteResult> writeResult = docRef.set(user);
-//		try {
-//			System.out.println("User updated at: " + writeResult.get().getUpdateTime());
-//		} catch (InterruptedException | ExecutionException e) {
-//			System.err.println("Error updating user: " + e.getMessage());
-//		}
-//	}
 	public static void updateUserData(UserProfile user) {
 	    DocumentReference docRef = db.collection(COLLECTION_NAME).document(user.getUserId());
 
@@ -113,25 +91,6 @@ public class FirestoreHandler {
 		return false;
 	}
 
-//	public static UserProfile getUserData(String userId) {
-//		Firestore db = FirestoreClient.getFirestore();
-//		DocumentReference docRef = db.collection(COLLECTION_NAME).document(userId);
-//		ApiFuture<DocumentSnapshot> future = docRef.get();
-//		try {
-//			DocumentSnapshot document = future.get();
-//			if (document.exists()) {
-//				// Convert Firestore document into UserProfile object
-//				UserProfile user = document.toObject(UserProfile.class);
-//				System.out.println("User Data Retrieved: " + user);
-//				return user; // Return the UserProfile object
-//			} else {
-//				System.err.println("No document found for userId: " + userId);
-//			}
-//		} catch (InterruptedException | ExecutionException e) {
-//			System.err.println("Error fetching user data: " + e.getMessage());
-//		}
-//		return null; // Return null if user not found or error occurred
-//	}
 	public static UserProfile getUserData(String userId) {
 	    DocumentReference docRef = db.collection(COLLECTION_NAME).document(userId);
 	    ApiFuture<DocumentSnapshot> future = docRef.get();

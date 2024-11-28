@@ -111,7 +111,7 @@ public class Messaging extends JFrame {
 	    sidebar.setLayout(null);
 
 	    // Initialize profilePic
-	    profilePic = new JLabel(); // Ensure profilePic is initialized
+	    profilePic = new JLabel(); 
 
 	    String profilePicBase64 = FirestoreHandler.getUserData(currentUserId).getProfilePicture(); // Fetch profile picture
 	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
@@ -126,18 +126,7 @@ public class Messaging extends JFrame {
 
 	    profilePic.setBounds(10, 28, 60, 60);
 	    profilePic.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Change cursor to hand
-	    profilePic.setToolTipText("View Profile"); // Tooltip for accessibility
-
-	    // Open profile editing when clicked
-//	    profilePic.addMouseListener(new java.awt.event.MouseAdapter() {
-//	        @Override
-//	        public void mouseClicked(java.awt.event.MouseEvent e) {
-//	            EventQueue.invokeLater(() -> {
-//	                Homepage homepage = new Homepage();
-//	                homepage.showProfile(FirestoreHandler.getUserData(currentUserId), Messaging.this); // Show profile
-//	            });
-//	        }
-//	    });
+	    profilePic.setToolTipText("View Profile"); 
 
 	    sidebar.add(profilePic);
 

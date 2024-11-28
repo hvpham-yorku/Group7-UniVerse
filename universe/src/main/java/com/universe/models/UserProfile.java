@@ -12,8 +12,8 @@ public class UserProfile {
 	private String province;
 	private String university;
 	private List<String> interests;
-	private String contactUserId; // This field is needed to map the Firestore data
-	private String profilePicture; // New field for the profile picture
+	private String contactUserId; 
+	private String profilePicture; 
 
 	// Getter and Setter for contactUserId
 	public String getContactUserId() {
@@ -27,19 +27,20 @@ public class UserProfile {
 	public UserProfile() {
 	}
 
-    public UserProfile(String userId, String username, String email, String bio, String dateOfBirth, String province,
-            String university, List<String> interests, String passwordHash, String profilePicture) {
-        this.userId = userId;
-        this.username = username;
-        this.email = email;
-        this.bio = bio;
-        this.dateOfBirth = dateOfBirth;
-        this.province = province;
-        this.university = university;
-        this.interests = interests;
-        this.passwordHash = passwordHash;
-        this.profilePicture = profilePicture;
-    }
+	public UserProfile(String userId, String username, String email, String bio, String dateOfBirth, String province,
+			String university, List<String> interests, String passwordHash, String profilePicture) {
+		this.userId = userId;
+		this.username = username;
+		this.email = email;
+		this.bio = bio;
+		this.dateOfBirth = dateOfBirth;
+		this.province = province;
+		this.university = university;
+		this.interests = interests;
+		this.passwordHash = passwordHash;
+		this.profilePicture = profilePicture;
+	}
+
 	public UserProfile(String userId, String username, String email, String passwordHash, String university) {
 		this.userId = userId;
 		this.username = username;
@@ -175,11 +176,4 @@ public class UserProfile {
 		this.interests = interests;
 	}
 
-	@Override
-	public String toString() {
-		return "UserProfile{" + "userId='" + userId + '\'' + ", username='" + username + '\'' + ", email='" + email
-				+ '\'' + ", passwordHash='" + passwordHash + '\'' + ", bio='" + bio + '\'' + ", dateOfBirth='"
-				+ dateOfBirth + '\'' + ", province='" + province + '\'' + ", university='" + university + '\''
-				+ ", interests=" + interests + '}';
-	}
 }
