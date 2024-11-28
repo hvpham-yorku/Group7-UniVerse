@@ -67,6 +67,7 @@ public class Homepage extends JFrame {
 	public Homepage() {
 		// Fetch the current user's details
 		String currentUserId = SessionManager.currentUserId;
+		System.out.println(currentUserId);
 		if (currentUserId == null || currentUserId.isEmpty()) {
 			JOptionPane.showMessageDialog(null, "No user logged in.", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
