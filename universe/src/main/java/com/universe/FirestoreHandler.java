@@ -397,5 +397,27 @@ public class FirestoreHandler {
 		// Attach a snapshot listener to the collection (ordered by timestamp)
 		return messagesRef.orderBy("timestamp", Query.Direction.ASCENDING).addSnapshotListener(listener);
 	}
+	 public static List<UserProfile> getPendingContacts(String userId) {
+	        CollectionReference notificationsRef = db.collection("UserProfile").document(userId).collection("notifications");
+	        List<UserProfile> pendingContacts = new ArrayList<>();
+
+	        try {
+	            // Query for all notifications with status "pending"
+	            QuerySnapshot snapshot = notificationsRef.whereEqualTo("status", "pending").get().get();
+
+	            // Process each document
+	            for (DocumentSnapshot document : snapshot.getDocuments()) {
+	                String contactUserId = document.getString("contactUserId");
+	                String username = document.getString("username");
+	                
+	                // Add contact to the list
+	                pendingContacts.add(new UserProfile(contactUserId, username, "", ""));
+	            }
+	        } catch (InterruptedException | ExecutionException e) {
+	            System.err.println("Error fetching pending contacts: " + e.getMessage());
+	        }
+
+	        return pendingContacts;
+	    }
 
 }
