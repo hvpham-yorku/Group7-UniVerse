@@ -9,11 +9,15 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -54,6 +58,7 @@ public class SignUporIn {
 	private List<String> selectedInterests;
 	private JLabel profilePicLabel;
 	private String currentUserId;
+	private String encodedProfilePicture;
 
 	public static void main(String[] args) {
 
@@ -424,17 +429,31 @@ public class SignUporIn {
 		dialog.setVisible(true);
 	}
 
-	private void handleAddPicture() {
-		JFileChooser fileChooser = new JFileChooser();
-		int result = fileChooser.showOpenDialog(frame);
-		if (result == JFileChooser.APPROVE_OPTION) {
-			File selectedFile = fileChooser.getSelectedFile();
-			ImageIcon profilePic = new ImageIcon(selectedFile.getAbsolutePath());
-			Image scaledImage = profilePic.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
-			profilePicLabel.setIcon(new ImageIcon(scaledImage));
-		}
-	}
 
+	private void handleAddPicture() {
+	    JFileChooser fileChooser = new JFileChooser();
+	    int result = fileChooser.showOpenDialog(frame);
+	    if (result == JFileChooser.APPROVE_OPTION) {
+	        try {
+	            File selectedFile = fileChooser.getSelectedFile();
+	            BufferedImage image = ImageIO.read(selectedFile);
+
+	            // Encode image to Base64
+	            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	            ImageIO.write(image, "png", baos); // Use "png" or other format
+	            byte[] imageBytes = baos.toByteArray();
+	            encodedProfilePicture = Base64.getEncoder().encodeToString(imageBytes);
+
+	            // Display the image in the UI
+	            ImageIcon profilePic = new ImageIcon(selectedFile.getAbsolutePath());
+	            Image scaledImage = profilePic.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+	            profilePicLabel.setIcon(new ImageIcon(scaledImage));
+	        } catch (Exception e) {
+	            JOptionPane.showMessageDialog(frame, "Failed to load image.", "Error", JOptionPane.ERROR_MESSAGE);
+	            e.printStackTrace();
+	        }
+	    }
+	}
 	private void handleSignUp(ActionEvent e) {
 		String username = textFieldName.getText();
 		String email = textFieldEmail.getText();
@@ -459,49 +478,61 @@ public class SignUporIn {
 		cardLayout.show(mainPanel, "Welcome");
 	}
 
+
 	private void handleSave(ActionEvent e) {
-		if (SessionManager.currentUserId == null) {
-			JOptionPane.showMessageDialog(frame, "No user logged in to save data for.", "Error",
-					JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+	    if (SessionManager.currentUserId == null) {
+	        JOptionPane.showMessageDialog(frame, "No user logged in to save data for.", "Error",
+	                JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
-		String username = lblUserName.getText().replace("Name: ", "");
-		String email = lblUserEmail.getText().replace("Email: ", "");
-		String dateOfBirth = dobField.getText();
-		String bio = bioTextField.getText();
-		String city = choiceCity.getSelectedItem();
-		String university = choiceUniversity.getSelectedItem();
+	    String username = lblUserName.getText().replace("Name: ", "");
+	    String email = lblUserEmail.getText().replace("Email: ", "");
+	    String dateOfBirth = dobField.getText();
+	    String bio = bioTextField.getText();
+	    String city = choiceCity.getSelectedItem();
+	    String university = choiceUniversity.getSelectedItem();
 
-		// Get selected interests
-		String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
-		List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
+	    // Get selected interests
+	    String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
+	    List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
 
-		// Fetch existing user data to preserve passwordHash
-		UserProfile existingUser = FirestoreHandler.getUserData(SessionManager.currentUserId);
-		if (existingUser == null) {
-			JOptionPane.showMessageDialog(frame, "User data not found in Firestore.", "Error",
-					JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+	    // Fetch existing user data to preserve passwordHash
+	    UserProfile existingUser = FirestoreHandler.getUserData(SessionManager.currentUserId);
+	    if (existingUser == null) {
+	        JOptionPane.showMessageDialog(frame, "User data not found in Firestore.", "Error",
+	                JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
-		// Create updated user profile while preserving the passwordHash
-		UserProfile updatedUser = new UserProfile(SessionManager.currentUserId, username, email, bio, dateOfBirth, city,
-				university, interests, existingUser.getPasswordHash());
+	    // Create updated user profile while preserving the passwordHash
+	    UserProfile updatedUser = new UserProfile(
+	        SessionManager.currentUserId, 
+	        username, 
+	        email, 
+	        bio, 
+	        dateOfBirth, 
+	        city,
+	        university, 
+	        interests, 
+	        existingUser.getPasswordHash(), 
+	        encodedProfilePicture // Include the profile picture
+	    );
 
-		// Update Firestore
-		FirestoreHandler.updateUserData(updatedUser);
+	    // Update Firestore
+	    FirestoreHandler.updateUserData(updatedUser);
 
-		JOptionPane.showMessageDialog(frame, "Profile updated successfully!", "Success",
-				JOptionPane.INFORMATION_MESSAGE);
+	    JOptionPane.showMessageDialog(frame, "Profile updated successfully!", "Success",
+	            JOptionPane.INFORMATION_MESSAGE);
 
-		// Navigate to the Homepage
-		EventQueue.invokeLater(() -> {
-			Homepage homepage = new Homepage();
-			homepage.setVisible(true);
-			homepage.setLocationRelativeTo(null);
-			frame.dispose(); // Close the Update Profile window
-		});
+	    // Navigate to the Homepage
+	    EventQueue.invokeLater(() -> {
+	        Homepage homepage = new Homepage();
+	        homepage.setVisible(true);
+	        homepage.setLocationRelativeTo(null);
+	        frame.dispose(); // Close the Update Profile window
+	    });
 	}
+	
 
 }

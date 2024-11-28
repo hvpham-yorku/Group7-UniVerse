@@ -28,28 +28,71 @@ public class FirestoreHandler {
 	private static final String FRIENDS_COLLECTION = "friends";
 	private static final String CHATS_COLLECTION = "chats";
 	private static Firestore db = FirestoreClient.getFirestore(); // kennie modified
-
+//
+//	public static void addUserData(UserProfile user) {
+//		Firestore db = FirestoreClient.getFirestore();
+//		CollectionReference users = db.collection(COLLECTION_NAME);
+//
+//		ApiFuture<WriteResult> writeResult = users.document(user.getUserId()).set(user);
+//		try {
+//			System.out.println("User added at: " + writeResult.get().getUpdateTime());
+//		} catch (InterruptedException | ExecutionException e) {
+//			e.printStackTrace();
+//		}
+//	}
+	
 	public static void addUserData(UserProfile user) {
-		Firestore db = FirestoreClient.getFirestore();
-		CollectionReference users = db.collection(COLLECTION_NAME);
+	    CollectionReference users = db.collection(COLLECTION_NAME);
 
-		ApiFuture<WriteResult> writeResult = users.document(user.getUserId()).set(user);
-		try {
-			System.out.println("User added at: " + writeResult.get().getUpdateTime());
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
-		}
+	    Map<String, Object> userData = new HashMap<>();
+	    userData.put("userId", user.getUserId());
+	    userData.put("username", user.getUsername());
+	    userData.put("email", user.getEmail());
+	    userData.put("passwordHash", user.getPasswordHash());
+	    userData.put("bio", user.getBio());
+	    userData.put("dateOfBirth", user.getDateOfBirth());
+	    userData.put("province", user.getProvince());
+	    userData.put("university", user.getUniversity());
+	    userData.put("interests", user.getInterests());
+	    userData.put("profilePicture", user.getProfilePicture()); // Include profile picture
+
+	    ApiFuture<WriteResult> writeResult = users.document(user.getUserId()).set(userData);
+	    try {
+	        System.out.println("User added at: " + writeResult.get().getUpdateTime());
+	    } catch (InterruptedException | ExecutionException e) {
+	        System.err.println("Error adding user: " + e.getMessage());
+	    }
 	}
 
+//	public static void updateUserData(UserProfile user) {
+//		Firestore db = FirestoreClient.getFirestore();
+//		DocumentReference docRef = db.collection(COLLECTION_NAME).document(user.getUserId());
+//		ApiFuture<WriteResult> writeResult = docRef.set(user);
+//		try {
+//			System.out.println("User updated at: " + writeResult.get().getUpdateTime());
+//		} catch (InterruptedException | ExecutionException e) {
+//			System.err.println("Error updating user: " + e.getMessage());
+//		}
+//	}
 	public static void updateUserData(UserProfile user) {
-		Firestore db = FirestoreClient.getFirestore();
-		DocumentReference docRef = db.collection(COLLECTION_NAME).document(user.getUserId());
-		ApiFuture<WriteResult> writeResult = docRef.set(user);
-		try {
-			System.out.println("User updated at: " + writeResult.get().getUpdateTime());
-		} catch (InterruptedException | ExecutionException e) {
-			System.err.println("Error updating user: " + e.getMessage());
-		}
+	    DocumentReference docRef = db.collection(COLLECTION_NAME).document(user.getUserId());
+
+	    Map<String, Object> userData = new HashMap<>();
+	    userData.put("username", user.getUsername());
+	    userData.put("email", user.getEmail());
+	    userData.put("bio", user.getBio());
+	    userData.put("dateOfBirth", user.getDateOfBirth());
+	    userData.put("province", user.getProvince());
+	    userData.put("university", user.getUniversity());
+	    userData.put("interests", user.getInterests());
+	    userData.put("profilePicture", user.getProfilePicture()); // Include profile picture
+
+	    ApiFuture<WriteResult> writeResult = docRef.update(userData);
+	    try {
+	        System.out.println("User updated at: " + writeResult.get().getUpdateTime());
+	    } catch (InterruptedException | ExecutionException e) {
+	        System.err.println("Error updating user: " + e.getMessage());
+	    }
 	}
 
 	// Authenticate user (login)
@@ -70,25 +113,44 @@ public class FirestoreHandler {
 		return false;
 	}
 
+//	public static UserProfile getUserData(String userId) {
+//		Firestore db = FirestoreClient.getFirestore();
+//		DocumentReference docRef = db.collection(COLLECTION_NAME).document(userId);
+//		ApiFuture<DocumentSnapshot> future = docRef.get();
+//		try {
+//			DocumentSnapshot document = future.get();
+//			if (document.exists()) {
+//				// Convert Firestore document into UserProfile object
+//				UserProfile user = document.toObject(UserProfile.class);
+//				System.out.println("User Data Retrieved: " + user);
+//				return user; // Return the UserProfile object
+//			} else {
+//				System.err.println("No document found for userId: " + userId);
+//			}
+//		} catch (InterruptedException | ExecutionException e) {
+//			System.err.println("Error fetching user data: " + e.getMessage());
+//		}
+//		return null; // Return null if user not found or error occurred
+//	}
 	public static UserProfile getUserData(String userId) {
-		Firestore db = FirestoreClient.getFirestore();
-		DocumentReference docRef = db.collection(COLLECTION_NAME).document(userId);
-		ApiFuture<DocumentSnapshot> future = docRef.get();
-		try {
-			DocumentSnapshot document = future.get();
-			if (document.exists()) {
-				// Convert Firestore document into UserProfile object
-				UserProfile user = document.toObject(UserProfile.class);
-				System.out.println("User Data Retrieved: " + user);
-				return user; // Return the UserProfile object
-			} else {
-				System.err.println("No document found for userId: " + userId);
-			}
-		} catch (InterruptedException | ExecutionException e) {
-			System.err.println("Error fetching user data: " + e.getMessage());
-		}
-		return null; // Return null if user not found or error occurred
+	    DocumentReference docRef = db.collection(COLLECTION_NAME).document(userId);
+	    ApiFuture<DocumentSnapshot> future = docRef.get();
+
+	    try {
+	        DocumentSnapshot document = future.get();
+	        if (document.exists()) {
+	            UserProfile user = document.toObject(UserProfile.class);
+	            System.out.println("User Data Retrieved: " + user);
+	            return user; // Return the UserProfile object
+	        } else {
+	            System.err.println("No document found for userId: " + userId);
+	        }
+	    } catch (InterruptedException | ExecutionException e) {
+	        System.err.println("Error fetching user data: " + e.getMessage());
+	    }
+	    return null; // Return null if user not found or error occurred
 	}
+	
 
 	public static void deleteUserData(String userId) {
 		Firestore db = FirestoreClient.getFirestore();

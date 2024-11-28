@@ -10,6 +10,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -25,6 +26,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -35,6 +37,14 @@ import com.universe.FirestoreHandler;
 import com.universe.models.UserProfile;
 import com.universe.utils.Constants;
 import com.universe.utils.SessionManager;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Base64;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.JOptionPane;
 
 public class Homepage extends JFrame {
 
@@ -49,7 +59,9 @@ public class Homepage extends JFrame {
 	private UserProfile currentUser; // Logged-in user's profile
 
 	private JLabel noFriendsLabel; // Label for "No friends added yet"
-	private JFormattedTextField dobField; // Declare dobField at the class level
+	private JFormattedTextField dobField; 
+	private JLabel welcomeLabel;
+	private JLabel profilePic; // Class-level declaration
 	/**
 	 * Create the frame.
 	 */
@@ -85,13 +97,15 @@ public class Homepage extends JFrame {
 			addedFriends = new ArrayList<>();
 		}
 
+		
 		// Welcome panel
 		JPanel welcomePanel = new JPanel();
 		welcomePanel.setBounds(100, 10, 770, 60);
 		welcomePanel.setBackground(Color.WHITE);
 		welcomePanel.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
 		welcomePanel.setLayout(null);
-		JLabel welcomeLabel = new JLabel("Hi " + currentUser.getUsername() + ", Welcome to UniVerse!", JLabel.CENTER);
+		
+		welcomeLabel = new JLabel("Hi " + currentUser.getUsername() + ", Welcome to UniVerse!", JLabel.CENTER);
 		welcomeLabel.setFont(new Font("Inria Sans", Font.BOLD, 20));
 		welcomeLabel.setForeground(new Color(31, 162, 255));
 		welcomeLabel.setBounds(0, 5, 770, 50);
@@ -155,7 +169,8 @@ public class Homepage extends JFrame {
 		friendsPanel.add(searchField);
 
 		// Search button
-		JButton searchButton = new JButton("Search");
+		JButton searchButton = new JButton("");
+		searchButton.setEnabled(false);
 		searchButton.setBounds(200, 35, 60, 30);
 		searchButton.setFont(new Font("Roboto", Font.BOLD, 12));
 		searchButton.setBackground(new Color(46, 157, 251));
@@ -429,80 +444,62 @@ public class Homepage extends JFrame {
 
 	public void showProfile(UserProfile user, JFrame parentFrame) {
 	    JDialog dialog = new JDialog(parentFrame, "Edit My Profile", true);
-	    dialog.setSize(500, 600);
-	    dialog.setLayout(null);
+	    dialog.setSize(500, 700);
+	    dialog.getContentPane().setLayout(null);
 
 	    int yPosition = 20; // Vertical position for each component
 	    int labelWidth = 120;
 	    int fieldWidth = 250;
 	    int fieldHeight = 30;
 
-	    // Full Name Field
+	    // Full Name Field (Not Editable)
 	    JLabel lblName = new JLabel("Full Name:");
 	    lblName.setBounds(20, yPosition, labelWidth, fieldHeight);
-	    dialog.add(lblName);
+	    dialog.getContentPane().add(lblName);
 
-	    JTextField nameField = new JTextField(user.getUsername());
+	    JLabel nameField = new JLabel(user.getUsername());
 	    nameField.setBounds(150, yPosition, fieldWidth, fieldHeight);
-	    dialog.add(nameField);
+	    dialog.getContentPane().add(nameField);
 
 	    yPosition += 50;
 
-	    // Email Field
+	    // Email Field (Not Editable)
 	    JLabel lblEmail = new JLabel("Email:");
 	    lblEmail.setBounds(20, yPosition, labelWidth, fieldHeight);
-	    dialog.add(lblEmail);
+	    dialog.getContentPane().add(lblEmail);
 
-	    JTextField emailField = new JTextField(user.getEmail());
+	    JLabel emailField = new JLabel(user.getEmail());
 	    emailField.setBounds(150, yPosition, fieldWidth, fieldHeight);
-	    dialog.add(emailField);
+	    dialog.getContentPane().add(emailField);
 
 	    yPosition += 50;
 
-	 // Date of Birth Field
+	    // Date of Birth Field (Not Editable)
 	    JLabel lblDob = new JLabel("Date of Birth:");
 	    lblDob.setBounds(20, yPosition, labelWidth, fieldHeight);
-	    dialog.add(lblDob);
-	    
-//	  JFormattedTextField dobField;
-	    try {
-	        MaskFormatter dateMask = new MaskFormatter("##/##/####"); // Format: dd/MM/yyyy
-	        dateMask.setPlaceholderCharacter('_'); // Placeholder for missing values
-	        dobField = new JFormattedTextField(dateMask);
-	        dobField.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    dialog.getContentPane().add(lblDob);
 
-	        // Pre-fill the value, ensuring it matches the format
-	        String dob = user.getDateOfBirth();
-	        if (dob != null && dob.matches("\\d{2}/\\d{2}/\\d{4}")) { // Validate format
-	            dobField.setValue(dob);
-	        } else {
-	            dobField.setValue(""); // Default to empty if invalid
-	        }
+	    JLabel dobField = new JLabel(user.getDateOfBirth());
+	    dobField.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    dialog.getContentPane().add(dobField);
 
-	        dialog.add(dobField);
-	    } catch (Exception e) {
-	        JOptionPane.showMessageDialog(dialog, "Error setting up Date of Birth field.", "Error", JOptionPane.ERROR_MESSAGE);
-	        dobField = new JFormattedTextField();
-	        dobField.setBounds(150, yPosition, fieldWidth, fieldHeight);
-	        dialog.add(dobField);
-	    }
 	    yPosition += 50;
 
-	    // Bio Field
+	    // Bio Field (Editable)
 	    JLabel lblBio = new JLabel("Bio:");
 	    lblBio.setBounds(20, yPosition, labelWidth, fieldHeight);
-	    dialog.add(lblBio);
+	    dialog.getContentPane().add(lblBio);
 
 	    JTextField bioField = new JTextField(user.getBio() != null ? user.getBio() : "");
 	    bioField.setBounds(150, yPosition, fieldWidth, fieldHeight);
-	    dialog.add(bioField);
+	    dialog.getContentPane().add(bioField);
 
 	    yPosition += 50;
 
-	    // City Field
+	    // City Field (Editable)
 	    JLabel lblCity = new JLabel("City:");
 	    lblCity.setBounds(20, yPosition, labelWidth, fieldHeight);
-	    dialog.add(lblCity);
+	    dialog.getContentPane().add(lblCity);
 
 	    Choice cityChoice = new Choice();
 	    cityChoice.setBounds(150, yPosition, fieldWidth, fieldHeight);
@@ -510,38 +507,34 @@ public class Homepage extends JFrame {
 	        cityChoice.add(city);
 	    }
 	    cityChoice.select(user.getProvince() != null ? user.getProvince() : "");
-	    dialog.add(cityChoice);
+	    dialog.getContentPane().add(cityChoice);
 
 	    yPosition += 50;
 
-	    // University Field
+	    // University Field (Not Editable)
 	    JLabel lblUniversity = new JLabel("University:");
 	    lblUniversity.setBounds(20, yPosition, labelWidth, fieldHeight);
-	    dialog.add(lblUniversity);
+	    dialog.getContentPane().add(lblUniversity);
 
-	    Choice universityChoice = new Choice();
-	    universityChoice.setBounds(150, yPosition, fieldWidth, fieldHeight);
-	    for (String university : Constants.UNIVERSITIES) {
-	    	universityChoice.add(university);
-	    }
-	    universityChoice.select(user.getUniversity() != null ? user.getUniversity() : "");
-	    dialog.add(universityChoice);
+	    JLabel universityField = new JLabel(user.getUniversity());
+	    universityField.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    dialog.getContentPane().add(universityField);
 
 	    yPosition += 50;
 
-	    // Interests Field
+	    // Interests Field (Editable via Button)
 	    JLabel lblInterests = new JLabel("Interests:");
 	    lblInterests.setBounds(20, yPosition, labelWidth, fieldHeight);
-	    dialog.add(lblInterests);
+	    dialog.getContentPane().add(lblInterests);
 
 	    String interestsText = (user.getInterests() != null) ? String.join(", ", user.getInterests()) : "No interests specified";
 	    JLabel interestsSummary = new JLabel(interestsText);
 	    interestsSummary.setBounds(150, yPosition, fieldWidth, fieldHeight);
-	    dialog.add(interestsSummary);
+	    dialog.getContentPane().add(interestsSummary);
 
 	    JButton btnEditInterests = new JButton("Edit Interests");
 	    btnEditInterests.setBounds(150, yPosition + 40, 150, fieldHeight);
-	    dialog.add(btnEditInterests);
+	    dialog.getContentPane().add(btnEditInterests);
 
 	    btnEditInterests.addActionListener(e -> {
 	        List<String> selectedInterests = showInterestSelectionDialog(parentFrame, user.getInterests() != null ? user.getInterests() : new ArrayList<>());
@@ -551,43 +544,107 @@ public class Homepage extends JFrame {
 
 	    yPosition += 100;
 
+	    // Profile Picture Section
+	    JLabel lblProfilePicture = new JLabel("Profile Picture:");
+	    lblProfilePicture.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.getContentPane().add(lblProfilePicture);
+
+	    JLabel profilePicturePreview = new JLabel();
+	    profilePicturePreview.setBounds(150, yPosition, 100, 100);
+	    if (user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
+	        byte[] imageBytes = Base64.getDecoder().decode(user.getProfilePicture());
+	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+	        profilePicturePreview.setIcon(new ImageIcon(scaledImage));
+	    }
+	    dialog.getContentPane().add(profilePicturePreview);
+
+	    JButton btnChangeProfilePicture = new JButton("Change Picture");
+	    btnChangeProfilePicture.setBounds(260, yPosition + 35, 140, fieldHeight);
+	    btnChangeProfilePicture.addActionListener(e -> {
+	        String newProfilePicture = selectProfilePicture();
+	        if (newProfilePicture != null) {
+	            user.setProfilePicture(newProfilePicture);
+	            
+	            // Update the preview in the dialog
+	            byte[] imageBytes = Base64.getDecoder().decode(newProfilePicture);
+	            ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+	            Image scaledImage = profileImageIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+	            profilePicturePreview.setIcon(new ImageIcon(scaledImage));
+	            
+	            // Save the updated profile picture to Firestore
+	            FirestoreHandler.updateUserData(user);
+	            
+	            // Refresh the sidebar profile picture
+	            updateSidebarProfilePicture(newProfilePicture);
+	        }
+	    });
+	    dialog.getContentPane().add(btnChangeProfilePicture);
+
+	    yPosition += 120;
+
 	    // Save Changes Button
 	    JButton btnSave = new JButton("Save Changes");
 	    btnSave.setBounds(180, yPosition, 150, fieldHeight);
-	    dialog.add(btnSave);
+	    dialog.getContentPane().add(btnSave);
 
 	    btnSave.addActionListener(e -> {
-	        // Validate and update Date of Birth
-	        String dobValue = dobField.getText();
-	        if (dobValue.matches("\\d{2}/\\d{2}/\\d{4}")) {
-	            user.setDateOfBirth(dobValue); // Save only valid values
-	        } else {
-	            JOptionPane.showMessageDialog(dialog, "Please enter a valid Date of Birth (dd/MM/yyyy).", "Validation Error", JOptionPane.ERROR_MESSAGE);
-	            return; // Prevent saving invalid data
-	        }
-
 	        // Update other fields
-	        user.setUsername(nameField.getText());
-	        user.setEmail(emailField.getText());
 	        user.setBio(bioField.getText());
 	        user.setProvince(cityChoice.getSelectedItem());
-	        user.setUniversity(universityChoice.getSelectedItem());
 
 	        // Save updates to Firestore
 	        FirestoreHandler.updateUserData(user);
 
+	        
 	        JOptionPane.showMessageDialog(dialog, "Profile updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
 	        dialog.dispose(); // Close the dialog
 	    });
-	    dialog.setLocationRelativeTo(null);
 
+	    dialog.setLocationRelativeTo(null);
 	    dialog.setVisible(true);
 	}
-	
+
+	private void updateSidebarProfilePicture(String newProfilePicture) {
+	    if (newProfilePicture != null && !newProfilePicture.isEmpty()) {
+	        byte[] imageBytes = Base64.getDecoder().decode(newProfilePicture);
+	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+	        profilePic.setIcon(new ImageIcon(scaledImage)); // Update the sidebar picture
+	    } else {
+	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png")); // Default icon
+	    }
+	    profilePic.revalidate();
+	    profilePic.repaint();
+	}
+	private String selectProfilePicture() {
+	    JFileChooser fileChooser = new JFileChooser();
+	    fileChooser.setDialogTitle("Select Profile Picture");
+	    fileChooser.setFileFilter(new FileNameExtensionFilter("Image Files", "jpg", "jpeg", "png"));
+
+	    int result = fileChooser.showOpenDialog(null);
+	    if (result == JFileChooser.APPROVE_OPTION) {
+	        File selectedFile = fileChooser.getSelectedFile();
+	        try {
+	            byte[] imageBytes = Files.readAllBytes(selectedFile.toPath());
+	            return Base64.getEncoder().encodeToString(imageBytes);
+	        } catch (IOException e) {
+	            JOptionPane.showMessageDialog(null, "Error reading image file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+	        }
+	    }
+	    return null;
+	}
+	private String getFormattedInterests(UserProfile user) {
+	    List<String> interests = user.getInterests();
+	    if (interests == null || interests.isEmpty()) {
+	        return "No interests specified"; // Placeholder text
+	    }
+	    return String.join(", ", interests);
+	}
 	private List<String> showInterestSelectionDialog(JFrame parentFrame, List<String> currentInterests) {
 	    JDialog dialog = new JDialog(parentFrame, "Select Interests", true);
 	    dialog.setSize(400, 300);
-	    dialog.setLayout(new BorderLayout());
+	    dialog.getContentPane().setLayout(new BorderLayout());
 
 	    JPanel interestsPanel = new JPanel();
 	    interestsPanel.setLayout(new BoxLayout(interestsPanel, BoxLayout.Y_AXIS));
@@ -606,7 +663,7 @@ public class Homepage extends JFrame {
 	        checkBoxes.add(checkBox);
 	    }
 
-	    dialog.add(new JScrollPane(interestsPanel), BorderLayout.CENTER);
+	    dialog.getContentPane().add(new JScrollPane(interestsPanel), BorderLayout.CENTER);
 
 	    JButton btnOk = new JButton("OK");
 	    btnOk.addActionListener(e -> {
@@ -615,7 +672,7 @@ public class Homepage extends JFrame {
 
 	    JPanel buttonPanel = new JPanel();
 	    buttonPanel.add(btnOk);
-	    dialog.add(buttonPanel, BorderLayout.SOUTH);
+	    dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 
 	    dialog.setVisible(true);
 
@@ -674,61 +731,81 @@ public class Homepage extends JFrame {
 		}
 	}
 
+
+	
 	private JPanel createSidebar(JFrame parentFrame) {
-		JPanel sidebar = new JPanel();
-		sidebar.setBounds(10, 10, 70, 540);
-		sidebar.setBackground(Color.WHITE);
-		sidebar.setLayout(null);
+	    JPanel sidebar = new JPanel();
+	    sidebar.setBounds(10, 10, 70, 540);
+	    sidebar.setBackground(Color.WHITE);
+	    sidebar.setLayout(null);
 
-//		JLabel profilePic = new JLabel(new ImageIcon("src/main/resources/icons/profile.png"));
-//		profilePic.setBounds(5, 25, 60, 60);
-//		sidebar.add(profilePic);
-		JLabel profilePic = new JLabel(new ImageIcon("src/main/resources/icons/profile.png"));
-		profilePic.setBounds(5, 25, 60, 60);
-		profilePic.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Change cursor to hand for click
-																				// indication
-		profilePic.setToolTipText("View Profile"); // Tooltip for accessibility
+	    // Profile Picture
+	    profilePic = new JLabel();
+	    String profilePicBase64 = currentUser.getProfilePicture();
+	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
+	        // Decode Base64 and set as profile picture
+	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
+	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+	        profilePic.setIcon(new ImageIcon(scaledImage));
+	    } else {
+	        // Use placeholder if no profile picture is available
+	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png"));
+	    }
 
-		profilePic.addMouseListener(new java.awt.event.MouseAdapter() {
-			@Override
-			public void mouseClicked(java.awt.event.MouseEvent e) {
-				// Show the current user's profile in a pop-up
-				showProfile(currentUser, Homepage.this);
-			}
-		});
-		sidebar.add(profilePic);
+	    profilePic.setBounds(5, 25, 60, 60);
+	    profilePic.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Change cursor to hand for click indication
+	    profilePic.setToolTipText("View Profile"); // Tooltip for accessibility
 
-		addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> {
-			// Homepage homepage = new Homepage();
-			// homepage.setVisible(true);
-			// parentFrame.dispose();
-		});
-		addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {
-			Messaging messaging = new Messaging();
-			messaging.setVisible(true);
-			messaging.setLocationRelativeTo(null);
-			parentFrame.dispose();
-		});
-		addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> {
-			JOptionPane.showMessageDialog(parentFrame, "Notifications clicked!");
-		});
-		addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310, e -> {
-			JOptionPane.showMessageDialog(parentFrame, "Community clicked!");
-		});
-		addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380, e -> {
-			JOptionPane.showMessageDialog(parentFrame, "Settings clicked!");
-		});
-		addSidebarIcon(sidebar, "src/main/resources/icons/leave.png", "Logout", 450, e -> {
-			int confirm = JOptionPane.showConfirmDialog(parentFrame, "Are you sure you want to exit?",
-					"Exit Confirmation", JOptionPane.YES_NO_OPTION);
-			if (confirm == JOptionPane.YES_OPTION) {
-				System.exit(0);
-			}
-		});
+	    profilePic.addMouseListener(new java.awt.event.MouseAdapter() {
+	        @Override
+	        public void mouseClicked(java.awt.event.MouseEvent e) {
+	            // Show the current user's profile in a pop-up
+	            showProfile(currentUser, Homepage.this);
+	        }
+	    });
+	    sidebar.add(profilePic);
 
-		return sidebar;
+	    // Sidebar Icons
+	    addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> {
+	        // Homepage homepage = new Homepage();
+	        // homepage.setVisible(true);
+	        // parentFrame.dispose();
+	    });
+	    addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {
+	        navigateToMessages(parentFrame);
+	    });
+	    addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> {
+	        JOptionPane.showMessageDialog(parentFrame, "Notifications clicked!");
+	    });
+	    addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310, e -> {
+	        JOptionPane.showMessageDialog(parentFrame, "Community clicked!");
+	    });
+	    addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380, e -> {
+	        JOptionPane.showMessageDialog(parentFrame, "Settings clicked!");
+	    });
+	    addSidebarIcon(sidebar, "src/main/resources/icons/leave.png", "Logout", 450, e -> {
+	        int confirm = JOptionPane.showConfirmDialog(parentFrame, "Are you sure you want to exit?",
+	                "Exit Confirmation", JOptionPane.YES_NO_OPTION);
+	        if (confirm == JOptionPane.YES_OPTION) {
+	            System.exit(0);
+	        }
+	    });
+
+	    return sidebar;
 	}
 
+	private void navigateToMessages(JFrame parentFrame) {
+	    // Dispose of the current frame to clean up resources
+	    parentFrame.dispose(); 
+
+	    // Safely open the Messaging frame on the Event Dispatch Thread
+	    EventQueue.invokeLater(() -> {
+	        Messaging messaging = new Messaging();
+	        messaging.setVisible(true);
+	        messaging.setLocationRelativeTo(null); // Center the new window
+	    });
+	}
 	private void addSidebarIcon(JPanel sidebar, String iconPath, String tooltip, int yPosition,
 			java.awt.event.ActionListener action) {
 		ImageIcon originalIcon = new ImageIcon(iconPath);
