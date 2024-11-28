@@ -1,18 +1,24 @@
 
 package com.universe.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -22,11 +28,12 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
+import javax.swing.text.MaskFormatter;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.universe.FirebaseInitializer;
 import com.universe.FirestoreHandler;
 import com.universe.models.UserProfile;
+import com.universe.utils.Constants;
 import com.universe.utils.SessionManager;
 
 public class Homepage extends JFrame {
@@ -42,32 +49,13 @@ public class Homepage extends JFrame {
 	private UserProfile currentUser; // Logged-in user's profile
 
 	private JLabel noFriendsLabel; // Label for "No friends added yet"
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(() -> {
-			try {
-				// Initialize Firebase
-				FirebaseInitializer.initializeFirebase();
-
-				// Launch the Homepage
-				Homepage frame = new Homepage();
-				frame.setVisible(true);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-	}
-
+	private JFormattedTextField dobField; // Declare dobField at the class level
 	/**
 	 * Create the frame.
 	 */
 	public Homepage() {
 		// Fetch the current user's details
 		String currentUserId = SessionManager.currentUserId;
-		System.out.println(currentUserId);
 		if (currentUserId == null || currentUserId.isEmpty()) {
 			JOptionPane.showMessageDialog(null, "No user logged in.", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
@@ -439,14 +427,275 @@ public class Homepage extends JFrame {
 		}
 	}
 
+	public void showProfile(UserProfile user, JFrame parentFrame) {
+	    JDialog dialog = new JDialog(parentFrame, "Edit My Profile", true);
+	    dialog.setSize(500, 600);
+	    dialog.setLayout(null);
+
+	    int yPosition = 20; // Vertical position for each component
+	    int labelWidth = 120;
+	    int fieldWidth = 250;
+	    int fieldHeight = 30;
+
+	    // Full Name Field
+	    JLabel lblName = new JLabel("Full Name:");
+	    lblName.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.add(lblName);
+
+	    JTextField nameField = new JTextField(user.getUsername());
+	    nameField.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    dialog.add(nameField);
+
+	    yPosition += 50;
+
+	    // Email Field
+	    JLabel lblEmail = new JLabel("Email:");
+	    lblEmail.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.add(lblEmail);
+
+	    JTextField emailField = new JTextField(user.getEmail());
+	    emailField.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    dialog.add(emailField);
+
+	    yPosition += 50;
+
+	 // Date of Birth Field
+	    JLabel lblDob = new JLabel("Date of Birth:");
+	    lblDob.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.add(lblDob);
+	    
+//	  JFormattedTextField dobField;
+	    try {
+	        MaskFormatter dateMask = new MaskFormatter("##/##/####"); // Format: dd/MM/yyyy
+	        dateMask.setPlaceholderCharacter('_'); // Placeholder for missing values
+	        dobField = new JFormattedTextField(dateMask);
+	        dobField.setBounds(150, yPosition, fieldWidth, fieldHeight);
+
+	        // Pre-fill the value, ensuring it matches the format
+	        String dob = user.getDateOfBirth();
+	        if (dob != null && dob.matches("\\d{2}/\\d{2}/\\d{4}")) { // Validate format
+	            dobField.setValue(dob);
+	        } else {
+	            dobField.setValue(""); // Default to empty if invalid
+	        }
+
+	        dialog.add(dobField);
+	    } catch (Exception e) {
+	        JOptionPane.showMessageDialog(dialog, "Error setting up Date of Birth field.", "Error", JOptionPane.ERROR_MESSAGE);
+	        dobField = new JFormattedTextField();
+	        dobField.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	        dialog.add(dobField);
+	    }
+	    yPosition += 50;
+
+	    // Bio Field
+	    JLabel lblBio = new JLabel("Bio:");
+	    lblBio.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.add(lblBio);
+
+	    JTextField bioField = new JTextField(user.getBio() != null ? user.getBio() : "");
+	    bioField.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    dialog.add(bioField);
+
+	    yPosition += 50;
+
+	    // City Field
+	    JLabel lblCity = new JLabel("City:");
+	    lblCity.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.add(lblCity);
+
+	    Choice cityChoice = new Choice();
+	    cityChoice.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    for (String city : Constants.CITIES) {
+	        cityChoice.add(city);
+	    }
+	    cityChoice.select(user.getProvince() != null ? user.getProvince() : "");
+	    dialog.add(cityChoice);
+
+	    yPosition += 50;
+
+	    // University Field
+	    JLabel lblUniversity = new JLabel("University:");
+	    lblUniversity.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.add(lblUniversity);
+
+	    Choice universityChoice = new Choice();
+	    universityChoice.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    for (String university : Constants.UNIVERSITIES) {
+	    	universityChoice.add(university);
+	    }
+	    universityChoice.select(user.getUniversity() != null ? user.getUniversity() : "");
+	    dialog.add(universityChoice);
+
+	    yPosition += 50;
+
+	    // Interests Field
+	    JLabel lblInterests = new JLabel("Interests:");
+	    lblInterests.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.add(lblInterests);
+
+	    String interestsText = (user.getInterests() != null) ? String.join(", ", user.getInterests()) : "No interests specified";
+	    JLabel interestsSummary = new JLabel(interestsText);
+	    interestsSummary.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    dialog.add(interestsSummary);
+
+	    JButton btnEditInterests = new JButton("Edit Interests");
+	    btnEditInterests.setBounds(150, yPosition + 40, 150, fieldHeight);
+	    dialog.add(btnEditInterests);
+
+	    btnEditInterests.addActionListener(e -> {
+	        List<String> selectedInterests = showInterestSelectionDialog(parentFrame, user.getInterests() != null ? user.getInterests() : new ArrayList<>());
+	        user.setInterests(selectedInterests); // Update user's interests immediately
+	        interestsSummary.setText(String.join(", ", selectedInterests)); // Update displayed interests
+	    });
+
+	    yPosition += 100;
+
+	    // Save Changes Button
+	    JButton btnSave = new JButton("Save Changes");
+	    btnSave.setBounds(180, yPosition, 150, fieldHeight);
+	    dialog.add(btnSave);
+
+	    btnSave.addActionListener(e -> {
+	        // Validate and update Date of Birth
+	        String dobValue = dobField.getText();
+	        if (dobValue.matches("\\d{2}/\\d{2}/\\d{4}")) {
+	            user.setDateOfBirth(dobValue); // Save only valid values
+	        } else {
+	            JOptionPane.showMessageDialog(dialog, "Please enter a valid Date of Birth (dd/MM/yyyy).", "Validation Error", JOptionPane.ERROR_MESSAGE);
+	            return; // Prevent saving invalid data
+	        }
+
+	        // Update other fields
+	        user.setUsername(nameField.getText());
+	        user.setEmail(emailField.getText());
+	        user.setBio(bioField.getText());
+	        user.setProvince(cityChoice.getSelectedItem());
+	        user.setUniversity(universityChoice.getSelectedItem());
+
+	        // Save updates to Firestore
+	        FirestoreHandler.updateUserData(user);
+
+	        JOptionPane.showMessageDialog(dialog, "Profile updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+	        dialog.dispose(); // Close the dialog
+	    });
+	    dialog.setLocationRelativeTo(null);
+
+	    dialog.setVisible(true);
+	}
+	
+	private List<String> showInterestSelectionDialog(JFrame parentFrame, List<String> currentInterests) {
+	    JDialog dialog = new JDialog(parentFrame, "Select Interests", true);
+	    dialog.setSize(400, 300);
+	    dialog.setLayout(new BorderLayout());
+
+	    JPanel interestsPanel = new JPanel();
+	    interestsPanel.setLayout(new BoxLayout(interestsPanel, BoxLayout.Y_AXIS));
+
+	    // Use sorted interests from Constants
+	    String[] interests = Constants.INTERESTS;
+
+	    // Create checkboxes and preselect based on currentInterests
+	    List<JCheckBox> checkBoxes = new ArrayList<>();
+	    for (String interest : interests) {
+	        JCheckBox checkBox = new JCheckBox(interest);
+	        if (currentInterests.contains(interest)) { // Preselect if it matches current interests
+	            checkBox.setSelected(true);
+	        }
+	        interestsPanel.add(checkBox);
+	        checkBoxes.add(checkBox);
+	    }
+
+	    dialog.add(new JScrollPane(interestsPanel), BorderLayout.CENTER);
+
+	    JButton btnOk = new JButton("OK");
+	    btnOk.addActionListener(e -> {
+	        dialog.dispose();
+	    });
+
+	    JPanel buttonPanel = new JPanel();
+	    buttonPanel.add(btnOk);
+	    dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+	    dialog.setVisible(true);
+
+	    // Collect selected interests after the dialog is closed
+	    List<String> selectedInterests = new ArrayList<>();
+	    for (JCheckBox checkBox : checkBoxes) {
+	        if (checkBox.isSelected()) {
+	            selectedInterests.add(checkBox.getText());
+	        }
+	    }
+
+	    return selectedInterests;
+	}
+
+	private void openEditDetailsDialog(UserProfile user) {
+		JPanel editPanel = new JPanel();
+		editPanel.setLayout(new BoxLayout(editPanel, BoxLayout.Y_AXIS));
+
+		JTextField nameField = new JTextField(user.getUsername());
+		JTextField universityField = new JTextField(user.getUniversity());
+		JTextField cityField = new JTextField(user.getProvince());
+		JTextField interestsField = new JTextField(String.join(", ", user.getInterests()));
+		JTextField dobField = new JTextField(user.getDateOfBirth());
+		JTextField emailField = new JTextField(user.getEmail());
+
+		editPanel.add(new JLabel("Name:"));
+		editPanel.add(nameField);
+		editPanel.add(new JLabel("University:"));
+		editPanel.add(universityField);
+		editPanel.add(new JLabel("City:"));
+		editPanel.add(cityField);
+		editPanel.add(new JLabel("Interests (comma-separated):"));
+		editPanel.add(interestsField);
+		editPanel.add(new JLabel("Date of Birth:"));
+		editPanel.add(dobField);
+		editPanel.add(new JLabel("Email:"));
+		editPanel.add(emailField);
+
+		int result = JOptionPane.showConfirmDialog(this, editPanel, "Edit My Profile", JOptionPane.OK_CANCEL_OPTION);
+
+		if (result == JOptionPane.OK_OPTION) {
+			// Save the updated details to the user's profile
+			user.setUsername(nameField.getText());
+			user.setUniversity(universityField.getText());
+			user.setProvince(cityField.getText());
+			user.setInterests(List.of(interestsField.getText().split(",\\s*")));
+			user.setDateOfBirth(dobField.getText());
+			user.setEmail(emailField.getText());
+
+			// Update the database with the new details
+			FirestoreHandler.updateUserData(user);
+
+			// Show a success message
+			JOptionPane.showMessageDialog(this, "Profile updated successfully!", "Success",
+					JOptionPane.INFORMATION_MESSAGE);
+		}
+	}
+
 	private JPanel createSidebar(JFrame parentFrame) {
 		JPanel sidebar = new JPanel();
 		sidebar.setBounds(10, 10, 70, 540);
 		sidebar.setBackground(Color.WHITE);
 		sidebar.setLayout(null);
 
+//		JLabel profilePic = new JLabel(new ImageIcon("src/main/resources/icons/profile.png"));
+//		profilePic.setBounds(5, 25, 60, 60);
+//		sidebar.add(profilePic);
 		JLabel profilePic = new JLabel(new ImageIcon("src/main/resources/icons/profile.png"));
 		profilePic.setBounds(5, 25, 60, 60);
+		profilePic.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Change cursor to hand for click
+																				// indication
+		profilePic.setToolTipText("View Profile"); // Tooltip for accessibility
+
+		profilePic.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
+			public void mouseClicked(java.awt.event.MouseEvent e) {
+				// Show the current user's profile in a pop-up
+				showProfile(currentUser, Homepage.this);
+			}
+		});
 		sidebar.add(profilePic);
 
 		addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> {
