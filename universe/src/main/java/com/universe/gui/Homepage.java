@@ -461,8 +461,13 @@ public class Homepage extends JFrame {
 			parentFrame.dispose();
 		});
 		addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> {
-			JOptionPane.showMessageDialog(parentFrame, "Notifications clicked!");
-		});
+	        EventQueue.invokeLater(() -> {
+	            Notifications notifications = new Notifications();
+	            notifications.setVisible(true);
+	            notifications.setLocationRelativeTo(null);
+	        });
+	        parentFrame.dispose();
+	    });
 		addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310, e -> {
 			JOptionPane.showMessageDialog(parentFrame, "Community clicked!");
 		});

@@ -90,6 +90,9 @@ public class Messaging extends JFrame {
 
 		JPanel chatPanel = createChatPanel();
 		contentPane.add(chatPanel, BorderLayout.EAST);
+		
+		 // Add listener for real-time chat updates
+	    listenForNewMessages();
 
 		// Add listener to cleanup Firestore listener on exit
 		addWindowListener(new java.awt.event.WindowAdapter() {
@@ -125,8 +128,7 @@ public class Messaging extends JFrame {
 		addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> navigateToHomepage());
 		addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {
 		});
-		addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240,
-				e -> JOptionPane.showMessageDialog(this, "Notifications clicked!"));
+		addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> navigateToNotifications());
 		addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310,
 				e -> JOptionPane.showMessageDialog(this, "Community clicked!"));
 		addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380,
@@ -135,6 +137,14 @@ public class Messaging extends JFrame {
 
 		return sidebar;
 	}
+	private void navigateToNotifications() {
+        EventQueue.invokeLater(() -> {
+        	Notifications notifications = new Notifications();
+        	notifications.setVisible(true);
+            notifications.setLocationRelativeTo(null);
+        });
+        dispose();
+    }
 
 	private void addSidebarIcon(JPanel sidebar, String iconPath, String tooltip, int yPosition,
 			java.awt.event.ActionListener action) {
@@ -301,16 +311,16 @@ public class Messaging extends JFrame {
 
 		// Remove the previous listener if one exists
 		if (chatListener != null) {
-			chatListener.remove();
+			chatListener.remove(); 
 		}
 
 		// Set up a new real-time listener for the selected chat
-		String chatId = currentUserId + "_" + contactId; // Chat ID format
-		chatListener = FirestoreHandler.addChatListener(chatId, (snapshots, e) -> {
-			if (e != null) {
-				System.err.println("Error listening for chat updates: " + e.getMessage());
-				return;
-			}
+	    String chatId = currentUserId + "_" + contactId; // Chat ID format
+	    chatListener = FirestoreHandler.addChatListener(chatId, (snapshots, e) -> {
+	        if (e != null) {
+	            System.err.println("Error listening for chat updates: " + e.getMessage());
+	            return;
+	        }
 
 			// Clear the chat panel to avoid duplicates
 			chatHistoryPanel.removeAll();
@@ -336,7 +346,30 @@ public class Messaging extends JFrame {
 
 		// Update the UI title with the contact name
 		setTitle("Chatting with " + contactName);
+		
+		// Scroll to the latest message
+	    SwingUtilities.invokeLater(() -> chatScrollPane.getVerticalScrollBar()
+	            .setValue(chatScrollPane.getVerticalScrollBar().getMaximum()));
+	    
+	 // Update contacts list after switching chat
+	    updateChatListOrder(contactId);
+
 	}
+	
+	private void updateChatListOrder(String contactId) {
+	    friendsList.stream()
+	        .filter(friend -> friend.getUserId().equals(contactId))
+	        .findFirst()
+	        .ifPresent(friend -> {
+	            friendsList.remove(friend);
+	            friendsList.add(0, friend); // Add to the top
+	        });
+
+	    // Refresh the contacts panel
+	    populateContacts();
+	}
+
+	
 
 	private void displayMessage(String message, boolean isUserMessage) {
 		JPanel messagePanel = new JPanel(new FlowLayout(isUserMessage ? FlowLayout.RIGHT : FlowLayout.LEFT));
@@ -369,5 +402,36 @@ public class Messaging extends JFrame {
 		SwingUtilities.invokeLater(() -> chatScrollPane.getVerticalScrollBar()
 				.setValue(chatScrollPane.getVerticalScrollBar().getMaximum()));
 	}
+	
+	private void listenForNewMessages() {
+	    FirestoreHandler.addGlobalChatListener(currentUserId, (snapshots, e) -> {
+	        if (e != null) {
+	            System.err.println("Error listening to new messages: " + e.getMessage());
+	            return;
+	        }
+
+	        // Update the friends list order based on the most recent message
+	        if (snapshots != null && !snapshots.isEmpty()) {
+	            for (DocumentSnapshot document : snapshots.getDocuments()) {
+	                String chatId = document.getId();
+	                String[] userIds = chatId.split("_");
+	                String otherUserId = userIds[0].equals(currentUserId) ? userIds[1] : userIds[0];
+
+	                // Move the chat with the other user to the top of the list
+	                friendsList.stream()
+	                    .filter(friend -> friend.getUserId().equals(otherUserId))
+	                    .findFirst()
+	                    .ifPresent(friend -> {
+	                        friendsList.remove(friend);
+	                        friendsList.add(0, friend); // Add to the top
+	                    });
+	            }
+
+	            // Refresh the contacts panel
+	            populateContacts();
+	        }
+	    });
+	}
+
 
 }
