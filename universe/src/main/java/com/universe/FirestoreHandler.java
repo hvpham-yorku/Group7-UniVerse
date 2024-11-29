@@ -22,6 +22,7 @@ import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 import com.universe.models.UserProfile;
 
+
 public class FirestoreHandler {
 
 	private static final String COLLECTION_NAME = "UserProfile";
@@ -397,5 +398,92 @@ public class FirestoreHandler {
 		// Attach a snapshot listener to the collection (ordered by timestamp)
 		return messagesRef.orderBy("timestamp", Query.Direction.ASCENDING).addSnapshotListener(listener);
 	}
+	//Kennie modified for interestpage
+//	public static List<String> getAllInterests() {
+//	    List<String> interests = new ArrayList<>();
+//	    try {
+//	        // Replace with actual Firestore logic to fetch interests
+//	        // Example logic:
+//	        Firestore db = FirestoreClient.getFirestore();
+//	        ApiFuture<QuerySnapshot> query = db.collection("interests").get();
+//	        for (QueryDocumentSnapshot doc : query.get().getDocuments()) {
+//	            interests.add(doc.getString("name")); // Adjust based on your Firestore schema
+//	        }
+//	    } catch (Exception e) {
+//	        e.printStackTrace();
+//	    }
+//	    return interests;
+//	}
+//	
+	public static List<String> getUserGroups(String userId) {
+	    List<String> userGroups = new ArrayList<>();
+	    try {
+	        // Replace with actual Firestore logic to fetch user's groups
+	        // Example logic:
+	        Firestore db = FirestoreClient.getFirestore();
+	        DocumentReference docRef = db.collection("users").document(userId);
+	        ApiFuture<DocumentSnapshot> future = docRef.get();
+	        DocumentSnapshot document = future.get();
+	        if (document.exists()) {
+	            userGroups = (List<String>) document.get("groups"); // Adjust based on your Firestore schema
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    return userGroups;
+	}
+        //	Kennie
+	/**
+     * Fetches members of a group from the database.
+     */
+    public static List<String> getGroupMembers(String groupName) {
+        List<String> members = new ArrayList<>();
+        try {
+            CollectionReference groupsRef = db.collection("groups");
+            DocumentSnapshot groupSnapshot = groupsRef.document(groupName).get().get();
+
+            if (groupSnapshot.exists() && groupSnapshot.contains("members")) {
+                members = (List<String>) groupSnapshot.get("members");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return members;
+    }
+
+    /**
+     * Adds a member to a group in the database.
+     */
+    public static void addGroupMember(String groupName, String userId) {
+        try {
+            CollectionReference groupsRef = db.collection("groups");
+            DocumentReference groupDoc = groupsRef.document(groupName);
+
+            groupDoc.update("members", FieldValue.arrayUnion(userId)).get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Checks if two users are friends in the database.
+     */
+    public static boolean isFriend(String currentUserId, String otherUserId) {
+        try {
+            CollectionReference friendsRef = db.collection("friends");
+            DocumentSnapshot friendSnapshot = friendsRef.document(currentUserId).get().get();
+
+            if (friendSnapshot.exists() && friendSnapshot.contains("friends")) {
+                List<String> friends = (List<String>) friendSnapshot.get("friends");
+                return friends.contains(otherUserId);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+   
+
 
 }
