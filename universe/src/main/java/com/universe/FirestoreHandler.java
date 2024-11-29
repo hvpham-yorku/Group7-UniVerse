@@ -433,7 +433,25 @@ public class FirestoreHandler {
 	    return userGroups;
 	}
         //	Kennie
-	/**
+//	/**
+//     * Fetches members of a group from the database.
+//     */
+//    public static List<String> getGroupMembers(String groupName) {
+//        List<String> members = new ArrayList<>();
+//        try {
+//            CollectionReference groupsRef = db.collection("groups");
+//            DocumentSnapshot groupSnapshot = groupsRef.document(groupName).get().get();
+//
+//            if (groupSnapshot.exists() && groupSnapshot.contains("members")) {
+//                members = (List<String>) groupSnapshot.get("members");
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return members;
+//    }
+
+    /**
      * Fetches members of a group from the database.
      */
     public static List<String> getGroupMembers(String groupName) {
@@ -484,6 +502,8 @@ public class FirestoreHandler {
     }
 
    
+
+
 
 
 }
