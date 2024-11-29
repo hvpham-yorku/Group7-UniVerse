@@ -49,6 +49,7 @@ public class Messaging extends JFrame {
 	private String currentUserId;
 	private String currentChatContactId;
 	private JLabel profilePic;
+	private UserProfile currentUser ;
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			try {
@@ -64,6 +65,7 @@ public class Messaging extends JFrame {
 	public Messaging() {
 		// Initialize user session
 		currentUserId = SessionManager.currentUserId;
+		 currentUser = FirestoreHandler.getUserData(currentUserId);
 
 		if (currentUserId == null || currentUserId.isEmpty()) {
 			JOptionPane.showMessageDialog(this, "No user logged in.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -177,6 +179,8 @@ public class Messaging extends JFrame {
 	    getContentPane().removeAll(); // Remove current components
 	    Homepage homepage = new Homepage();
 	    getContentPane().add(homepage.getContentPane()); // Add new components
+		setTitle("Welcome, " + currentUser.getUsername() + "!");
+
 	    revalidate();
 	    repaint(); // Refresh the GUI
 	}
