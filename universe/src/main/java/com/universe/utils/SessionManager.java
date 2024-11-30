@@ -1,7 +1,6 @@
 package com.universe.utils;
 
 public class SessionManager {
-    public static String currentUserId;
-    public static String currentUser; // Globally accessible user ID
-// Globally accessible user ID
+    public static String currentUserId; // current logged in user id
+    public static String currentUser; // current logged in user
 }

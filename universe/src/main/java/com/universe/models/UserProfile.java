@@ -12,27 +12,41 @@ public class UserProfile {
 	private String province;
 	private String university;
 	private List<String> interests;
-	private String contactUserId; // This field is needed to map the Firestore data
+	private String contactUserId; 
+	private String profilePicture; 
 
 	// Getter and Setter for contactUserId
 	public String getContactUserId() {
-	    return contactUserId;
+		return contactUserId;
 	}
 
 	public void setContactUserId(String contactUserId) {
-	    this.contactUserId = contactUserId;
+		this.contactUserId = contactUserId;
 	}
-
 
 	public UserProfile() {
 	}
 
+	public UserProfile(String userId, String username, String email, String bio, String dateOfBirth, String province,
+			String university, List<String> interests, String passwordHash, String profilePicture) {
+		this.userId = userId;
+		this.username = username;
+		this.email = email;
+		this.bio = bio;
+		this.dateOfBirth = dateOfBirth;
+		this.province = province;
+		this.university = university;
+		this.interests = interests;
+		this.passwordHash = passwordHash;
+		this.profilePicture = profilePicture;
+	}
+
 	public UserProfile(String userId, String username, String email, String passwordHash, String university) {
-	    this.userId = userId;
-	    this.username = username;
-	    this.email = email;
-	    this.passwordHash = passwordHash;
-	    this.university = university;
+		this.userId = userId;
+		this.username = username;
+		this.email = email;
+		this.passwordHash = passwordHash;
+		this.university = university;
 	}
 
 	public UserProfile(String userId, String username, String email, String passwordHash) {
@@ -66,6 +80,28 @@ public class UserProfile {
 		this.university = university;
 		this.interests = interests;
 		this.passwordHash = passwordHash;
+	}
+
+	public UserProfile(String userId, String username, String email, String passwordHash, String bio,
+			String dateOfBirth, String province, String university, List<String> interests, String profilePicture) {
+		this.userId = userId;
+		this.username = username;
+		this.email = email;
+		this.passwordHash = passwordHash;
+		this.bio = bio;
+		this.dateOfBirth = dateOfBirth;
+		this.province = province;
+		this.university = university;
+		this.interests = interests;
+		this.profilePicture = profilePicture;
+	}
+
+	public String getProfilePicture() {
+		return profilePicture;
+	}
+
+	public void setProfilePicture(String profilePicture) {
+		this.profilePicture = profilePicture;
 	}
 
 	public String getUserId() {
@@ -139,21 +175,5 @@ public class UserProfile {
 	public void setInterests(List<String> interests) {
 		this.interests = interests;
 	}
-	
-	@Override
-	public String toString() {
-	    return "UserProfile{" +
-	            "userId='" + userId + '\'' +
-	            ", username='" + username + '\'' +
-	            ", email='" + email + '\'' +
-	            ", passwordHash='" + passwordHash + '\'' +
-	            ", bio='" + bio + '\'' +
-	            ", dateOfBirth='" + dateOfBirth + '\'' +
-	            ", province='" + province + '\'' +
-	            ", university='" + university + '\'' +
-	            ", interests=" + interests +
-	            '}';
-	}
-}
 
-	
+}
