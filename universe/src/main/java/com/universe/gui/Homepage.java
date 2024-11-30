@@ -805,7 +805,6 @@ public class Homepage extends JFrame {
 	        messaging.setVisible(true);
 	        messaging.setLocationRelativeTo(null); // Center the new window
 	    });
-	    dispose();
 	}
 	private void addSidebarIcon(JPanel sidebar, String iconPath, String tooltip, int yPosition,
 			java.awt.event.ActionListener action) {
