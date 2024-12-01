@@ -7,12 +7,15 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -38,6 +41,7 @@ import com.universe.models.UserProfile;
 import com.universe.utils.Constants;
 import com.universe.utils.SessionManager;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -561,20 +565,38 @@ public class Homepage extends JFrame {
 
 	    JButton btnChangeProfilePicture = new JButton("Change Picture");
 	    btnChangeProfilePicture.setBounds(260, yPosition + 35, 140, fieldHeight);
+//	    btnChangeProfilePicture.addActionListener(e -> {
+//	        String newProfilePicture = selectProfilePicture();
+//	        if (newProfilePicture != null) {
+//	            user.setProfilePicture(newProfilePicture);
+//	            
+//	            // Update the preview in the dialog
+//	            byte[] imageBytes = Base64.getDecoder().decode(newProfilePicture);
+//	            ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+//	            Image scaledImage = profileImageIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+//	            profilePicturePreview.setIcon(new ImageIcon(scaledImage));
+//	            
+//	            // Save the updated profile picture to Firestore
+//	            FirestoreHandler.updateUserData(user);
+//	            
+//	            // Refresh the sidebar profile picture
+//	            updateSidebarProfilePicture(newProfilePicture);
+//	        }
+//	    });
 	    btnChangeProfilePicture.addActionListener(e -> {
-	        String newProfilePicture = selectProfilePicture();
+	        String newProfilePicture = selectAndResizeProfilePicture();
 	        if (newProfilePicture != null) {
 	            user.setProfilePicture(newProfilePicture);
-	            
+
 	            // Update the preview in the dialog
 	            byte[] imageBytes = Base64.getDecoder().decode(newProfilePicture);
 	            ImageIcon profileImageIcon = new ImageIcon(imageBytes);
 	            Image scaledImage = profileImageIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
 	            profilePicturePreview.setIcon(new ImageIcon(scaledImage));
-	            
+
 	            // Save the updated profile picture to Firestore
 	            FirestoreHandler.updateUserData(user);
-	            
+
 	            // Refresh the sidebar profile picture
 	            updateSidebarProfilePicture(newProfilePicture);
 	        }
@@ -604,6 +626,52 @@ public class Homepage extends JFrame {
 	    dialog.setLocationRelativeTo(null);
 	    dialog.setVisible(true);
 	}
+	
+	private String selectAndResizeProfilePicture() {
+	    JFileChooser fileChooser = new JFileChooser();
+	    fileChooser.setDialogTitle("Select Profile Picture");
+	    fileChooser.setFileFilter(new FileNameExtensionFilter("Image Files", "jpg", "jpeg", "png"));
+
+	    int result = fileChooser.showOpenDialog(null);
+	    if (result == JFileChooser.APPROVE_OPTION) {
+	        try {
+	            File selectedFile = fileChooser.getSelectedFile();
+	            BufferedImage originalImage = ImageIO.read(selectedFile);
+
+	            // Resize the image to a maximum size (e.g., 300x300)
+	            int maxDimension = 300;
+	            BufferedImage resizedImage = resizeImage(originalImage, maxDimension, maxDimension);
+
+	            // Convert the resized image to Base64
+	            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	            ImageIO.write(resizedImage, "png", baos); // Use "png" or other format
+	            byte[] imageBytes = baos.toByteArray();
+
+	            return Base64.getEncoder().encodeToString(imageBytes);
+	        } catch (IOException e) {
+	            JOptionPane.showMessageDialog(null, "Error reading image file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+	        }
+	    }
+	    return null;
+	}
+	
+	private BufferedImage resizeImage(BufferedImage originalImage, int maxWidth, int maxHeight) {
+	    int originalWidth = originalImage.getWidth();
+	    int originalHeight = originalImage.getHeight();
+
+	    double scale = Math.min((double) maxWidth / originalWidth, (double) maxHeight / originalHeight);
+
+	    int newWidth = (int) (originalWidth * scale);
+	    int newHeight = (int) (originalHeight * scale);
+
+	    BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
+	    Graphics g = resizedImage.getGraphics();
+	    g.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+	    g.dispose();
+
+	    return resizedImage;
+	}
+
 
 	private void updateSidebarProfilePicture(String newProfilePicture) {
 	    if (newProfilePicture != null && !newProfilePicture.isEmpty()) {
@@ -612,11 +680,15 @@ public class Homepage extends JFrame {
 	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
 	        profilePic.setIcon(new ImageIcon(scaledImage)); // Update the sidebar picture
 	    } else {
-	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png")); // Default icon
+	        // Fallback to default icon if no profile picture is set
+	        ImageIcon defaultIcon = new ImageIcon("src/main/resources/icons/profile.png");
+	        Image scaledDefaultImage = defaultIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+	        profilePic.setIcon(new ImageIcon(scaledDefaultImage)); // Set default profile picture
 	    }
 	    profilePic.revalidate();
 	    profilePic.repaint();
 	}
+	
 	private String selectProfilePicture() {
 	    JFileChooser fileChooser = new JFileChooser();
 	    fileChooser.setDialogTitle("Select Profile Picture");
@@ -741,16 +813,28 @@ public class Homepage extends JFrame {
 
 	    // Profile Picture
 	    profilePic = new JLabel();
+//	    String profilePicBase64 = currentUser.getProfilePicture();
+//	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
+//	        // Decode Base64 and set as profile picture
+//	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
+//	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+//	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+//	        profilePic.setIcon(new ImageIcon(scaledImage));
+//	    } else {
+//	        // Use placeholder if no profile picture is available
+//	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png"));
+//	    }
 	    String profilePicBase64 = currentUser.getProfilePicture();
 	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
-	        // Decode Base64 and set as profile picture
 	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
 	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
 	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
 	        profilePic.setIcon(new ImageIcon(scaledImage));
 	    } else {
-	        // Use placeholder if no profile picture is available
-	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png"));
+	        // Default profile picture
+	        ImageIcon defaultIcon = new ImageIcon("src/main/resources/icons/profile.png");
+	        Image scaledDefaultImage = defaultIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+	        profilePic.setIcon(new ImageIcon(scaledDefaultImage));
 	    }
 
 	    profilePic.setBounds(5, 25, 60, 60);
