@@ -175,34 +175,77 @@ public class SignUporIn {
 		btnSignUp.setBounds(horizontalOffset + 290, verticalOffset + 180, 117, 29); // Adjusted X position
 		signUpPanel.add(btnSignUp);
 
+//		btnSignUp.addActionListener(e -> {
+//			String username = textFieldName.getText();
+//			String email = textFieldEmail.getText();
+//			String password = new String(passwordField.getPassword());
+//
+//			if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+//				JOptionPane.showMessageDialog(frame, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
+//				return;
+//			}
+//
+//			// Generate user ID and save it in Firestore
+//			String userId = String.valueOf(System.currentTimeMillis());
+//			String passwordHash = Integer.toHexString(password.hashCode());
+//			UserProfile user = new UserProfile(userId, username, email, passwordHash);
+//			FirestoreHandler.addUserData(user);
+//
+//			// Store user information in SessionManager
+//			SessionManager.currentUserId = userId;
+//			SessionManager.currentUser = username;
+//
+//			// Update Welcome Panel with user details
+//			lblUserName.setText("Name: " + username);
+//			lblUserEmail.setText("Email: " + email);
+//
+//			// Inform the user and navigate to the Update Profile (Welcome) panel
+//			JOptionPane.showMessageDialog(frame, "Sign up successful! Please update your profile.", "Success",
+//					JOptionPane.INFORMATION_MESSAGE);
+//			cardLayout.show(mainPanel, "Welcome"); // Switch to Welcome (Update Profile) panel
+//		});
 		btnSignUp.addActionListener(e -> {
-			String username = textFieldName.getText();
-			String email = textFieldEmail.getText();
-			String password = new String(passwordField.getPassword());
+		    String username = textFieldName.getText().trim();
+		    String email = textFieldEmail.getText().trim();
+		    String password = new String(passwordField.getPassword()).trim();
 
-			if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-				JOptionPane.showMessageDialog(frame, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+		    List<String> missingFields = new ArrayList<>();
+		    if (username.isEmpty()) {
+		        missingFields.add("Full Name");
+		    }
+		    if (email.isEmpty()) {
+		        missingFields.add("Email");
+		    } else if (!isValidEmail(email)) {
+		        missingFields.add("Email (Invalid Format)");
+		    }
+		    if (password.isEmpty()) {
+		        missingFields.add("Password");
+		    }
 
-			// Generate user ID and save it in Firestore
-			String userId = String.valueOf(System.currentTimeMillis());
-			String passwordHash = Integer.toHexString(password.hashCode());
-			UserProfile user = new UserProfile(userId, username, email, passwordHash);
-			FirestoreHandler.addUserData(user);
+		    if (!missingFields.isEmpty()) {
+		        String message = "Please complete the following fields:\n" + String.join("\n", missingFields);
+		        JOptionPane.showMessageDialog(frame, message, "Missing Fields", JOptionPane.ERROR_MESSAGE);
+		        return;
+		    }
 
-			// Store user information in SessionManager
-			SessionManager.currentUserId = userId;
-			SessionManager.currentUser = username;
+		    // Generate user ID and save it in Firestore
+		    String userId = String.valueOf(System.currentTimeMillis());
+		    String passwordHash = Integer.toHexString(password.hashCode());
+		    UserProfile user = new UserProfile(userId, username, email, passwordHash);
+		    FirestoreHandler.addUserData(user);
 
-			// Update Welcome Panel with user details
-			lblUserName.setText("Name: " + username);
-			lblUserEmail.setText("Email: " + email);
+		    // Store user information in SessionManager
+		    SessionManager.currentUserId = userId;
+		    SessionManager.currentUser = username;
 
-			// Inform the user and navigate to the Update Profile (Welcome) panel
-			JOptionPane.showMessageDialog(frame, "Sign up successful! Please update your profile.", "Success",
-					JOptionPane.INFORMATION_MESSAGE);
-			cardLayout.show(mainPanel, "Welcome"); // Switch to Welcome (Update Profile) panel
+		    // Update Welcome Panel with user details
+		    lblUserName.setText("Name: " + username);
+		    lblUserEmail.setText("Email: " + email);
+
+		    // Inform the user and navigate to the Update Profile (Welcome) panel
+		    JOptionPane.showMessageDialog(frame, "Sign up successful! Please update your profile.", "Success",
+		            JOptionPane.INFORMATION_MESSAGE);
+		    cardLayout.show(mainPanel, "Welcome"); // Switch to Welcome (Update Profile) panel
 		});
 
 		JLabel lblLoginLink = new JLabel("<html><u>Already have an account? Login</u></html>");
@@ -215,6 +258,11 @@ public class SignUporIn {
 				cardLayout.show(mainPanel, "Login");
 			}
 		});
+	}
+	
+	private boolean isValidEmail(String email) {
+	    String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
+	    return email.matches(emailRegex);
 	}
 
 	private void initializeLoginPanel(JPanel loginPanel) {
@@ -454,30 +502,6 @@ public class SignUporIn {
 	        }
 	    }
 	}
-	private void handleSignUp(ActionEvent e) {
-		String username = textFieldName.getText();
-		String email = textFieldEmail.getText();
-		String password = new String(passwordField.getPassword());
-
-		if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-			JOptionPane.showMessageDialog(frame, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-
-		currentUserId = String.valueOf(System.currentTimeMillis());
-		String passwordHash = Integer.toHexString(password.hashCode());
-
-		UserProfile user = new UserProfile(currentUserId, username, email, passwordHash);
-		FirestoreHandler.addUserData(user);
-
-		lblUserName.setText("Name: " + username);
-		lblUserEmail.setText("Email: " + email);
-
-		JOptionPane.showMessageDialog(frame, "Sign up successful! Please complete your profile.", "Success",
-				JOptionPane.INFORMATION_MESSAGE);
-		cardLayout.show(mainPanel, "Welcome");
-	}
-
 
 	private void handleSave(ActionEvent e) {
 	    if (SessionManager.currentUserId == null) {
@@ -486,16 +510,48 @@ public class SignUporIn {
 	        return;
 	    }
 
-	    String username = lblUserName.getText().replace("Name: ", "");
-	    String email = lblUserEmail.getText().replace("Email: ", "");
-	    String dateOfBirth = dobField.getText();
-	    String bio = bioTextField.getText();
-	    String city = choiceCity.getSelectedItem();
-	    String university = choiceUniversity.getSelectedItem();
+	    String username = lblUserName.getText().replace("Name: ", "").trim();
+	    String email = lblUserEmail.getText().replace("Email: ", "").trim();
+	    String dateOfBirth = dobField.getText().trim(); // Format should be "__/__/____" if empty
+	    String bio = bioTextField.getText().trim();
+	    String city = choiceCity.getSelectedItem().trim();
+	    String university = choiceUniversity.getSelectedItem().trim();
 
 	    // Get selected interests
-	    String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
+	    String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "").trim();
 	    List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
+
+	    // Collect missing fields
+	    List<String> missingFields = new ArrayList<>();
+	    if (username.isEmpty()) {
+	        missingFields.add("Full Name");
+	    }
+	    if (email.isEmpty()) {
+	        missingFields.add("Email");
+	    }
+	    // Check if the Date of Birth field is empty or only contains the placeholder characters
+	    if (dateOfBirth.isEmpty() || dateOfBirth.contains("_")) {
+	        missingFields.add("Date of Birth");
+	    }
+	    if (bio.isEmpty()) {
+	        missingFields.add("Bio");
+	    }
+	    if (city.isEmpty()) {
+	        missingFields.add("City");
+	    }
+	    if (university.isEmpty()) {
+	        missingFields.add("University");
+	    }
+	    if (interests.isEmpty() || interestsSummary.equals("None selected")) {
+	        missingFields.add("Interests");
+	    }
+
+	    // Show error if there are missing fields
+	    if (!missingFields.isEmpty()) {
+	        String message = "Please complete the following fields:\n" + String.join("\n", missingFields);
+	        JOptionPane.showMessageDialog(frame, message, "Missing Fields", JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
 	    // Fetch existing user data to preserve passwordHash
 	    UserProfile existingUser = FirestoreHandler.getUserData(SessionManager.currentUserId);
@@ -516,7 +572,7 @@ public class SignUporIn {
 	        university, 
 	        interests, 
 	        existingUser.getPasswordHash(), 
-	        encodedProfilePicture // Include the profile picture
+	        encodedProfilePicture // Include the profile picture (optional)
 	    );
 
 	    // Update Firestore
@@ -533,6 +589,5 @@ public class SignUporIn {
 	        frame.dispose(); // Close the Update Profile window
 	    });
 	}
-	
 
 }
