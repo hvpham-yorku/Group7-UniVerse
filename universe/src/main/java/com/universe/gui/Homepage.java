@@ -411,39 +411,120 @@ public class Homepage extends JFrame {
 		}).start();
 	}
 
+//	private void showProfilePopup(UserProfile user) {
+//		JPanel profilePanel = new JPanel();
+//		profilePanel.setLayout(new BoxLayout(profilePanel, BoxLayout.Y_AXIS));
+//		profilePanel.add(new JLabel("Name: " + user.getUsername()));
+//		profilePanel.add(new JLabel("University: " + user.getUniversity()));
+//		profilePanel.add(new JLabel("City: " + user.getProvince()));
+//		profilePanel.add(new JLabel("Interest: " + user.getInterests()));
+//		profilePanel.add(new JLabel("Date of Birth: " + user.getDateOfBirth()));
+//		profilePanel.add(new JLabel("Email: " + user.getEmail()));
+//
+//		int option = JOptionPane.showOptionDialog(this, profilePanel, "User Profile", JOptionPane.OK_CANCEL_OPTION,
+//				JOptionPane.INFORMATION_MESSAGE, null, new String[] { "Add Friend", "Close" }, "Close");
+//
+//		if (option == JOptionPane.OK_OPTION) {
+//			// Check if the user is already added
+//			synchronized (addedFriends) {
+//				boolean isAlreadyAdded = addedFriends.stream()
+//						.anyMatch(friend -> friend.getUserId().equals(user.getUserId()));
+//				if (isAlreadyAdded) {
+//					// Notify the user that the friend is already added
+//					JOptionPane.showMessageDialog(this, user.getUsername() + " is already added as a friend!",
+//							"Friend Already Added", JOptionPane.WARNING_MESSAGE);
+//				} else {
+//					// Add the friend to the Firestore and update UI
+//					FirestoreHandler.addFriend(SessionManager.currentUserId, user.getUserId(), user.getUsername(),
+//							user.getUniversity());
+//					addedFriends.add(user);
+//					refreshRightPanelAfterDelay();
+//					JOptionPane.showMessageDialog(this, user.getUsername() + " has been added as a friend!", "Success",
+//							JOptionPane.INFORMATION_MESSAGE);
+//				}
+//			}
+//		}
+//	}
+	
 	private void showProfilePopup(UserProfile user) {
-		JPanel profilePanel = new JPanel();
-		profilePanel.setLayout(new BoxLayout(profilePanel, BoxLayout.Y_AXIS));
-		profilePanel.add(new JLabel("Name: " + user.getUsername()));
-		profilePanel.add(new JLabel("University: " + user.getUniversity()));
-		profilePanel.add(new JLabel("City: " + user.getProvince()));
-		profilePanel.add(new JLabel("Interest: " + user.getInterests()));
-		profilePanel.add(new JLabel("Date of Birth: " + user.getDateOfBirth()));
-		profilePanel.add(new JLabel("Email: " + user.getEmail()));
+	    JDialog dialog = new JDialog(this, "User Profile", true);
+	    dialog.setSize(250, 250); // Reduced size for a compact layout
+	    dialog.setLayout(new BorderLayout());
+	    dialog.setResizable(false);
 
-		int option = JOptionPane.showOptionDialog(this, profilePanel, "User Profile", JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.INFORMATION_MESSAGE, null, new String[] { "Add Friend", "Close" }, "Close");
+	    // Profile Panel
+	    JPanel profilePanel = new JPanel();
+	    profilePanel.setLayout(new BoxLayout(profilePanel, BoxLayout.Y_AXIS));
+	    profilePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); // Minimal padding around the content
 
-		if (option == JOptionPane.OK_OPTION) {
-			// Check if the user is already added
-			synchronized (addedFriends) {
-				boolean isAlreadyAdded = addedFriends.stream()
-						.anyMatch(friend -> friend.getUserId().equals(user.getUserId()));
-				if (isAlreadyAdded) {
-					// Notify the user that the friend is already added
-					JOptionPane.showMessageDialog(this, user.getUsername() + " is already added as a friend!",
-							"Friend Already Added", JOptionPane.WARNING_MESSAGE);
-				} else {
-					// Add the friend to the Firestore and update UI
-					FirestoreHandler.addFriend(SessionManager.currentUserId, user.getUserId(), user.getUsername(),
-							user.getUniversity());
-					addedFriends.add(user);
-					refreshRightPanelAfterDelay();
-					JOptionPane.showMessageDialog(this, user.getUsername() + " has been added as a friend!", "Success",
-							JOptionPane.INFORMATION_MESSAGE);
-				}
-			}
-		}
+	    // Profile Picture
+	    JLabel profilePictureLabel = new JLabel();
+	    profilePictureLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+	    profilePictureLabel.setPreferredSize(new Dimension(80, 80)); // Smaller image size
+
+	    if (user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
+	        byte[] imageBytes = Base64.getDecoder().decode(user.getProfilePicture());
+	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+	        profilePictureLabel.setIcon(new ImageIcon(scaledImage));
+	    } else {
+	        // Default profile picture
+	        ImageIcon defaultIcon = new ImageIcon("src/main/resources/icons/profile.png");
+	        Image scaledDefaultImage = defaultIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+	        profilePictureLabel.setIcon(new ImageIcon(scaledDefaultImage));
+	    }
+	    profilePanel.add(profilePictureLabel);
+
+	    // User Information
+	    JLabel nameLabel = new JLabel("Name: " + user.getUsername());
+	    JLabel universityLabel = new JLabel("University: " + user.getUniversity());
+	    JLabel cityLabel = new JLabel("City: " + user.getProvince());
+	    JLabel interestsLabel = new JLabel("Interest: " + user.getInterests());
+	    JLabel dobLabel = new JLabel("Date of Birth: " + user.getDateOfBirth());
+	    JLabel emailLabel = new JLabel("Email: " + user.getEmail());
+
+	    // Style and alignment
+	    List<JLabel> labels = Arrays.asList(nameLabel, universityLabel, cityLabel, interestsLabel, dobLabel, emailLabel);
+	    for (JLabel label : labels) {
+	        label.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+	        label.setFont(new Font("Arial", Font.PLAIN, 11)); // Compact font size
+	        profilePanel.add(label);
+	    }
+
+	    dialog.add(profilePanel, BorderLayout.CENTER);
+
+	    // Button Panel
+	    JPanel buttonPanel = new JPanel();
+	    buttonPanel.setLayout(new BorderLayout());
+	    JButton closeButton = new JButton("Close");
+	    closeButton.addActionListener(e -> dialog.dispose());
+	    JButton addFriendButton = new JButton("Add Friend");
+	    addFriendButton.addActionListener(e -> {
+	        synchronized (addedFriends) {
+	            if (addedFriends.stream().anyMatch(friend -> friend.getUserId().equals(user.getUserId()))) {
+	                JOptionPane.showMessageDialog(this, user.getUsername() + " is already added as a friend!",
+	                        "Friend Already Added", JOptionPane.WARNING_MESSAGE);
+	            } else {
+	                FirestoreHandler.addFriend(SessionManager.currentUserId, user.getUserId(), user.getUsername(),
+	                        user.getUniversity());
+	                addedFriends.add(user);
+	                refreshRightPanelAfterDelay();
+	                JOptionPane.showMessageDialog(this, user.getUsername() + " has been added as a friend!", "Success",
+	                        JOptionPane.INFORMATION_MESSAGE);
+	            }
+	        }
+	        dialog.dispose();
+	    });
+
+	    JPanel buttons = new JPanel();
+	    buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS)); // Compact side-by-side buttons
+	    buttons.add(closeButton);
+	    buttons.add(addFriendButton);
+
+	    dialog.add(buttons, BorderLayout.SOUTH);
+
+	    dialog.setLocationRelativeTo(this);
+	    dialog.setVisible(true);
 	}
 
 	public void showProfile(UserProfile user, JFrame parentFrame) {
