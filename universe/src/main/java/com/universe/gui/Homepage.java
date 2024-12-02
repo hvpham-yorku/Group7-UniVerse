@@ -778,9 +778,9 @@ public class Homepage extends JFrame {
 	    addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> {
 	        JOptionPane.showMessageDialog(parentFrame, "Notifications clicked!");
 	    });
-	    addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310, e -> {
-	        JOptionPane.showMessageDialog(parentFrame, "Community clicked!");
-	    });
+	    
+	    addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310, e -> navigatetoInterestPage(parentFrame));
+	    
 	    addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380, e -> {
 	        JOptionPane.showMessageDialog(parentFrame, "Settings clicked!");
 	    });
@@ -806,6 +806,14 @@ public class Homepage extends JFrame {
 	        messaging.setLocationRelativeTo(null); // Center the new window
 	    });
 	}
+	
+	private void navigatetoInterestPage(JFrame parentFrame) {
+		Interestspage interest = new Interestspage();
+		interest.setVisible(true);
+		interest.setLocationRelativeTo(null);
+		parentFrame.dispose();
+}
+	
 	private void addSidebarIcon(JPanel sidebar, String iconPath, String tooltip, int yPosition,
 			java.awt.event.ActionListener action) {
 		ImageIcon originalIcon = new ImageIcon(iconPath);
