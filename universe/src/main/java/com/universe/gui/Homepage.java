@@ -62,6 +62,7 @@ public class Homepage extends JFrame {
 	private JFormattedTextField dobField; 
 	private JLabel welcomeLabel;
 	private JLabel profilePic; // Class-level declaration
+
 	/**
 	 * Create the frame.
 	 */
