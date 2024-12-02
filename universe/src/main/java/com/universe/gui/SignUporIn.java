@@ -175,34 +175,77 @@ public class SignUporIn {
 		btnSignUp.setBounds(horizontalOffset + 290, verticalOffset + 180, 117, 29); // Adjusted X position
 		signUpPanel.add(btnSignUp);
 
+//		btnSignUp.addActionListener(e -> {
+//			String username = textFieldName.getText();
+//			String email = textFieldEmail.getText();
+//			String password = new String(passwordField.getPassword());
+//
+//			if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+//				JOptionPane.showMessageDialog(frame, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
+//				return;
+//			}
+//
+//			// Generate user ID and save it in Firestore
+//			String userId = String.valueOf(System.currentTimeMillis());
+//			String passwordHash = Integer.toHexString(password.hashCode());
+//			UserProfile user = new UserProfile(userId, username, email, passwordHash);
+//			FirestoreHandler.addUserData(user);
+//
+//			// Store user information in SessionManager
+//			SessionManager.currentUserId = userId;
+//			SessionManager.currentUser = username;
+//
+//			// Update Welcome Panel with user details
+//			lblUserName.setText("Name: " + username);
+//			lblUserEmail.setText("Email: " + email);
+//
+//			// Inform the user and navigate to the Update Profile (Welcome) panel
+//			JOptionPane.showMessageDialog(frame, "Sign up successful! Please update your profile.", "Success",
+//					JOptionPane.INFORMATION_MESSAGE);
+//			cardLayout.show(mainPanel, "Welcome"); // Switch to Welcome (Update Profile) panel
+//		});
 		btnSignUp.addActionListener(e -> {
-			String username = textFieldName.getText();
-			String email = textFieldEmail.getText();
-			String password = new String(passwordField.getPassword());
+		    String username = textFieldName.getText().trim();
+		    String email = textFieldEmail.getText().trim();
+		    String password = new String(passwordField.getPassword()).trim();
 
-			if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-				JOptionPane.showMessageDialog(frame, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+		    List<String> missingFields = new ArrayList<>();
+		    if (username.isEmpty()) {
+		        missingFields.add("Full Name");
+		    }
+		    if (email.isEmpty()) {
+		        missingFields.add("Email");
+		    } else if (!isValidEmail(email)) {
+		        missingFields.add("Email (Invalid Format)");
+		    }
+		    if (password.isEmpty()) {
+		        missingFields.add("Password");
+		    }
 
-			// Generate user ID and save it in Firestore
-			String userId = String.valueOf(System.currentTimeMillis());
-			String passwordHash = Integer.toHexString(password.hashCode());
-			UserProfile user = new UserProfile(userId, username, email, passwordHash);
-			FirestoreHandler.addUserData(user);
+		    if (!missingFields.isEmpty()) {
+		        String message = "Please complete the following fields:\n" + String.join("\n", missingFields);
+		        JOptionPane.showMessageDialog(frame, message, "Missing Fields", JOptionPane.ERROR_MESSAGE);
+		        return;
+		    }
 
-			// Store user information in SessionManager
-			SessionManager.currentUserId = userId;
-			SessionManager.currentUser = username;
+		    // Generate user ID and save it in Firestore
+		    String userId = String.valueOf(System.currentTimeMillis());
+		    String passwordHash = Integer.toHexString(password.hashCode());
+		    UserProfile user = new UserProfile(userId, username, email, passwordHash);
+		    FirestoreHandler.addUserData(user);
 
-			// Update Welcome Panel with user details
-			lblUserName.setText("Name: " + username);
-			lblUserEmail.setText("Email: " + email);
+		    // Store user information in SessionManager
+		    SessionManager.currentUserId = userId;
+		    SessionManager.currentUser = username;
 
-			// Inform the user and navigate to the Update Profile (Welcome) panel
-			JOptionPane.showMessageDialog(frame, "Sign up successful! Please update your profile.", "Success",
-					JOptionPane.INFORMATION_MESSAGE);
-			cardLayout.show(mainPanel, "Welcome"); // Switch to Welcome (Update Profile) panel
+		    // Update Welcome Panel with user details
+		    lblUserName.setText("Name: " + username);
+		    lblUserEmail.setText("Email: " + email);
+
+		    // Inform the user and navigate to the Update Profile (Welcome) panel
+		    JOptionPane.showMessageDialog(frame, "Sign up successful! Please update your profile.", "Success",
+		            JOptionPane.INFORMATION_MESSAGE);
+		    cardLayout.show(mainPanel, "Welcome"); // Switch to Welcome (Update Profile) panel
 		});
 
 		JLabel lblLoginLink = new JLabel("<html><u>Already have an account? Login</u></html>");
@@ -215,6 +258,11 @@ public class SignUporIn {
 				cardLayout.show(mainPanel, "Login");
 			}
 		});
+	}
+	
+	private boolean isValidEmail(String email) {
+	    String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
+	    return email.matches(emailRegex);
 	}
 
 	private void initializeLoginPanel(JPanel loginPanel) {
@@ -430,54 +478,108 @@ public class SignUporIn {
 	}
 
 
+//	private void handleAddPicture() {
+//	    JFileChooser fileChooser = new JFileChooser();
+//	    int result = fileChooser.showOpenDialog(frame);
+//	    if (result == JFileChooser.APPROVE_OPTION) {
+//	        try {
+//	            File selectedFile = fileChooser.getSelectedFile();
+//	            BufferedImage image = ImageIO.read(selectedFile);
+//
+//	            // Encode image to Base64
+//	            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//	            ImageIO.write(image, "png", baos); // Use "png" or other format
+//	            byte[] imageBytes = baos.toByteArray();
+//	            encodedProfilePicture = Base64.getEncoder().encodeToString(imageBytes);
+//
+//	            // Display the image in the UI
+//	            ImageIcon profilePic = new ImageIcon(selectedFile.getAbsolutePath());
+//	            Image scaledImage = profilePic.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+//	            profilePicLabel.setIcon(new ImageIcon(scaledImage));
+//	        } catch (Exception e) {
+//	            JOptionPane.showMessageDialog(frame, "Failed to load image.", "Error", JOptionPane.ERROR_MESSAGE);
+//	            e.printStackTrace();
+//	        }
+//	    }
+//	}
+//	private void handleAddPicture() {
+//	    JFileChooser fileChooser = new JFileChooser();
+//	    int result = fileChooser.showOpenDialog(frame);
+//	    if (result == JFileChooser.APPROVE_OPTION) {
+//	        try {
+//	            File selectedFile = fileChooser.getSelectedFile();
+//	            BufferedImage originalImage = ImageIO.read(selectedFile);
+//
+//	            // Resize the image to a maximum size (e.g., 300x300)
+//	            int maxDimension = 300;
+//	            BufferedImage resizedImage = resizeImage(originalImage, maxDimension, maxDimension);
+//
+//	            // Encode the resized image to Base64
+//	            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//	            ImageIO.write(resizedImage, "png", baos); // Use "png" or other format
+//	            byte[] imageBytes = baos.toByteArray();
+//	            encodedProfilePicture = Base64.getEncoder().encodeToString(imageBytes);
+//
+//	            // Display the resized image in the UI
+//	            ImageIcon profilePic = new ImageIcon(resizedImage);
+//	            Image scaledImage = profilePic.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+//	            profilePicLabel.setIcon(new ImageIcon(scaledImage));
+//	        } catch (Exception e) {
+//	            JOptionPane.showMessageDialog(frame, "Failed to load image.", "Error", JOptionPane.ERROR_MESSAGE);
+//	            e.printStackTrace();
+//	        }
+//	    }
+//	}
 	private void handleAddPicture() {
 	    JFileChooser fileChooser = new JFileChooser();
 	    int result = fileChooser.showOpenDialog(frame);
 	    if (result == JFileChooser.APPROVE_OPTION) {
 	        try {
 	            File selectedFile = fileChooser.getSelectedFile();
-	            BufferedImage image = ImageIO.read(selectedFile);
+	            BufferedImage originalImage = ImageIO.read(selectedFile);
 
-	            // Encode image to Base64
+	            // Resize the image to a maximum size (e.g., 300x300)
+	            int maxDimension = 300;
+	            BufferedImage resizedImage = resizeImage(originalImage, maxDimension, maxDimension);
+
+	            // Encode the resized image to Base64
 	            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	            ImageIO.write(image, "png", baos); // Use "png" or other format
+	            ImageIO.write(resizedImage, "png", baos); // Use "png" or other format
 	            byte[] imageBytes = baos.toByteArray();
 	            encodedProfilePicture = Base64.getEncoder().encodeToString(imageBytes);
 
-	            // Display the image in the UI
-	            ImageIcon profilePic = new ImageIcon(selectedFile.getAbsolutePath());
+	            // Display the resized image in the UI
+	            ImageIcon profilePic = new ImageIcon(resizedImage);
 	            Image scaledImage = profilePic.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
 	            profilePicLabel.setIcon(new ImageIcon(scaledImage));
 	        } catch (Exception e) {
 	            JOptionPane.showMessageDialog(frame, "Failed to load image.", "Error", JOptionPane.ERROR_MESSAGE);
 	            e.printStackTrace();
 	        }
+	    } else {
+	        // Reset to null if no picture is selected
+	        encodedProfilePicture = null;
+	        // Optional: Update the UI with the default profile picture
+	        profilePicLabel.setIcon(new ImageIcon("src/main/resources/icons/profile.png"));
 	    }
 	}
-	private void handleSignUp(ActionEvent e) {
-		String username = textFieldName.getText();
-		String email = textFieldEmail.getText();
-		String password = new String(passwordField.getPassword());
+	private BufferedImage resizeImage(BufferedImage originalImage, int maxWidth, int maxHeight) {
+	    int originalWidth = originalImage.getWidth();
+	    int originalHeight = originalImage.getHeight();
 
-		if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-			JOptionPane.showMessageDialog(frame, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+	    double scale = Math.min((double) maxWidth / originalWidth, (double) maxHeight / originalHeight);
 
-		currentUserId = String.valueOf(System.currentTimeMillis());
-		String passwordHash = Integer.toHexString(password.hashCode());
+	    int newWidth = (int) (originalWidth * scale);
+	    int newHeight = (int) (originalHeight * scale);
 
-		UserProfile user = new UserProfile(currentUserId, username, email, passwordHash);
-		FirestoreHandler.addUserData(user);
+	    BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
+	    Graphics g = resizedImage.getGraphics();
+	    g.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+	    g.dispose();
 
-		lblUserName.setText("Name: " + username);
-		lblUserEmail.setText("Email: " + email);
-
-		JOptionPane.showMessageDialog(frame, "Sign up successful! Please complete your profile.", "Success",
-				JOptionPane.INFORMATION_MESSAGE);
-		cardLayout.show(mainPanel, "Welcome");
+	    return resizedImage;
 	}
-
+	
 
 	private void handleSave(ActionEvent e) {
 	    if (SessionManager.currentUserId == null) {
@@ -486,16 +588,48 @@ public class SignUporIn {
 	        return;
 	    }
 
-	    String username = lblUserName.getText().replace("Name: ", "");
-	    String email = lblUserEmail.getText().replace("Email: ", "");
-	    String dateOfBirth = dobField.getText();
-	    String bio = bioTextField.getText();
-	    String city = choiceCity.getSelectedItem();
-	    String university = choiceUniversity.getSelectedItem();
+	    String username = lblUserName.getText().replace("Name: ", "").trim();
+	    String email = lblUserEmail.getText().replace("Email: ", "").trim();
+	    String dateOfBirth = dobField.getText().trim(); // Format should be "__/__/____" if empty
+	    String bio = bioTextField.getText().trim();
+	    String city = choiceCity.getSelectedItem().trim();
+	    String university = choiceUniversity.getSelectedItem().trim();
 
 	    // Get selected interests
-	    String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
+	    String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "").trim();
 	    List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
+
+	    // Collect missing fields
+	    List<String> missingFields = new ArrayList<>();
+	    if (username.isEmpty()) {
+	        missingFields.add("Full Name");
+	    }
+	    if (email.isEmpty()) {
+	        missingFields.add("Email");
+	    }
+	    // Check if the Date of Birth field is empty or only contains the placeholder characters
+	    if (dateOfBirth.isEmpty() || dateOfBirth.contains("_")) {
+	        missingFields.add("Date of Birth");
+	    }
+	    if (bio.isEmpty()) {
+	        missingFields.add("Bio");
+	    }
+	    if (city.isEmpty()) {
+	        missingFields.add("City");
+	    }
+	    if (university.isEmpty()) {
+	        missingFields.add("University");
+	    }
+	    if (interests.isEmpty() || interestsSummary.equals("None selected")) {
+	        missingFields.add("Interests");
+	    }
+
+	    // Show error if there are missing fields
+	    if (!missingFields.isEmpty()) {
+	        String message = "Please complete the following fields:\n" + String.join("\n", missingFields);
+	        JOptionPane.showMessageDialog(frame, message, "Missing Fields", JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
 	    // Fetch existing user data to preserve passwordHash
 	    UserProfile existingUser = FirestoreHandler.getUserData(SessionManager.currentUserId);
@@ -516,7 +650,7 @@ public class SignUporIn {
 	        university, 
 	        interests, 
 	        existingUser.getPasswordHash(), 
-	        encodedProfilePicture // Include the profile picture
+	        encodedProfilePicture // Include the profile picture (optional)
 	    );
 
 	    // Update Firestore
@@ -533,6 +667,5 @@ public class SignUporIn {
 	        frame.dispose(); // Close the Update Profile window
 	    });
 	}
-	
 
 }
