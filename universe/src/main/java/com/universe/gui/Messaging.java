@@ -7,6 +7,7 @@ import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Image;
+import java.util.Base64;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -56,6 +57,19 @@ public class Messaging extends JFrame {
 	// User data
 	private String currentUserId;
 	private String currentChatContactId;
+
+	private JLabel profilePic;
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(() -> {
+			try {
+				FirebaseInitializer.initializeFirebase();
+				Messaging frame = new Messaging();
+				frame.setVisible(true);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+	}
 
 
 	public Messaging() {
@@ -107,38 +121,59 @@ public class Messaging extends JFrame {
 	}
 
 	private JPanel createSidebar() {
-		JPanel sidebar = new JPanel();
-		sidebar.setPreferredSize(new Dimension(80, 0)); // Fixed width for the sidebar
-		sidebar.setBackground(Color.WHITE);
-		sidebar.setLayout(null);
+	    JPanel sidebar = new JPanel();
+	    sidebar.setPreferredSize(new Dimension(80, 0)); // Fixed width for the sidebar
+	    sidebar.setBackground(Color.WHITE);
+	    sidebar.setLayout(null);
 
-		// Profile label above the profile picture
-		JLabel profileLabel = new JLabel("Profile");
-		profileLabel.setFont(new Font("Roboto", Font.BOLD, 14));
-		profileLabel.setForeground(new Color(97, 97, 97)); // Gray color
-		profileLabel.setBounds(10, 5, 60, 20);
-		sidebar.add(profileLabel);
+	    // Initialize profilePic
+	    profilePic = new JLabel(); 
 
-		// Profile picture
-		JLabel profilePic = new JLabel(new ImageIcon("src/main/resources/icons/profile.png"));
-		profilePic.setBounds(10, 25, 60, 60);
-		sidebar.add(profilePic);
+	    String profilePicBase64 = FirestoreHandler.getUserData(currentUserId).getProfilePicture(); // Fetch profile picture
+	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
+	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
+	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+	        profilePic.setIcon(new ImageIcon(scaledImage));
+	    } else {
+	        // Default profile picture
+	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png"));
+	    }
 
-		// Add sidebar icons and actions
-		addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> navigateToHomepage());
-		addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {
-		});
-		addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240,
-				e -> JOptionPane.showMessageDialog(this, "Notifications clicked!"));
-		addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310,
-				e -> JOptionPane.showMessageDialog(this, "Community clicked!"));
-		addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380,
-				e -> JOptionPane.showMessageDialog(this, "Settings clicked!"));
-		addSidebarIcon(sidebar, "src/main/resources/icons/leave.png", "Logout", 450, e -> handleLogout());
+	    profilePic.setBounds(10, 28, 60, 60);
+	    profilePic.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Change cursor to hand
+	    profilePic.setToolTipText("View Profile"); 
 
-		return sidebar;
+	    sidebar.add(profilePic);
+
+	    // Add sidebar icons and actions
+	    addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> navigateToHomepage());
+	    addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {});
+	    addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240,
+	            e -> JOptionPane.showMessageDialog(this, "Notifications clicked!"));
+	    addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310,
+	            e -> JOptionPane.showMessageDialog(this, "Community clicked!"));
+	    addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380,
+	            e -> JOptionPane.showMessageDialog(this, "Settings clicked!"));
+	    addSidebarIcon(sidebar, "src/main/resources/icons/leave.png", "Logout", 450, e -> handleLogout());
+
+	    return sidebar;
 	}
-
+	
+	private void refreshProfilePicture() {
+	    String profilePicBase64 = FirestoreHandler.getUserData(currentUserId).getProfilePicture(); // Fetch latest picture
+	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
+	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
+	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+	        profilePic.setIcon(new ImageIcon(scaledImage));
+	    } else {
+	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png")); // Default icon
+	    }
+	    profilePic.revalidate();
+	    profilePic.repaint(); // Ensure immediate UI refresh
+	}
+	
 	private void addSidebarIcon(JPanel sidebar, String iconPath, String tooltip, int yPosition,
 			java.awt.event.ActionListener action) {
 		ImageIcon originalIcon = new ImageIcon(iconPath);
@@ -162,7 +197,7 @@ public class Messaging extends JFrame {
 		});
 		dispose(); // Close current page
 	}
-
+	
 	private void handleLogout() {
 		int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit?", "Exit Confirmation",
 				JOptionPane.YES_NO_OPTION);
@@ -442,5 +477,6 @@ public class Messaging extends JFrame {
 	    // Scroll to the latest message
 	    SwingUtilities.invokeLater(() -> chatScrollPane.getVerticalScrollBar()
 	            .setValue(chatScrollPane.getVerticalScrollBar().getMaximum()));
+
 	}
 }

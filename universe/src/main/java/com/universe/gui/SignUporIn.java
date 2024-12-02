@@ -9,11 +9,15 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -33,6 +37,7 @@ import javax.swing.text.MaskFormatter;
 
 import com.universe.FirestoreHandler;
 import com.universe.models.UserProfile;
+import com.universe.utils.Constants;
 import com.universe.utils.SessionManager;
 
 public class SignUporIn {
@@ -53,6 +58,7 @@ public class SignUporIn {
 	private List<String> selectedInterests;
 	private JLabel profilePicLabel;
 	private String currentUserId;
+	private String encodedProfilePicture;
 
 	public static void main(String[] args) {
 
@@ -343,11 +349,8 @@ public class SignUporIn {
 
 		choiceCity = new Choice();
 		choiceCity.setBounds(rightColumnX + labelWidth, verticalOffset + 80, fieldWidth, fieldHeight);
-		String[] cities = { "Toronto", "Ottawa", "Mississauga", "Brampton", "Hamilton", "London", "Markham", "Vaughan",
-				"Kitchener", "Windsor", "Richmond Hill", "Oakville", "Burlington", "Sudbury", "Oshawa",
-				"St. Catharines", "Barrie", "Cambridge", "Kingston", "Guelph", "Thunder Bay", "Waterloo", "Pickering",
-				"Niagara Falls", "Whitby" };
-		for (String city : cities) {
+	
+		for (String city : Constants.CITIES) {
 			choiceCity.add(city);
 		}
 		welcomePanel.add(choiceCity);
@@ -359,12 +362,8 @@ public class SignUporIn {
 
 		choiceUniversity = new Choice();
 		choiceUniversity.setBounds(rightColumnX + labelWidth, verticalOffset + 120, fieldWidth, fieldHeight);
-		String[] universities = { "University of Toronto", "York University", "McMaster University",
-				"University of Waterloo", "Western University", "Queen's University", "University of Ottawa",
-				"Carleton University", "University of Guelph", "Lakehead University", "Trent University",
-				"Wilfrid Laurier University", "Brock University", "Ryerson University", "Laurentian University",
-				"Nipissing University", "Ontario Tech University", "Algoma University" };
-		for (String university : universities) {
+		
+		for (String university : Constants.UNIVERSITIES) {
 			choiceUniversity.add(university);
 		}
 		welcomePanel.add(choiceUniversity);
@@ -398,47 +397,13 @@ public class SignUporIn {
 		JPanel interestsPanel = new JPanel();
 		interestsPanel.setLayout(new BoxLayout(interestsPanel, BoxLayout.Y_AXIS));
 
-		String[] interests = { "Sports", "Music", "Reading", "Travel", "Art", "Technology", "Cooking", "Fitness",
-				"Gaming", "Movies", "Photography", "Fashion", "Environment", "Social Media", "Entrepreneurship",
-				"Volunteering", "Writing", "Public Speaking", "Languages", "Hiking", "Yoga", "Meditation",
-				"Health & Wellness", "Debate", "Community Service", "Cultural Activities", "Programming", "Robotics",
-				"Startups", "Investing", "Astronomy", "Biology", "Physics", "Chemistry", "Mathematics", "Economics",
-				"History", "Philosophy", "Political Science", "Psychology", "Sociology", "Graphic Design",
-				"Video Editing", "Content Creation", "Podcasts", "Camping", "Food Tasting", "Dance", "Theater",
-				"Stand-Up Comedy", "Board Games", "Card Games", "Puzzles", "Gardening", "Pets & Animals", "Anime",
-				"Comics", "Creative Writing", "Journalism", "3D Modeling", "Virtual Reality", "Augmented Reality",
-				"Cryptocurrency", "Blockchain", "Marketing", "Advertising", "Digital Art", "Painting", "Sculpting",
-				"Music Production", "DJing", "Cars", "Motorcycles", "DIY Projects", "Home Decor", "Cooking Experiments",
-				"Baking", "Mixology", "Event Planning", "Networking", "Career Development", "Fitness Challenges",
-				"Weightlifting", "CrossFit", "Rugby", "Soccer", "Basketball", "Swimming", "Martial Arts",
-				"Self-Defense", "Esports", "Streaming", "Interior Design", "Mindfulness", "Climate Activism",
-				"Pet Care", "Charity Work", "Startup Pitches", "Business Plan Writing", "Urban Exploration",
-				"Bird Watching", "Science Fiction", "Fantasy", "Classical Music", "Hip Hop", "Rock Music",
-				"Electronic Music", "Jazz", "Blues", "Country Music", "Reggae", "K-Pop", "J-Pop", "Latino Music",
-				"Dancehall", "Piano", "Guitar", "Drums", "Violin", "Networking Events", "TED Talks", "Personal Finance",
-				"Home Brewing", "Cheese Tasting", "Public Relations", "Social Activism", "Podcast Hosting",
-				"Speech Competitions", "Debate Club", "Yoga Retreats", "Survival Skills", "Outdoor Adventures",
-				"Mountain Biking", "Skateboarding", "Snowboarding", "Skiing", "Fishing", "Kayaking", "Sailing",
-				"Scuba Diving", "Freediving", "Surfing", "Archery", "Horseback Riding", "Cycling", "Triathlons",
-				"Running", "Marathon Training", "Hunting", "Skydiving", "Bungee Jumping", "Parkour", "Geocaching",
-				"Street Art", "Mural Painting", "Tattoo Art", "Hairstyling", "Cosplay", "Conventions",
-				"LARPing (Live Action Role Playing)", "Escape Rooms", "Trivia Nights", "Improv Comedy", "Sketching",
-				"Woodworking", "Metalworking", "Leather Crafting", "Knitting", "Crocheting", "Sewing", "Quilting",
-				"Storytelling", "Magic Tricks", "Collecting", "Antique Hunting", "Vinyl Collecting", "Record Stores",
-				"Museum Hopping", "Concerts", "Theater Plays", "Opera", "Ballet", "Trivia Games",
-				"Learning New Languages", "Coding Hackathons", "Mathematics Competitions", "Model United Nations",
-				"Science Fairs", "History Reenactment", "Cultural Festivals", "Travel Blogging", "Food Blogging",
-				"Vlogging", "Fitness Blogging", "Book Clubs", "Study Groups", "Research Projects", "Academic Writing",
-				"Grant Writing", "Academic Conferences", "Eco-Friendly Lifestyle", "Upcycling", "Minimalism",
-				"Zero Waste", "Urban Gardening", "Sustainable Development", "Wildlife Conservation" };
-
-		Arrays.sort(interests);
+		String[] interests = Constants.INTERESTS;
 
 		List<JCheckBox> checkBoxes = new ArrayList<>();
 		for (String interest : interests) {
-			JCheckBox checkBox = new JCheckBox(interest);
-			interestsPanel.add(checkBox);
-			checkBoxes.add(checkBox);
+		    JCheckBox checkBox = new JCheckBox(interest);
+		    interestsPanel.add(checkBox);
+		    checkBoxes.add(checkBox);
 		}
 
 		dialog.add(new JScrollPane(interestsPanel), BorderLayout.CENTER);
@@ -458,21 +423,37 @@ public class SignUporIn {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.add(btnOk);
 		dialog.add(buttonPanel, BorderLayout.SOUTH);
+	    dialog.setLocationRelativeTo(null);
 
+		
 		dialog.setVisible(true);
 	}
 
-	private void handleAddPicture() {
-		JFileChooser fileChooser = new JFileChooser();
-		int result = fileChooser.showOpenDialog(frame);
-		if (result == JFileChooser.APPROVE_OPTION) {
-			File selectedFile = fileChooser.getSelectedFile();
-			ImageIcon profilePic = new ImageIcon(selectedFile.getAbsolutePath());
-			Image scaledImage = profilePic.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
-			profilePicLabel.setIcon(new ImageIcon(scaledImage));
-		}
-	}
 
+	private void handleAddPicture() {
+	    JFileChooser fileChooser = new JFileChooser();
+	    int result = fileChooser.showOpenDialog(frame);
+	    if (result == JFileChooser.APPROVE_OPTION) {
+	        try {
+	            File selectedFile = fileChooser.getSelectedFile();
+	            BufferedImage image = ImageIO.read(selectedFile);
+
+	            // Encode image to Base64
+	            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	            ImageIO.write(image, "png", baos); // Use "png" or other format
+	            byte[] imageBytes = baos.toByteArray();
+	            encodedProfilePicture = Base64.getEncoder().encodeToString(imageBytes);
+
+	            // Display the image in the UI
+	            ImageIcon profilePic = new ImageIcon(selectedFile.getAbsolutePath());
+	            Image scaledImage = profilePic.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+	            profilePicLabel.setIcon(new ImageIcon(scaledImage));
+	        } catch (Exception e) {
+	            JOptionPane.showMessageDialog(frame, "Failed to load image.", "Error", JOptionPane.ERROR_MESSAGE);
+	            e.printStackTrace();
+	        }
+	    }
+	}
 	private void handleSignUp(ActionEvent e) {
 		String username = textFieldName.getText();
 		String email = textFieldEmail.getText();
@@ -497,49 +478,61 @@ public class SignUporIn {
 		cardLayout.show(mainPanel, "Welcome");
 	}
 
+
 	private void handleSave(ActionEvent e) {
-		if (SessionManager.currentUserId == null) {
-			JOptionPane.showMessageDialog(frame, "No user logged in to save data for.", "Error",
-					JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+	    if (SessionManager.currentUserId == null) {
+	        JOptionPane.showMessageDialog(frame, "No user logged in to save data for.", "Error",
+	                JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
-		String username = lblUserName.getText().replace("Name: ", "");
-		String email = lblUserEmail.getText().replace("Email: ", "");
-		String dateOfBirth = dobField.getText();
-		String bio = bioTextField.getText();
-		String city = choiceCity.getSelectedItem();
-		String university = choiceUniversity.getSelectedItem();
+	    String username = lblUserName.getText().replace("Name: ", "");
+	    String email = lblUserEmail.getText().replace("Email: ", "");
+	    String dateOfBirth = dobField.getText();
+	    String bio = bioTextField.getText();
+	    String city = choiceCity.getSelectedItem();
+	    String university = choiceUniversity.getSelectedItem();
 
-		// Get selected interests
-		String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
-		List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
+	    // Get selected interests
+	    String interestsSummary = lblInterestsSummary.getText().replace("Selected Interests: ", "");
+	    List<String> interests = interestsSummary.isEmpty() ? new ArrayList<>() : List.of(interestsSummary.split(", "));
 
-		// Fetch existing user data to preserve passwordHash
-		UserProfile existingUser = FirestoreHandler.getUserData(SessionManager.currentUserId);
-		if (existingUser == null) {
-			JOptionPane.showMessageDialog(frame, "User data not found in Firestore.", "Error",
-					JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+	    // Fetch existing user data to preserve passwordHash
+	    UserProfile existingUser = FirestoreHandler.getUserData(SessionManager.currentUserId);
+	    if (existingUser == null) {
+	        JOptionPane.showMessageDialog(frame, "User data not found in Firestore.", "Error",
+	                JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
-		// Create updated user profile while preserving the passwordHash
-		UserProfile updatedUser = new UserProfile(SessionManager.currentUserId, username, email, bio, dateOfBirth, city,
-				university, interests, existingUser.getPasswordHash());
+	    // Create updated user profile while preserving the passwordHash
+	    UserProfile updatedUser = new UserProfile(
+	        SessionManager.currentUserId, 
+	        username, 
+	        email, 
+	        bio, 
+	        dateOfBirth, 
+	        city,
+	        university, 
+	        interests, 
+	        existingUser.getPasswordHash(), 
+	        encodedProfilePicture // Include the profile picture
+	    );
 
-		// Update Firestore
-		FirestoreHandler.updateUserData(updatedUser);
+	    // Update Firestore
+	    FirestoreHandler.updateUserData(updatedUser);
 
-		JOptionPane.showMessageDialog(frame, "Profile updated successfully!", "Success",
-				JOptionPane.INFORMATION_MESSAGE);
+	    JOptionPane.showMessageDialog(frame, "Profile updated successfully!", "Success",
+	            JOptionPane.INFORMATION_MESSAGE);
 
-		// Navigate to the Homepage
-		EventQueue.invokeLater(() -> {
-			Homepage homepage = new Homepage();
-			homepage.setVisible(true);
-			homepage.setLocationRelativeTo(null);
-			frame.dispose(); // Close the Update Profile window
-		});
+	    // Navigate to the Homepage
+	    EventQueue.invokeLater(() -> {
+	        Homepage homepage = new Homepage();
+	        homepage.setVisible(true);
+	        homepage.setLocationRelativeTo(null);
+	        frame.dispose(); // Close the Update Profile window
+	    });
 	}
+	
 
 }

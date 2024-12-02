@@ -1,33 +1,50 @@
 
 package com.universe.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
+import javax.swing.text.MaskFormatter;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.universe.FirebaseInitializer;
 import com.universe.FirestoreHandler;
 import com.universe.models.UserProfile;
+import com.universe.utils.Constants;
 import com.universe.utils.SessionManager;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Base64;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.JOptionPane;
 
 public class Homepage extends JFrame {
 
@@ -42,7 +59,9 @@ public class Homepage extends JFrame {
 	private UserProfile currentUser; // Logged-in user's profile
 
 	private JLabel noFriendsLabel; // Label for "No friends added yet"
-
+	private JFormattedTextField dobField; 
+	private JLabel welcomeLabel;
+	private JLabel profilePic; // Class-level declaration
 
 	/**
 	 * Create the frame.
@@ -79,13 +98,15 @@ public class Homepage extends JFrame {
 			addedFriends = new ArrayList<>();
 		}
 
+		
 		// Welcome panel
 		JPanel welcomePanel = new JPanel();
 		welcomePanel.setBounds(100, 10, 770, 60);
 		welcomePanel.setBackground(Color.WHITE);
 		welcomePanel.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
 		welcomePanel.setLayout(null);
-		JLabel welcomeLabel = new JLabel("Hi " + currentUser.getUsername() + ", Welcome to UniVerse!", JLabel.CENTER);
+		
+		welcomeLabel = new JLabel("Hi " + currentUser.getUsername() + ", Welcome to UniVerse!", JLabel.CENTER);
 		welcomeLabel.setFont(new Font("Inria Sans", Font.BOLD, 20));
 		welcomeLabel.setForeground(new Color(31, 162, 255));
 		welcomeLabel.setBounds(0, 5, 770, 50);
@@ -149,7 +170,8 @@ public class Homepage extends JFrame {
 		friendsPanel.add(searchField);
 
 		// Search button
-		JButton searchButton = new JButton("Search");
+		JButton searchButton = new JButton("");
+		searchButton.setEnabled(false);
 		searchButton.setBounds(200, 35, 60, 30);
 		searchButton.setFont(new Font("Roboto", Font.BOLD, 12));
 		searchButton.setBackground(new Color(46, 157, 251));
@@ -421,47 +443,370 @@ public class Homepage extends JFrame {
 		}
 	}
 
-	private JPanel createSidebar(JFrame parentFrame) {
-		JPanel sidebar = new JPanel();
-		sidebar.setBounds(10, 10, 70, 540);
-		sidebar.setBackground(Color.WHITE);
-		sidebar.setLayout(null);
+	public void showProfile(UserProfile user, JFrame parentFrame) {
+	    JDialog dialog = new JDialog(parentFrame, "Edit My Profile", true);
+	    dialog.setSize(500, 700);
+	    dialog.getContentPane().setLayout(null);
 
-		JLabel profilePic = new JLabel(new ImageIcon("src/main/resources/icons/profile.png"));
-		profilePic.setBounds(5, 25, 60, 60);
-		sidebar.add(profilePic);
+	    int yPosition = 20; // Vertical position for each component
+	    int labelWidth = 120;
+	    int fieldWidth = 250;
+	    int fieldHeight = 30;
 
-		addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> {
-			// Homepage homepage = new Homepage();
-			// homepage.setVisible(true);
-			// parentFrame.dispose();
-		});
-		addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {
-			Messaging messaging = new Messaging();
-			messaging.setVisible(true);
-			messaging.setLocationRelativeTo(null);
-			parentFrame.dispose();
-		});
-		addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> {
-			JOptionPane.showMessageDialog(parentFrame, "Notifications clicked!");
-		});
-		addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310, e -> {
-			JOptionPane.showMessageDialog(parentFrame, "Community clicked!");
-		});
-		addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380, e -> {
-			JOptionPane.showMessageDialog(parentFrame, "Settings clicked!");
-		});
-		addSidebarIcon(sidebar, "src/main/resources/icons/leave.png", "Logout", 450, e -> {
-			int confirm = JOptionPane.showConfirmDialog(parentFrame, "Are you sure you want to exit?",
-					"Exit Confirmation", JOptionPane.YES_NO_OPTION);
-			if (confirm == JOptionPane.YES_OPTION) {
-				System.exit(0);
-			}
-		});
+	    // Full Name Field (Not Editable)
+	    JLabel lblName = new JLabel("Full Name:");
+	    lblName.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.getContentPane().add(lblName);
 
-		return sidebar;
+	    JLabel nameField = new JLabel(user.getUsername());
+	    nameField.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    dialog.getContentPane().add(nameField);
+
+	    yPosition += 50;
+
+	    // Email Field (Not Editable)
+	    JLabel lblEmail = new JLabel("Email:");
+	    lblEmail.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.getContentPane().add(lblEmail);
+
+	    JLabel emailField = new JLabel(user.getEmail());
+	    emailField.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    dialog.getContentPane().add(emailField);
+
+	    yPosition += 50;
+
+	    // Date of Birth Field (Not Editable)
+	    JLabel lblDob = new JLabel("Date of Birth:");
+	    lblDob.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.getContentPane().add(lblDob);
+
+	    JLabel dobField = new JLabel(user.getDateOfBirth());
+	    dobField.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    dialog.getContentPane().add(dobField);
+
+	    yPosition += 50;
+
+	    // Bio Field (Editable)
+	    JLabel lblBio = new JLabel("Bio:");
+	    lblBio.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.getContentPane().add(lblBio);
+
+	    JTextField bioField = new JTextField(user.getBio() != null ? user.getBio() : "");
+	    bioField.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    dialog.getContentPane().add(bioField);
+
+	    yPosition += 50;
+
+	    // City Field (Editable)
+	    JLabel lblCity = new JLabel("City:");
+	    lblCity.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.getContentPane().add(lblCity);
+
+	    Choice cityChoice = new Choice();
+	    cityChoice.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    for (String city : Constants.CITIES) {
+	        cityChoice.add(city);
+	    }
+	    cityChoice.select(user.getProvince() != null ? user.getProvince() : "");
+	    dialog.getContentPane().add(cityChoice);
+
+	    yPosition += 50;
+
+	    // University Field (Not Editable)
+	    JLabel lblUniversity = new JLabel("University:");
+	    lblUniversity.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.getContentPane().add(lblUniversity);
+
+	    JLabel universityField = new JLabel(user.getUniversity());
+	    universityField.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    dialog.getContentPane().add(universityField);
+
+	    yPosition += 50;
+
+	    // Interests Field (Editable via Button)
+	    JLabel lblInterests = new JLabel("Interests:");
+	    lblInterests.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.getContentPane().add(lblInterests);
+
+	    String interestsText = (user.getInterests() != null) ? String.join(", ", user.getInterests()) : "No interests specified";
+	    JLabel interestsSummary = new JLabel(interestsText);
+	    interestsSummary.setBounds(150, yPosition, fieldWidth, fieldHeight);
+	    dialog.getContentPane().add(interestsSummary);
+
+	    JButton btnEditInterests = new JButton("Edit Interests");
+	    btnEditInterests.setBounds(150, yPosition + 40, 150, fieldHeight);
+	    dialog.getContentPane().add(btnEditInterests);
+
+	    btnEditInterests.addActionListener(e -> {
+	        List<String> selectedInterests = showInterestSelectionDialog(parentFrame, user.getInterests() != null ? user.getInterests() : new ArrayList<>());
+	        user.setInterests(selectedInterests); // Update user's interests immediately
+	        interestsSummary.setText(String.join(", ", selectedInterests)); // Update displayed interests
+	    });
+
+	    yPosition += 100;
+
+	    // Profile Picture Section
+	    JLabel lblProfilePicture = new JLabel("Profile Picture:");
+	    lblProfilePicture.setBounds(20, yPosition, labelWidth, fieldHeight);
+	    dialog.getContentPane().add(lblProfilePicture);
+
+	    JLabel profilePicturePreview = new JLabel();
+	    profilePicturePreview.setBounds(150, yPosition, 100, 100);
+	    if (user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
+	        byte[] imageBytes = Base64.getDecoder().decode(user.getProfilePicture());
+	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+	        profilePicturePreview.setIcon(new ImageIcon(scaledImage));
+	    }
+	    dialog.getContentPane().add(profilePicturePreview);
+
+	    JButton btnChangeProfilePicture = new JButton("Change Picture");
+	    btnChangeProfilePicture.setBounds(260, yPosition + 35, 140, fieldHeight);
+	    btnChangeProfilePicture.addActionListener(e -> {
+	        String newProfilePicture = selectProfilePicture();
+	        if (newProfilePicture != null) {
+	            user.setProfilePicture(newProfilePicture);
+	            
+	            // Update the preview in the dialog
+	            byte[] imageBytes = Base64.getDecoder().decode(newProfilePicture);
+	            ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+	            Image scaledImage = profileImageIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+	            profilePicturePreview.setIcon(new ImageIcon(scaledImage));
+	            
+	            // Save the updated profile picture to Firestore
+	            FirestoreHandler.updateUserData(user);
+	            
+	            // Refresh the sidebar profile picture
+	            updateSidebarProfilePicture(newProfilePicture);
+	        }
+	    });
+	    dialog.getContentPane().add(btnChangeProfilePicture);
+
+	    yPosition += 120;
+
+	    // Save Changes Button
+	    JButton btnSave = new JButton("Save Changes");
+	    btnSave.setBounds(180, yPosition, 150, fieldHeight);
+	    dialog.getContentPane().add(btnSave);
+
+	    btnSave.addActionListener(e -> {
+	        // Update other fields
+	        user.setBio(bioField.getText());
+	        user.setProvince(cityChoice.getSelectedItem());
+
+	        // Save updates to Firestore
+	        FirestoreHandler.updateUserData(user);
+
+	        
+	        JOptionPane.showMessageDialog(dialog, "Profile updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+	        dialog.dispose(); // Close the dialog
+	    });
+
+	    dialog.setLocationRelativeTo(null);
+	    dialog.setVisible(true);
 	}
 
+	private void updateSidebarProfilePicture(String newProfilePicture) {
+	    if (newProfilePicture != null && !newProfilePicture.isEmpty()) {
+	        byte[] imageBytes = Base64.getDecoder().decode(newProfilePicture);
+	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+	        profilePic.setIcon(new ImageIcon(scaledImage)); // Update the sidebar picture
+	    } else {
+	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png")); // Default icon
+	    }
+	    profilePic.revalidate();
+	    profilePic.repaint();
+	}
+	private String selectProfilePicture() {
+	    JFileChooser fileChooser = new JFileChooser();
+	    fileChooser.setDialogTitle("Select Profile Picture");
+	    fileChooser.setFileFilter(new FileNameExtensionFilter("Image Files", "jpg", "jpeg", "png"));
+
+	    int result = fileChooser.showOpenDialog(null);
+	    if (result == JFileChooser.APPROVE_OPTION) {
+	        File selectedFile = fileChooser.getSelectedFile();
+	        try {
+	            byte[] imageBytes = Files.readAllBytes(selectedFile.toPath());
+	            return Base64.getEncoder().encodeToString(imageBytes);
+	        } catch (IOException e) {
+	            JOptionPane.showMessageDialog(null, "Error reading image file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+	        }
+	    }
+	    return null;
+	}
+	private String getFormattedInterests(UserProfile user) {
+	    List<String> interests = user.getInterests();
+	    if (interests == null || interests.isEmpty()) {
+	        return "No interests specified"; // Placeholder text
+	    }
+	    return String.join(", ", interests);
+	}
+	private List<String> showInterestSelectionDialog(JFrame parentFrame, List<String> currentInterests) {
+	    JDialog dialog = new JDialog(parentFrame, "Select Interests", true);
+	    dialog.setSize(400, 300);
+	    dialog.getContentPane().setLayout(new BorderLayout());
+
+	    JPanel interestsPanel = new JPanel();
+	    interestsPanel.setLayout(new BoxLayout(interestsPanel, BoxLayout.Y_AXIS));
+
+	    // Use sorted interests from Constants
+	    String[] interests = Constants.INTERESTS;
+
+	    // Create checkboxes and preselect based on currentInterests
+	    List<JCheckBox> checkBoxes = new ArrayList<>();
+	    for (String interest : interests) {
+	        JCheckBox checkBox = new JCheckBox(interest);
+	        if (currentInterests.contains(interest)) { // Preselect if it matches current interests
+	            checkBox.setSelected(true);
+	        }
+	        interestsPanel.add(checkBox);
+	        checkBoxes.add(checkBox);
+	    }
+
+	    dialog.getContentPane().add(new JScrollPane(interestsPanel), BorderLayout.CENTER);
+
+	    JButton btnOk = new JButton("OK");
+	    btnOk.addActionListener(e -> {
+	        dialog.dispose();
+	    });
+
+	    JPanel buttonPanel = new JPanel();
+	    buttonPanel.add(btnOk);
+	    dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+
+	    dialog.setVisible(true);
+
+	    // Collect selected interests after the dialog is closed
+	    List<String> selectedInterests = new ArrayList<>();
+	    for (JCheckBox checkBox : checkBoxes) {
+	        if (checkBox.isSelected()) {
+	            selectedInterests.add(checkBox.getText());
+	        }
+	    }
+
+	    return selectedInterests;
+	}
+
+	private void openEditDetailsDialog(UserProfile user) {
+		JPanel editPanel = new JPanel();
+		editPanel.setLayout(new BoxLayout(editPanel, BoxLayout.Y_AXIS));
+
+		JTextField nameField = new JTextField(user.getUsername());
+		JTextField universityField = new JTextField(user.getUniversity());
+		JTextField cityField = new JTextField(user.getProvince());
+		JTextField interestsField = new JTextField(String.join(", ", user.getInterests()));
+		JTextField dobField = new JTextField(user.getDateOfBirth());
+		JTextField emailField = new JTextField(user.getEmail());
+
+		editPanel.add(new JLabel("Name:"));
+		editPanel.add(nameField);
+		editPanel.add(new JLabel("University:"));
+		editPanel.add(universityField);
+		editPanel.add(new JLabel("City:"));
+		editPanel.add(cityField);
+		editPanel.add(new JLabel("Interests (comma-separated):"));
+		editPanel.add(interestsField);
+		editPanel.add(new JLabel("Date of Birth:"));
+		editPanel.add(dobField);
+		editPanel.add(new JLabel("Email:"));
+		editPanel.add(emailField);
+
+		int result = JOptionPane.showConfirmDialog(this, editPanel, "Edit My Profile", JOptionPane.OK_CANCEL_OPTION);
+
+		if (result == JOptionPane.OK_OPTION) {
+			// Save the updated details to the user's profile
+			user.setUsername(nameField.getText());
+			user.setUniversity(universityField.getText());
+			user.setProvince(cityField.getText());
+			user.setInterests(List.of(interestsField.getText().split(",\\s*")));
+			user.setDateOfBirth(dobField.getText());
+			user.setEmail(emailField.getText());
+
+			// Update the database with the new details
+			FirestoreHandler.updateUserData(user);
+
+			// Show a success message
+			JOptionPane.showMessageDialog(this, "Profile updated successfully!", "Success",
+					JOptionPane.INFORMATION_MESSAGE);
+		}
+	}
+
+
+	
+	private JPanel createSidebar(JFrame parentFrame) {
+	    JPanel sidebar = new JPanel();
+	    sidebar.setBounds(10, 10, 70, 540);
+	    sidebar.setBackground(Color.WHITE);
+	    sidebar.setLayout(null);
+
+	    // Profile Picture
+	    profilePic = new JLabel();
+	    String profilePicBase64 = currentUser.getProfilePicture();
+	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
+	        // Decode Base64 and set as profile picture
+	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
+	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+	        profilePic.setIcon(new ImageIcon(scaledImage));
+	    } else {
+	        // Use placeholder if no profile picture is available
+	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png"));
+	    }
+
+	    profilePic.setBounds(5, 25, 60, 60);
+	    profilePic.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Change cursor to hand for click indication
+	    profilePic.setToolTipText("View Profile"); // Tooltip for accessibility
+
+	    profilePic.addMouseListener(new java.awt.event.MouseAdapter() {
+	        @Override
+	        public void mouseClicked(java.awt.event.MouseEvent e) {
+	            // Show the current user's profile in a pop-up
+	            showProfile(currentUser, Homepage.this);
+	        }
+	    });
+	    sidebar.add(profilePic);
+
+	    // Sidebar Icons
+	    addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> {
+	        // Homepage homepage = new Homepage();
+	        // homepage.setVisible(true);
+	        // parentFrame.dispose();
+	    });
+	    addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {
+	        navigateToMessages(parentFrame);
+	    });
+	    addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> {
+	        JOptionPane.showMessageDialog(parentFrame, "Notifications clicked!");
+	    });
+	    addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310, e -> {
+	        JOptionPane.showMessageDialog(parentFrame, "Community clicked!");
+	    });
+	    addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380, e -> {
+	        JOptionPane.showMessageDialog(parentFrame, "Settings clicked!");
+	    });
+	    addSidebarIcon(sidebar, "src/main/resources/icons/leave.png", "Logout", 450, e -> {
+	        int confirm = JOptionPane.showConfirmDialog(parentFrame, "Are you sure you want to exit?",
+	                "Exit Confirmation", JOptionPane.YES_NO_OPTION);
+	        if (confirm == JOptionPane.YES_OPTION) {
+	            System.exit(0);
+	        }
+	    });
+
+	    return sidebar;
+	}
+
+	private void navigateToMessages(JFrame parentFrame) {
+	    // Dispose of the current frame to clean up resources
+	    parentFrame.dispose(); 
+
+	    // Safely open the Messaging frame on the Event Dispatch Thread
+	    EventQueue.invokeLater(() -> {
+	        Messaging messaging = new Messaging();
+	        messaging.setVisible(true);
+	        messaging.setLocationRelativeTo(null); // Center the new window
+	    });
+	}
 	private void addSidebarIcon(JPanel sidebar, String iconPath, String tooltip, int yPosition,
 			java.awt.event.ActionListener action) {
 		ImageIcon originalIcon = new ImageIcon(iconPath);
