@@ -198,9 +198,10 @@ public class Notifications extends JFrame {
 
         switch (type) {
             case "friend_request":
-                JOptionPane.showMessageDialog(this, "Friend Request received.");
-                break;
-
+               JOptionPane.showMessageDialog(this, "Friend Request received.");
+            	
+                 break;
+            	
             case "new_message":
                 Map<String, Object> metadata = (Map<String, Object>) notification.get("metadata");
                 if (metadata != null) {
