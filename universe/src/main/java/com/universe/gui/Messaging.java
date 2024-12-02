@@ -31,6 +31,7 @@ import org.json.JSONObject;
 import com.ConfigLoader;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.ListenerRegistration;
+import com.universe.FirebaseInitializer;
 import com.universe.FirestoreHandler;
 import com.universe.models.UserProfile;
 import com.universe.utils.SessionManager;
@@ -73,7 +74,6 @@ public class Messaging extends JFrame {
 
 
 	public Messaging() {
-	    System.out.println("Messaging constructor started...");
 
 		// Initialize user session
 		currentUserId = SessionManager.currentUserId;
