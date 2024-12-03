@@ -13,6 +13,7 @@ import java.util.Base64;
 
 import com.universe.models.UserProfile;
 import com.universe.utils.SessionManager;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.universe.FirestoreHandler;
 
 public class Interestspage extends JFrame {
@@ -52,8 +53,7 @@ public class Interestspage extends JFrame {
 
         userInterests = currentUser.getInterests();
         if (userInterests == null) userInterests = new ArrayList<>();
-        userGroups = FirestoreHandler.getUserGroups(currentUserId);
-        if (userGroups == null) userGroups = new ArrayList<>();
+        userGroups = new ArrayList<>();
 
         setTitle("Join a Community Page");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -82,13 +82,34 @@ public class Interestspage extends JFrame {
         JPanel sidebar = createSidebar(this);
         contentPane.add(sidebar);
 
-        createLeftPanel(); // Groups user has joined
-        createRightPanel(); // Groups user might be interested in
+        createLeftPanel();
+        createRightPanel();
 
-        populateUserGroups(userGroups);
-        populateAllGroups(); // Show all groups initially
-       // populateMatchingGroups(userInterests); // Populate right panel with matching groups
+        // Attach real-time listener to the user's groups
+        FirestoreHandler.getUserGroupsRealtime(currentUserId, (snapshot, e) -> {
+            if (e != null) {
+                System.err.println("Error listening to user groups: " + e.getMessage());
+                return;
+            }
+
+            if (snapshot != null && snapshot.exists()) {
+                List<String> groups = (List<String>) snapshot.get("groups");
+                if (groups != null) {
+                    userGroups.clear();
+                    userGroups.addAll(groups);
+                    populateUserGroups(userGroups); // Update left panel
+                }
+            }
+        });
+
+        populateAllGroups(); // Populate the right panel with all groups
     }
+
+
+
+
+
+
 
     private void createLeftPanel() {
         JPanel leftPanel = new JPanel();
@@ -174,6 +195,7 @@ public class Interestspage extends JFrame {
 
     private void populateAllGroups() {
         interestsListPanel.removeAll();
+
         List<Map<String, Object>> allGroups = FirestoreHandler.getAllGroups();
 
         if (allGroups == null || allGroups.isEmpty()) {
@@ -190,6 +212,7 @@ public class Interestspage extends JFrame {
         interestsListPanel.revalidate();
         interestsListPanel.repaint();
     }
+
     
 
     private void handleGroupSearch() {
@@ -228,34 +251,69 @@ public class Interestspage extends JFrame {
         groupCard.setBackground(new Color(230, 230, 230));
         groupCard.setLayout(null);
 
-        JLabel groupLabel = new JLabel((String) groupData.get("groupName"));
+        String groupName = (String) groupData.get("groupName");
+
+        JLabel groupLabel = new JLabel(groupName);
         groupLabel.setFont(new Font("Roboto", Font.BOLD, 13));
         groupLabel.setBounds(10, 5, 200, 20);
         groupCard.add(groupLabel);
 
-        JButton joinButton = new JButton("Join");
-        joinButton.setBounds(220, 5, 60, 30);
-        joinButton.setFont(new Font("Roboto", Font.BOLD, 10));
-        joinButton.setBackground(new Color(46, 157, 251));
-        joinButton.setForeground(Color.BLACK);
-        joinButton.addActionListener(e -> joinGroup((String) groupData.get("groupName")));
-        groupCard.add(joinButton);
+        // Check membership dynamically
+        boolean isMember = userGroups.contains(groupName);
 
+        JButton actionButton = new JButton(isMember ? "Joined" : "Join");
+        actionButton.setBounds(220, 5, 80, 30);
+        actionButton.setFont(new Font("Roboto", Font.BOLD, 10));
+        actionButton.setBackground(isMember ? new Color(46, 204, 113) : new Color(46, 157, 251));
+        actionButton.setForeground(Color.BLACK);
+
+        // Button click action
+        actionButton.addActionListener(e -> {
+            if (!isMember) {
+                // Join group
+                FirestoreHandler.addUserToGroup(SessionManager.currentUserId, groupName);
+                userGroups.add(groupName); // Update local state
+                actionButton.setText("Joined");
+                actionButton.setBackground(new Color(46, 204, 113));
+                actionButton.setEnabled(false); // Disable the button
+                populateUserGroups(userGroups); // Refresh the left panel
+            } else {
+                // Leave group
+                FirestoreHandler.removeUserFromGroup(SessionManager.currentUserId, groupName);
+                userGroups.remove(groupName); // Update local state
+                actionButton.setText("Join");
+                actionButton.setBackground(new Color(46, 157, 251));
+                actionButton.setEnabled(true); // Re-enable the button
+                populateUserGroups(userGroups); // Refresh the left panel
+            }
+        });
+
+        // Disable button if already joined
+        actionButton.setEnabled(!isMember);
+
+        groupCard.add(actionButton);
         interestsListPanel.add(groupCard);
     }
 
-    private void joinGroup(String groupName) {
-        if (!userGroups.contains(groupName)) {
-            FirestoreHandler.addUserToGroup(SessionManager.currentUserId, groupName);
-            userGroups.add(groupName);
-            populateUserGroups(userGroups);
-            JOptionPane.showMessageDialog(this, "You have successfully joined the group: " + groupName,
-                    "Success", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this, "You are already a member of this group.",
-                    "Info", JOptionPane.INFORMATION_MESSAGE);
-        }
-    }
+
+
+
+
+
+
+//    private void joinGroup(String groupName) {
+//        if (!userGroups.contains(groupName)) {
+//            FirestoreHandler.addUserToGroup(SessionManager.currentUserId, groupName);
+//            JOptionPane.showMessageDialog(this, "You have successfully joined the group: " + groupName,
+//                    "Success", JOptionPane.INFORMATION_MESSAGE);
+//        } else {
+//            JOptionPane.showMessageDialog(this, "You are already a member of this group.",
+//                    "Info", JOptionPane.INFORMATION_MESSAGE);
+//        }
+//    }
+
+
+
 
     private JPanel createSidebar(JFrame parentFrame) {
         JPanel sidebar = new JPanel();
@@ -373,9 +431,16 @@ public class Interestspage extends JFrame {
                 addUserGroupCard(group);
             }
         }
+
         userGroupsListPanel.revalidate();
         userGroupsListPanel.repaint();
     }
+
+
+
+
+
+
 
 
 
@@ -430,6 +495,8 @@ public class Interestspage extends JFrame {
 
         userGroupsListPanel.add(groupCard);
     }
+    
+    
 
 //    private void handleSearch() {
 //        String query = searchField.getText().trim().toLowerCase();
@@ -454,34 +521,34 @@ public class Interestspage extends JFrame {
 //        interestsListPanel.repaint();
 //    }
 
-    private void showJoinConfirmation(String interest) {
-        String description = "<html><b>Description:</b><br>" +
-                             "This group provides a platform to connect with like-minded individuals who share a passion for " + interest + ".<br>" +
-                             "The purpose of this community is to foster collaboration and exchange ideas, resources, and strategies to grow together.<br>" +
-                             "By joining, you will have the opportunity to:<br>" +
-                             "- Share insights and experiences.<br>" +
-                             "- Build valuable connections.<br>" +
-                             "- Work collectively to achieve personal and group objectives.<br>" +
-                             "</html>";
-
-        JPanel confirmationPanel = new JPanel();
-        confirmationPanel.setLayout(new BoxLayout(confirmationPanel, BoxLayout.Y_AXIS));
-        confirmationPanel.add(new JLabel("You're about to join the " + interest + " Community."));
-        confirmationPanel.add(new JLabel(description));
-
-        int response = JOptionPane.showOptionDialog(this,
-                confirmationPanel,
-                "Confirm Join",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                new String[]{"Join Now", "Cancel"},
-                "Cancel");
-        if (response == JOptionPane.YES_OPTION) {
-            userGroups.add(interest);
-            populateUserGroups(userGroups);
-        }
-    }
+//    private void showJoinConfirmation(String interest) {
+//        String description = "<html><b>Description:</b><br>" +
+//                             "This group provides a platform to connect with like-minded individuals who share a passion for " + interest + ".<br>" +
+//                             "The purpose of this community is to foster collaboration and exchange ideas, resources, and strategies to grow together.<br>" +
+//                             "By joining, you will have the opportunity to:<br>" +
+//                             "- Share insights and experiences.<br>" +
+//                             "- Build valuable connections.<br>" +
+//                             "- Work collectively to achieve personal and group objectives.<br>" +
+//                             "</html>";
+//
+//        JPanel confirmationPanel = new JPanel();
+//        confirmationPanel.setLayout(new BoxLayout(confirmationPanel, BoxLayout.Y_AXIS));
+//        confirmationPanel.add(new JLabel("You're about to join the " + interest + " Community."));
+//        confirmationPanel.add(new JLabel(description));
+//
+//        int response = JOptionPane.showOptionDialog(this,
+//                confirmationPanel,
+//                "Confirm Join",
+//                JOptionPane.YES_NO_OPTION,
+//                JOptionPane.QUESTION_MESSAGE,
+//                null,
+//                new String[]{"Join Now", "Cancel"},
+//                "Cancel");
+//        if (response == JOptionPane.YES_OPTION) {
+//            userGroups.add(interest);
+//            populateUserGroups(userGroups);
+//        }
+//    }
 
     private void showLeaveConfirmation(String group) {
         int response = JOptionPane.showOptionDialog(this,
@@ -493,10 +560,12 @@ public class Interestspage extends JFrame {
                 new String[]{"Leave", "Cancel"},
                 "Cancel");
         if (response == JOptionPane.YES_OPTION) {
-            userGroups.remove(group);
-            populateUserGroups(userGroups);
+            FirestoreHandler.removeUserFromGroup(SessionManager.currentUserId, group);
+            JOptionPane.showMessageDialog(this, "You have successfully left the group: " + group,
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
         }
     }
+
 
     private void openGroupPage(String group) {
         JDialog groupDialog = new JDialog(this, "Welcome to " + group + " Universe Group", true);
@@ -602,32 +671,23 @@ public class Interestspage extends JFrame {
         descriptionField.setWrapStyleWord(true);
         createGroupDialog.add(descriptionField);
 
-        JLabel interestLabel = new JLabel("Related Interest:");
-        interestLabel.setBounds(20, 150, 110, 25);
-        createGroupDialog.add(interestLabel);
-
-        JComboBox<String> interestComboBox = new JComboBox<>(userInterests.toArray(new String[0]));
-        interestComboBox.setBounds(130, 150, 230, 25);
-        createGroupDialog.add(interestComboBox);
-
         JLabel rulesLabel = new JLabel("Rules:");
-        rulesLabel.setBounds(20, 190, 100, 25);
+        rulesLabel.setBounds(20, 150, 100, 25);
         createGroupDialog.add(rulesLabel);
 
         JTextArea rulesField = new JTextArea();
-        rulesField.setBounds(130, 190, 230, 60);
+        rulesField.setBounds(130, 150, 230, 60);
         rulesField.setLineWrap(true);
         rulesField.setWrapStyleWord(true);
         createGroupDialog.add(rulesField);
 
         JButton createButton = new JButton("Create");
-        createButton.setBounds(150, 270, 100, 30);
+        createButton.setBounds(150, 250, 100, 30);
         createButton.setBackground(new Color(46, 157, 251));
         createButton.setForeground(Color.BLACK);
         createButton.addActionListener(e -> {
             String groupName = nameField.getText().trim();
             String groupDescription = descriptionField.getText().trim();
-            String relatedInterest = (String) interestComboBox.getSelectedItem();
             String rules = rulesField.getText().trim();
 
             if (groupName.isEmpty()) {
@@ -635,16 +695,28 @@ public class Interestspage extends JFrame {
                 return;
             }
 
-            FirestoreHandler.createGroup(SessionManager.currentUserId, groupName, groupDescription, relatedInterest, rules);
+            // Check for duplicate groups in Firestore
+            boolean groupExists = FirestoreHandler.getAllGroups().stream()
+                    .anyMatch(group -> group.get("groupName").equals(groupName));
+            if (groupExists) {
+                JOptionPane.showMessageDialog(createGroupDialog, "A group with this name already exists.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Create the group and add the creator to the group
+            FirestoreHandler.createGroup(SessionManager.currentUserId, groupName, groupDescription, null, rules);
+            FirestoreHandler.addUserToGroup(SessionManager.currentUserId, groupName); // Add creator to group
+
             JOptionPane.showMessageDialog(createGroupDialog, "Group created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             createGroupDialog.dispose();
 
-            populateAllGroups();
+            populateAllGroups(); // Refresh the right panel
         });
         createGroupDialog.add(createButton);
 
         createGroupDialog.setVisible(true);
     }
+
 
 
 }

@@ -18,6 +18,7 @@ import com.google.cloud.firestore.ListenerRegistration;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.SetOptions;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 import com.universe.models.UserProfile;
@@ -352,6 +353,8 @@ public class FirestoreHandler {
 		}
 		return users;
 	}
+	
+	
 
 	/**
 	 * Kennie Fetch a one-time list of all friends from Firestore.
@@ -418,24 +421,25 @@ public class FirestoreHandler {
 		// Attach a snapshot listener to the collection (ordered by timestamp)
 		return messagesRef.orderBy("timestamp", Query.Direction.ASCENDING).addSnapshotListener(listener);
 	}
-	 //Modifies for community page 
-	public static List<String> getUserGroups(String userId) {
-	    List<String> userGroups = new ArrayList<>();
-	    try {
-	        // Replace with actual Firestore logic to fetch user's groups
-	        // Example logic:
-	        Firestore db = FirestoreClient.getFirestore();
-	        DocumentReference docRef = db.collection("users").document(userId);
-	        ApiFuture<DocumentSnapshot> future = docRef.get();
-	        DocumentSnapshot document = future.get();
-	        if (document.exists()) {
-	            userGroups = (List<String>) document.get("groups"); // Adjust based on your Firestore schema
-	        }
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-	    return userGroups;
-	}
+	 //Modifies for community page , kennie
+	
+//	public static List<String> getUserGroups(String userId) {
+//	    List<String> userGroups = new ArrayList<>();
+//	    try {
+//	        // Replace with actual Firestore logic to fetch user's groups
+//	        // Example logic:
+//	        Firestore db = FirestoreClient.getFirestore();
+//	        DocumentReference docRef = db.collection("users").document(userId);
+//	        ApiFuture<DocumentSnapshot> future = docRef.get();
+//	        DocumentSnapshot document = future.get();
+//	        if (document.exists()) {
+//	            userGroups = (List<String>) document.get("groups"); // Adjust based on your Firestore schema
+//	        }
+//	    } catch (Exception e) {
+//	        e.printStackTrace();
+//	    }
+//	    return userGroups;
+//	}
 	
 	/**
      * Fetches members of a group from the database.
@@ -491,6 +495,15 @@ public class FirestoreHandler {
         try {
             CollectionReference groupsCollection = db.collection("groups");
 
+            // Check if a group with the same name already exists
+            Query query = groupsCollection.whereEqualTo("groupName", groupName);
+            QuerySnapshot existingGroups = query.get().get();
+
+            if (!existingGroups.isEmpty()) {
+                System.out.println("A group with this name already exists!");
+                return; // Avoid creating duplicate groups
+            }
+
             // Create group data
             Map<String, Object> groupData = new HashMap<>();
             groupData.put("creatorId", creatorId);
@@ -501,13 +514,31 @@ public class FirestoreHandler {
             groupData.put("members", List.of(creatorId)); // Add the creator as the first member
 
             // Save to Firestore
-            ApiFuture<DocumentReference> result = groupsCollection.add(groupData);
-            System.out.println("Group created with ID: " + result.get().getId());
+            groupsCollection.document(groupName).set(groupData).get();
+            System.out.println("Group created successfully: " + groupName);
+
+            // Add the group to the creator's list of groups
+            DocumentReference userDoc = db.collection(COLLECTION_NAME).document(creatorId);
+            userDoc.update("groups", FieldValue.arrayUnion(groupName)).get();
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Error creating group: " + e.getMessage());
         }
     }
+    
+    public static void repopulateGroups(List<Map<String, Object>> groups) {
+        CollectionReference groupsCollection = db.collection("groups");
+
+        for (Map<String, Object> groupData : groups) {
+            String groupName = (String) groupData.get("groupName");
+            groupsCollection.document(groupName).set(groupData);
+        }
+        System.out.println("Groups repopulated successfully!");
+    }
+
+
+
+
 
     public static List<Map<String, Object>> getAllGroups() {
         List<Map<String, Object>> groups = new ArrayList<>();
@@ -527,46 +558,106 @@ public class FirestoreHandler {
         return groups;
     }
 
+   
+
+ // Add a real-time listener for user groups
+    public static void getUserGroups(EventListener<QuerySnapshot> listener, String userId) {
+        CollectionReference userGroupsRef = db.collection(COLLECTION_NAME).document(userId).collection("groups");
+        userGroupsRef.addSnapshotListener(listener);
+    }
+
+
+    // Add a user to a group and sync with Firestore
     public static void addUserToGroup(String userId, String groupName) {
         try {
-            Firestore db = FirestoreClient.getFirestore();
-
-            // Update the group document to add the user to the members list
+            // Reference to the group document
             DocumentReference groupDoc = db.collection("groups").document(groupName);
+
+            // Check if the group document exists; create it if necessary
+            if (!groupDoc.get().get().exists()) {
+                Map<String, Object> groupData = new HashMap<>();
+                groupData.put("groupName", groupName);
+                groupData.put("members", new ArrayList<>()); // Initialize members list
+                groupDoc.set(groupData).get();
+            }
+
+            // Add the user to the group's "members" list
             groupDoc.update("members", FieldValue.arrayUnion(userId)).get();
 
-            // Optionally, update the user's document to store the group they joined
-            DocumentReference userDoc = db.collection("users").document(userId);
+            // Add the group to the user's "groups" list
+            DocumentReference userDoc = db.collection(COLLECTION_NAME).document(userId);
+            if (!userDoc.get().get().contains("groups")) {
+                userDoc.set(new HashMap<String, Object>() {{
+                    put("groups", new ArrayList<>());
+                }}, SetOptions.merge());
+            }
             userDoc.update("groups", FieldValue.arrayUnion(groupName)).get();
 
-            System.out.println("User " + userId + " added to group " + groupName);
+            System.out.println("User " + userId + " successfully added to group " + groupName);
         } catch (Exception e) {
-            e.printStackTrace();
             System.err.println("Error adding user to group: " + e.getMessage());
         }
     }
 
-    public static List<Map<String, Object>> getGroupsMatchingInterests(List<String> interests) {
-        List<Map<String, Object>> matchingGroups = new ArrayList<>();
+
+
+
+    // Remove a user from a group and sync with Firestore
+    public static void removeUserFromGroup(String userId, String groupName) {
         try {
-            CollectionReference groupsRef = db.collection("groups");
+            // Remove user from group's members
+            DocumentReference groupDoc = db.collection("groups").document(groupName);
+            groupDoc.update("members", FieldValue.arrayRemove(userId)).get();
 
-            for (String interest : interests) {
-                Query query = groupsRef.whereEqualTo("groupName", interest);
-                ApiFuture<QuerySnapshot> querySnapshot = query.get();
+            // Remove group from user's groups
+            DocumentReference userDoc = db.collection(COLLECTION_NAME).document(userId);
+            userDoc.update("groups", FieldValue.arrayRemove(groupName)).get();
 
-                for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
-                    Map<String, Object> groupData = document.getData();
-                    if (groupData != null) {
-                        matchingGroups.add(groupData);
-                    }
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            System.err.println("Error fetching groups matching interests: " + e.getMessage());
+            System.out.println("User " + userId + " successfully removed from group " + groupName);
+        } catch (Exception e) {
+            System.err.println("Error removing user from group: " + e.getMessage());
         }
-        return matchingGroups;
     }
+
+
+    
+    //Add a method to attach a real-time listener to the user's groups.
+    
+    public static ListenerRegistration getUserGroupsRealtime(String userId, EventListener<DocumentSnapshot> listener) {
+        DocumentReference userDoc = db.collection(COLLECTION_NAME).document(userId);
+        return userDoc.addSnapshotListener(listener);
+    }
+
+
+
+
+
+
+
+
+
+
+//    public static List<Map<String, Object>> getGroupsMatchingInterests(List<String> interests) {
+//        List<Map<String, Object>> matchingGroups = new ArrayList<>();
+//        try {
+//            CollectionReference groupsRef = db.collection("groups");
+//
+//            for (String interest : interests) {
+//                Query query = groupsRef.whereEqualTo("groupName", interest);
+//                ApiFuture<QuerySnapshot> querySnapshot = query.get();
+//
+//                for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+//                    Map<String, Object> groupData = document.getData();
+//                    if (groupData != null) {
+//                        matchingGroups.add(groupData);
+//                    }
+//                }
+//            }
+//        } catch (InterruptedException | ExecutionException e) {
+//            System.err.println("Error fetching groups matching interests: " + e.getMessage());
+//        }
+//        return matchingGroups;
+//    }
 
 
 
