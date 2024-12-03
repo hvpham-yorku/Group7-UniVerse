@@ -23,7 +23,7 @@
    - **Criteria for Satisfaction**:
      - Users can edit or delete their bio, profile picture, university, program, year of study, and interests.
      - Users have the option to delete their account entirely.
-   - **Status**: 🔄 Added for Sprint 2 (Edit profile functionality in progress).
+   - **Status**: 🔄 Added for Sprint 2 (Edit profile functionality in progress).✅ Completed in Sprint 2
 
 4. **User Story**: As a user, I want to search for connections based on specific interests to find people who share my hobbies or passions.
    - **Criteria for Satisfaction**:
@@ -77,7 +77,7 @@
     - **Criteria for Satisfaction**:
       - Users receive in-app and push notifications for matches, messages, and activities.
       - Users can adjust notification preferences.
-    - **Status**: 🔄 Added for Sprint 2 (Notifications page testing in progress).
+    - **Status**: 🔄 Added for Sprint 2 (Notifications page testing in progress). ✅ Completed in Sprint 2
 
 13. **User Story**: As a user, I want to filter suggested matches by location and availability so that I can find people nearby and available for meetups.
     - **Criteria for Satisfaction**:
@@ -119,27 +119,25 @@
     - **Criteria for Satisfaction**:
       - “Featured Interests” section displays popular or trending hobbies.
       - Users can directly connect with others from this section.
-    - **Status**: 🔄 Added for Sprint 2 (Join Community page testing in progress).
+    - **Status**: 🔄 Added for Sprint 2 (Join Community page testing in progress). ✅ Completed in Sprint 2
 
-20. **User Story**: As an admin, I want to monitor reported users and take action to uphold community standards and safety.
-    - **Criteria for Satisfaction**:
-      - Admins can review reports with details on blocked/reported users.
-      - Actions include warnings, temporary suspension, or account termination.
-    - **Status**: Not started.
-
-21. **User Story**: As a user, I want to message an AI chatbot to ask questions or have a conversation, similar to ChatGPT.
+20. **User Story**: As a user, I want to message an AI chatbot to ask questions or have a conversation, similar to ChatGPT.
     - **Criteria for Satisfaction**:
       - The AI chatbot can respond in real-time.
       - Chatbot messages are displayed in the same format as user conversations.
       - Chat history with the chatbot is stored and retrievable.
-    - **Status**: 🔄 Added for Sprint 2 (Join Community page testing in progress).
+    - **Status**: 🔄 Added for Sprint 2 (Join Community page testing in progress). ✅ Completed in Sprint 2
 
-22. **User Story**: As a user, I want to join a community page to connect with interest-based groups and interact with members.
+21. **User Story**: As a user, I want to join a community page to connect with interest-based groups and interact with members.
     - **Criteria for Satisfaction**:
       - Users can create interest-based groups.
       - Users can join existing groups and view group details.
       - Users can add friends directly from group pages.
       - Users can manage their group memberships (leave groups).
-      - Users can delete groups they have created.
-    - **Status**: 🔄 Added for Sprint 2 (Join Community page testing in progress).
+    - **Status**: 🔄 Added for Sprint 2 (Join Community page testing in progress). ✅ Completed in Sprint 2
+
+22. **User Story**: As an admin, I want to be able to delete groups I have created.
+    - **Criteria for Satisfaction**:
+      - Only people who have created a group can delete that group.
+    - **Status**: 🔄 Added for Sprint 2 (Join Community page testing in progress). ✅ Completed in Sprint 2
 
