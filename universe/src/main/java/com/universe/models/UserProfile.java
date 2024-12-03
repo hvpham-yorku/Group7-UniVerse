@@ -57,6 +57,12 @@ public class UserProfile {
 		this.email = email;
 		this.passwordHash = passwordHash;
 	}
+	
+	public UserProfile(String userId, String username, String email) {
+		this.userId = userId;
+		this.username = username;
+		this.email = email;
+	}
 
 	public UserProfile(String userId, String username, String email, String bio, String dateOfBirth, String province,
 			String university, List<String> interests) {
