@@ -20,14 +20,18 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 
+import com.google.api.services.storage.Storage.Notifications;
 import com.universe.FirebaseInitializer;
 import com.universe.FirestoreHandler;
+import com.universe.models.UserProfile;
 import com.universe.utils.SessionManager;
 
 public class Notifications extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
+	private List<UserProfile> addedFriends; // Store added friends for the logged-in user
+
 
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
@@ -196,12 +200,20 @@ public class Notifications extends JFrame {
         String notificationId = (String) notification.get("id"); // Get notification ID for deletion
         String userId = SessionManager.currentUserId;
 
+
         switch (type) {
             case "friend_request":
-               JOptionPane.showMessageDialog(this, "Friend Request received.");
+            	JOptionPane.showMessageDialog(this, "Friend Request received.");
+            	EventQueue.invokeLater(() -> {
+                    Homepage hp = new Homepage();
+                    hp.setVisible(true);
+                    hp.setLocationRelativeTo(null);
+            	  });
+                dispose();
+                 
+                break;
             	
-                 break;
-            	
+                           	
             case "new_message":
                 Map<String, Object> metadata = (Map<String, Object>) notification.get("metadata");
                 if (metadata != null) {
@@ -246,6 +258,5 @@ public class Notifications extends JFrame {
         }
         
     }
-    
-
+   
 }
