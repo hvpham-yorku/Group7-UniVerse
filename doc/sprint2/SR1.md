@@ -26,7 +26,6 @@
 
 ## 2. Preparing for Sprint 2
 ### PB.md Updates:
-- **[Summary of updates made to PB.md]**  
 - **[Location saved:** `doc/sprint2`]**  
 
 ---
