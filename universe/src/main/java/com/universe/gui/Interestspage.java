@@ -4,12 +4,14 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.util.Base64;
+import java.util.HashSet;
 
 import com.universe.models.UserProfile;
 import com.universe.utils.SessionManager;
@@ -142,7 +144,7 @@ public class Interestspage extends JFrame {
         rightPanel.setBorder(BorderFactory.createLineBorder(new Color(46, 157, 251), 2));
         rightPanel.setLayout(null);
 
-        JLabel rightLabel = new JLabel("All Groups");
+        JLabel rightLabel = new JLabel("Popular Groups");
         rightLabel.setBounds(10, 10, 310, 20);
         rightLabel.setFont(new Font("Roboto", Font.BOLD, 12));
         rightPanel.add(rightLabel);
@@ -282,8 +284,14 @@ public class Interestspage extends JFrame {
 
                 if (confirm == JOptionPane.YES_OPTION) {
                     FirestoreHandler.addUserToGroup(SessionManager.currentUserId, groupName);
-                    userGroups.add(groupName); // Update user's groups
-                    populateUserGroups(userGroups); // Refresh left panel
+                    
+                 // Avoid duplicate addition to the list
+                    if (!userGroups.contains(groupName)) {
+                        userGroups.add(groupName); // Update user's groups list
+                    }
+                    
+                   // userGroups.add(groupName); // Update user's groups
+                    //populateUserGroups(userGroups); // Refresh left panel
                     joinButton.setText("Joined");
                     joinButton.setEnabled(false);
                 }
@@ -388,13 +396,16 @@ public class Interestspage extends JFrame {
     private void populateUserGroups(List<String> groups) {
         userGroupsListPanel.removeAll(); // Clear existing components
 
-        if (groups == null || groups.isEmpty()) {
+        // Ensure unique groups are displayed
+        List<String> uniqueGroups = new ArrayList<>(new HashSet<>(groups));
+
+        if (uniqueGroups.isEmpty()) {
             JLabel noGroupsLabel = new JLabel("No groups added yet!", JLabel.CENTER);
             noGroupsLabel.setFont(new Font("Roboto", Font.BOLD, 14));
             noGroupsLabel.setForeground(Color.GRAY);
             userGroupsListPanel.add(noGroupsLabel);
         } else {
-            for (String group : groups) {
+            for (String group : uniqueGroups) {
                 addUserGroupCard(group);
             }
         }
@@ -405,8 +416,23 @@ public class Interestspage extends JFrame {
 
 
 
+
     private void addUserGroupCard(String group) {
-        JPanel groupCard = new JPanel();
+       //new
+    	// Check if the group is already present on the panel to avoid duplication
+        for (Component component : userGroupsListPanel.getComponents()) {
+            if (component instanceof JPanel) {
+                JPanel existingGroupCard = (JPanel) component;
+                for (Component label : existingGroupCard.getComponents()) {
+                    if (label instanceof JLabel && ((JLabel) label).getText().equals(group)) {
+                        return; // Group already exists, skip adding
+                    }
+                }
+            }
+        }
+    	
+    	
+    	JPanel groupCard = new JPanel();
         groupCard.setPreferredSize(new Dimension(330, 60));
         groupCard.setBackground(new Color(230, 230, 230));
         groupCard.setLayout(null);
@@ -450,6 +476,39 @@ public class Interestspage extends JFrame {
         });     
         
         groupCard.add(leaveButton);
+        
+        //new for delete group
+        
+     // Add "Delete" button if the current user is the creator of the group
+        if (FirestoreHandler.isGroupCreator(SessionManager.currentUserId, group)) {
+            JButton deleteButton = new JButton("Delete");
+            deleteButton.setBounds(330, 5, 60, 30);
+            deleteButton.setFont(new Font("Roboto", Font.BOLD, 10));
+            deleteButton.setBackground(new Color(231, 76, 60));
+            deleteButton.setForeground(Color.BLACK);
+
+            deleteButton.addActionListener(e -> {
+                int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "Are you sure you want to delete the group '" + group + "'? This action cannot be undone.",
+                    "Confirm Delete",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+                );
+                if (confirm == JOptionPane.YES_OPTION) {
+                    FirestoreHandler.deleteGroup(group);
+                    userGroups.remove(group);
+                    populateUserGroups(userGroups);
+                    populateAllGroups();
+                    JOptionPane.showMessageDialog(this, "Group '" + group + "' has been deleted successfully.",
+                            "Success", JOptionPane.INFORMATION_MESSAGE);
+                }
+            });
+
+            groupCard.add(deleteButton);
+        }
+
+        
         userGroupsListPanel.add(groupCard);
     }
     
@@ -563,7 +622,6 @@ public class Interestspage extends JFrame {
         interestLabel.setBounds(20, 150, 110, 25);
         createGroupDialog.add(interestLabel);
 
-        // Dropdown for related interests
         JComboBox<String> interestComboBox = new JComboBox<>(userInterests.toArray(new String[0]));
         interestComboBox.setBounds(130, 150, 230, 25);
         createGroupDialog.add(interestComboBox);
@@ -593,27 +651,32 @@ public class Interestspage extends JFrame {
                 return;
             }
 
-            // Save group data
-            FirestoreHandler.createGroup(SessionManager.currentUserId, groupName, groupDescription, relatedInterest, rules);
-         // Avoid duplicate entries in userGroups
-            if (!userGroups.contains(groupName)) {
-                userGroups.add(groupName); // Add the new group to the user's groups
+            if (userGroups.contains(groupName)) {
+                JOptionPane.showMessageDialog(createGroupDialog, "Group already exists in your list!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-         // Update the group panels directly
-            populateUserGroups(userGroups); // Update the left panel
-            populateAllGroups(); // Update the right panel
-            userGroups.add(groupName); // Add the new group to the user's groups
-            
-            
+
+            // Save group data to Firestore
+            FirestoreHandler.createGroup(SessionManager.currentUserId, groupName, groupDescription, relatedInterest, rules);
+
+            // Ensure the group is added only once
+            if (!userGroups.contains(groupName)) {
+                userGroups.add(groupName);
+            }
+
+            // Refresh the left and right panels once
+           // populateUserGroups(userGroups);
+            populateAllGroups();
+
             JOptionPane.showMessageDialog(createGroupDialog, "Group created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             createGroupDialog.dispose();
-
-            
         });
         createGroupDialog.add(createButton);
 
         createGroupDialog.setVisible(true);
     }
+
+
 
 
 
