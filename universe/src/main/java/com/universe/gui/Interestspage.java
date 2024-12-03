@@ -245,55 +245,92 @@ public class Interestspage extends JFrame {
     }
     
 
+//    private void addGroupCard(Map<String, Object> groupData) {
+//        JPanel groupCard = new JPanel();
+//        groupCard.setPreferredSize(new Dimension(310, 60));
+//        groupCard.setBackground(new Color(230, 230, 230));
+//        groupCard.setLayout(null);
+//
+//        String groupName = (String) groupData.get("groupName");
+//
+//        JLabel groupLabel = new JLabel(groupName);
+//        groupLabel.setFont(new Font("Roboto", Font.BOLD, 13));
+//        groupLabel.setBounds(10, 5, 200, 20);
+//        groupCard.add(groupLabel);
+//
+//        // Check membership dynamically
+//        boolean isMember = userGroups.contains(groupName);
+//
+//        JButton actionButton = new JButton(isMember ? "Joined" : "Join");
+//        actionButton.setBounds(220, 5, 80, 30);
+//        actionButton.setFont(new Font("Roboto", Font.BOLD, 10));
+//        actionButton.setBackground(isMember ? new Color(46, 204, 113) : new Color(46, 157, 251));
+//        actionButton.setForeground(Color.BLACK);
+//
+//        // Button click action
+//        actionButton.addActionListener(e -> {
+//            if (!isMember) {
+//                // Join group
+//                FirestoreHandler.addUserToGroup(SessionManager.currentUserId, groupName);
+//                userGroups.add(groupName); // Update local state
+//                actionButton.setText("Joined");
+//                actionButton.setBackground(new Color(46, 204, 113));
+//                actionButton.setEnabled(false); // Disable the button
+//                populateUserGroups(userGroups); // Refresh the left panel
+//            } else {
+//                // Leave group
+//                FirestoreHandler.removeUserFromGroup(SessionManager.currentUserId, groupName);
+//                userGroups.remove(groupName); // Update local state
+//                actionButton.setText("Join");
+//                actionButton.setBackground(new Color(46, 157, 251));
+//                actionButton.setEnabled(true); // Re-enable the button
+//                populateUserGroups(userGroups); // Refresh the left panel
+//            }
+//         // Force revalidate and repaint for immediate UI update
+//            interestsListPanel.revalidate();
+//            interestsListPanel.repaint();
+//        });
+//
+//        // Disable button if already joined
+//        actionButton.setEnabled(!isMember);
+//
+//        groupCard.add(actionButton);
+//        interestsListPanel.add(groupCard);
+//    }
     private void addGroupCard(Map<String, Object> groupData) {
+        String groupName = (String) groupData.get("groupName");
+
         JPanel groupCard = new JPanel();
         groupCard.setPreferredSize(new Dimension(310, 60));
         groupCard.setBackground(new Color(230, 230, 230));
         groupCard.setLayout(null);
-
-        String groupName = (String) groupData.get("groupName");
 
         JLabel groupLabel = new JLabel(groupName);
         groupLabel.setFont(new Font("Roboto", Font.BOLD, 13));
         groupLabel.setBounds(10, 5, 200, 20);
         groupCard.add(groupLabel);
 
-        // Check membership dynamically
-        boolean isMember = userGroups.contains(groupName);
+        JButton joinButton = new JButton(userGroups.contains(groupName) ? "Joined" : "Join");
+        joinButton.setBounds(220, 5, 60, 30);
+        joinButton.setFont(new Font("Roboto", Font.BOLD, 10));
+        joinButton.setBackground(new Color(46, 157, 251));
+        joinButton.setForeground(Color.BLACK);
+        joinButton.setEnabled(!userGroups.contains(groupName));
 
-        JButton actionButton = new JButton(isMember ? "Joined" : "Join");
-        actionButton.setBounds(220, 5, 80, 30);
-        actionButton.setFont(new Font("Roboto", Font.BOLD, 10));
-        actionButton.setBackground(isMember ? new Color(46, 204, 113) : new Color(46, 157, 251));
-        actionButton.setForeground(Color.BLACK);
-
-        // Button click action
-        actionButton.addActionListener(e -> {
-            if (!isMember) {
-                // Join group
+        joinButton.addActionListener(e -> {
+            if (!userGroups.contains(groupName)) {
                 FirestoreHandler.addUserToGroup(SessionManager.currentUserId, groupName);
-                userGroups.add(groupName); // Update local state
-                actionButton.setText("Joined");
-                actionButton.setBackground(new Color(46, 204, 113));
-                actionButton.setEnabled(false); // Disable the button
-                populateUserGroups(userGroups); // Refresh the left panel
-            } else {
-                // Leave group
-                FirestoreHandler.removeUserFromGroup(SessionManager.currentUserId, groupName);
-                userGroups.remove(groupName); // Update local state
-                actionButton.setText("Join");
-                actionButton.setBackground(new Color(46, 157, 251));
-                actionButton.setEnabled(true); // Re-enable the button
-                populateUserGroups(userGroups); // Refresh the left panel
+                userGroups.add(groupName); // Update user's groups
+                populateUserGroups(userGroups); // Refresh left panel
+                joinButton.setText("Joined");
+                joinButton.setEnabled(false);
             }
         });
+        groupCard.add(joinButton);
 
-        // Disable button if already joined
-        actionButton.setEnabled(!isMember);
-
-        groupCard.add(actionButton);
         interestsListPanel.add(groupCard);
     }
+
 
 
 
@@ -419,7 +456,7 @@ public class Interestspage extends JFrame {
 //    }
 
     private void populateUserGroups(List<String> groups) {
-        userGroupsListPanel.removeAll();
+        userGroupsListPanel.removeAll(); // Clear existing components
 
         if (groups == null || groups.isEmpty()) {
             JLabel noGroupsLabel = new JLabel("No groups added yet!", JLabel.CENTER);
@@ -490,9 +527,17 @@ public class Interestspage extends JFrame {
         leaveButton.setFont(new Font("Roboto", Font.BOLD, 10));
         leaveButton.setBackground(new Color(231, 76, 60));
         leaveButton.setForeground(Color.BLACK);
-        leaveButton.addActionListener(e -> showLeaveConfirmation(group));
-        groupCard.add(leaveButton);
+        
+        //leaveButton.addActionListener(e -> showLeaveConfirmation(group));
+        leaveButton.addActionListener(e -> {
+            FirestoreHandler.removeUserFromGroup(SessionManager.currentUserId, group); // Remove from Firestore
+            userGroups.remove(group); // Remove from user's groups
+            populateUserGroups(userGroups); // Refresh left panel
+            populateAllGroups(); // Refresh right panel
+        });
 
+        
+        groupCard.add(leaveButton);
         userGroupsListPanel.add(groupCard);
     }
     
@@ -671,23 +716,33 @@ public class Interestspage extends JFrame {
         descriptionField.setWrapStyleWord(true);
         createGroupDialog.add(descriptionField);
 
+        JLabel interestLabel = new JLabel("Related Interest:");
+        interestLabel.setBounds(20, 150, 110, 25);
+        createGroupDialog.add(interestLabel);
+
+        // Dropdown for related interests
+        JComboBox<String> interestComboBox = new JComboBox<>(userInterests.toArray(new String[0]));
+        interestComboBox.setBounds(130, 150, 230, 25);
+        createGroupDialog.add(interestComboBox);
+
         JLabel rulesLabel = new JLabel("Rules:");
-        rulesLabel.setBounds(20, 150, 100, 25);
+        rulesLabel.setBounds(20, 190, 100, 25);
         createGroupDialog.add(rulesLabel);
 
         JTextArea rulesField = new JTextArea();
-        rulesField.setBounds(130, 150, 230, 60);
+        rulesField.setBounds(130, 190, 230, 60);
         rulesField.setLineWrap(true);
         rulesField.setWrapStyleWord(true);
         createGroupDialog.add(rulesField);
 
         JButton createButton = new JButton("Create");
-        createButton.setBounds(150, 250, 100, 30);
+        createButton.setBounds(150, 270, 100, 30);
         createButton.setBackground(new Color(46, 157, 251));
         createButton.setForeground(Color.BLACK);
         createButton.addActionListener(e -> {
             String groupName = nameField.getText().trim();
             String groupDescription = descriptionField.getText().trim();
+            String relatedInterest = (String) interestComboBox.getSelectedItem();
             String rules = rulesField.getText().trim();
 
             if (groupName.isEmpty()) {
@@ -695,27 +750,28 @@ public class Interestspage extends JFrame {
                 return;
             }
 
-            // Check for duplicate groups in Firestore
-            boolean groupExists = FirestoreHandler.getAllGroups().stream()
-                    .anyMatch(group -> group.get("groupName").equals(groupName));
-            if (groupExists) {
-                JOptionPane.showMessageDialog(createGroupDialog, "A group with this name already exists.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
+            // Save group data
+            FirestoreHandler.createGroup(SessionManager.currentUserId, groupName, groupDescription, relatedInterest, rules);
+         // Avoid duplicate entries in userGroups
+            if (!userGroups.contains(groupName)) {
+                userGroups.add(groupName); // Add the new group to the user's groups
             }
-
-            // Create the group and add the creator to the group
-            FirestoreHandler.createGroup(SessionManager.currentUserId, groupName, groupDescription, null, rules);
-            FirestoreHandler.addUserToGroup(SessionManager.currentUserId, groupName); // Add creator to group
-
+         // Update the group panels directly
+            populateUserGroups(userGroups); // Update the left panel
+            populateAllGroups(); // Update the right panel
+            userGroups.add(groupName); // Add the new group to the user's groups
+            
+            
             JOptionPane.showMessageDialog(createGroupDialog, "Group created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             createGroupDialog.dispose();
 
-            populateAllGroups(); // Refresh the right panel
+            
         });
         createGroupDialog.add(createButton);
 
         createGroupDialog.setVisible(true);
     }
+
 
 
 
