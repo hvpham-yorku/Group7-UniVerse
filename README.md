@@ -6,7 +6,15 @@ note: to have access to firebase you would have to contact me by # or email
 because of Googles policy we are unable to upload our private keys in this repo because it is public. 
 https://1ty.me/8SEfyiikM (if you are not the TA or professor **DO NOT OPEN** as this is a view once link)
 
-the link above is the correct content of the serviceAccountKey.json file, please replace it, to be able to use our application locally. 
+store those keys in a json file called #serviceAccountKey.json on your device and add that key to your ~/.zshrc file as 
+```
+export FIREBASE_KEY_PATH="path-to-serviceAccountKey.json"
+```
+then run 
+```
+ source ~/.zshrc  
+```
+in your terminal to refresh the session. 
 
 ## Motivation
 
