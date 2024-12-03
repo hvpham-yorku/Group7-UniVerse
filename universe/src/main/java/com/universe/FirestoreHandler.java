@@ -12,6 +12,7 @@ import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.EventListener;
+import com.google.cloud.firestore.FieldPath;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.ListenerRegistration;
@@ -151,10 +152,31 @@ public class FirestoreHandler {
 		ApiFuture<WriteResult> writeResult = contactsRef.document(contactUserId).set(contactData);
 		try {
 			System.out.println("Contact added successfully at: " + writeResult.get().getUpdateTime());
-		} catch (InterruptedException | ExecutionException e) {
-			System.err.println("Error adding contact: " + e.getMessage());
-		}
+		
+			// Fetch sender's username
+	        String senderUsername;
+	        DocumentReference senderRef = db.collection("UserProfile").document(userId);
+	        DocumentSnapshot senderDoc = senderRef.get().get();
+	        if (senderDoc.exists()) {
+	            senderUsername = senderDoc.getString("username");
+	        } else {
+	            senderUsername = "Unknown";
+	        }
+	       
+
+	        // Add a notification for the new friend
+	        Map<String, Object> notificationData = new HashMap<>();
+	        notificationData.put("type", "friend_request");
+	        notificationData.put("content", senderUsername + " sent you a friend request.");
+	        addNotification(contactUserId, notificationData);
+	;
+
+	    } catch (InterruptedException | ExecutionException e) {
+	        System.err.println("Error adding contact or notification: " + e.getMessage());
+	    }
 	}
+
+	
 
 	public static void removeFriend(String userId, String contactUserId) {
 		DocumentReference docRef = db.collection("UserProfile").document(userId).collection("contacts")
@@ -249,12 +271,20 @@ public class FirestoreHandler {
 		CollectionReference messagesRef = db.collection("chats").document(userId + "_" + contactId)
 				.collection("messages");
 		ApiFuture<DocumentSnapshot> existingMessage = messagesRef.document(messageId).get();
-
+		// Define chatId for this message
+	    String chatId = userId + "_" + contactId;
+	    
 		try {
 			if (!existingMessage.get().exists()) {
 				// Save message in both userId_contactId and contactId_userId
 				saveMessageInChat(userId + "_" + contactId, messageId, messageData);
 				saveMessageInChat(contactId + "_" + userId, messageId, messageData);
+				// Add a notification for the receiver
+			    Map<String, Object> notificationData = new HashMap<>();
+			    notificationData.put("type", "new_message");
+			    notificationData.put("content", "You received a new message!");
+			    notificationData.put("metadata", Map.of("chatId", chatId, "senderId", userId));
+			    addNotification(contactId, notificationData);
 			}
 		} catch (InterruptedException | ExecutionException e) {
 			System.err.println("Error checking existing message: " + e.getMessage());
@@ -418,5 +448,102 @@ public class FirestoreHandler {
 		// Attach a snapshot listener to the collection (ordered by timestamp)
 		return messagesRef.orderBy("timestamp", Query.Direction.ASCENDING).addSnapshotListener(listener);
 	}
+	
+	public static void addNotification(String userId, Map<String, Object> notificationData) {
+	    if (userId == null || userId.isEmpty()) {
+	        throw new IllegalArgumentException("User ID must not be null or empty.");
+	    }
+
+	    // Reference to the userNotifications sub-collection
+	    CollectionReference notificationsRef = db
+	        .collection("notifications")
+	        .document(userId)
+	        .collection("userNotifications");
+
+	    // Add the notification document with server timestamp
+	    notificationData.put("timestamp", FieldValue.serverTimestamp());
+	    ApiFuture<DocumentReference> future = notificationsRef.add(notificationData);
+
+	    try {
+	        DocumentReference documentReference = future.get();
+	        System.out.println("Notification added with ID: " + documentReference.getId());
+	    } catch (InterruptedException | ExecutionException e) {
+	        System.err.println("Error adding notification: " + e.getMessage());
+	    }
+	}
+
+	public static List<Map<String, Object>> getUserNotifications(String userId) {
+	    if (userId == null || userId.isEmpty()) {
+	        throw new IllegalArgumentException("User ID must not be null or empty.");
+	    }
+
+	    List<Map<String, Object>> notifications = new ArrayList<>();
+	    try {
+	        QuerySnapshot snapshot = db
+	            .collection("notifications")
+	            .document(userId)
+	            .collection("userNotifications")
+	            .orderBy("timestamp", Query.Direction.DESCENDING)
+	            .get()
+	            .get();
+
+	        for (DocumentSnapshot doc : snapshot.getDocuments()) {
+	            Map<String, Object> notification = doc.getData();
+	            if (notification != null) {
+	                notification.put("id", doc.getId());
+	                notifications.add(notification);
+	            }
+	        }
+	    } catch (Exception e) { 
+	        System.err.println("Error fetching notifications: " + e.getMessage());
+	    }
+	    return notifications;
+	}
+
+
+	
+	public static void markNotificationAsRead(String userId, String notificationId) {
+	    if (userId == null || notificationId == null || userId.isEmpty() || notificationId.isEmpty()) {
+	        System.err.println("User ID or Notification ID is null/empty. Cannot mark as read.");
+	        return;
+	    }
+
+	    DocumentReference docRef = db
+	        .collection("notifications")
+	        .document(userId)
+	        .collection("userNotifications")
+	        .document(notificationId);
+
+	    ApiFuture<WriteResult> future = docRef.delete();
+
+	    try {
+	        WriteResult result = future.get();
+	        System.out.println("Notification deleted at: " + result.getUpdateTime());
+	    } catch (InterruptedException | ExecutionException e) {
+	        System.err.println("Error deleting notification: " + e.getMessage());
+	    }
+	}
+
+
+	public static void listenToNotifications(String userId, EventListener<QuerySnapshot> listener) {
+	    if (userId == null || userId.isEmpty()) {
+	        System.err.println("User ID is null or empty. Cannot listen to notifications.");
+	        return;
+	    }
+
+	    db.collection("notifications")
+	      .document(userId)
+	      .collection("userNotifications")
+	      .orderBy("timestamp", Query.Direction.DESCENDING)
+	      .addSnapshotListener(listener);
+	}
+
+	public static void addGlobalChatListener(String userId, EventListener<QuerySnapshot> listener) {
+	    CollectionReference chatsRef = db.collection("chats");
+	    chatsRef.whereGreaterThanOrEqualTo(FieldPath.documentId(), userId + "_")
+	            .addSnapshotListener(listener);
+	}
+
+	
 
 }

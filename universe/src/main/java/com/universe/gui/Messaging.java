@@ -107,6 +107,9 @@ public class Messaging extends JFrame {
 
 		JPanel chatPanel = createChatPanel();
 		contentPane.add(chatPanel, BorderLayout.EAST);
+		
+		 // Add listener for real-time chat updates
+	    listenForNewMessages();
 
 		// Add listener to cleanup Firestore listener on exit
 		addWindowListener(new java.awt.event.WindowAdapter() {
@@ -121,6 +124,47 @@ public class Messaging extends JFrame {
 	}
 
 	private JPanel createSidebar() {
+ Notifications
+		JPanel sidebar = new JPanel();
+		sidebar.setPreferredSize(new Dimension(80, 0)); // Fixed width for the sidebar
+		sidebar.setBackground(Color.WHITE);
+		sidebar.setLayout(null);
+
+		// Profile label above the profile picture
+		JLabel profileLabel = new JLabel("Profile");
+		profileLabel.setFont(new Font("Roboto", Font.BOLD, 14));
+		profileLabel.setForeground(new Color(97, 97, 97)); // Gray color
+		profileLabel.setBounds(10, 5, 60, 20);
+		sidebar.add(profileLabel);
+
+		// Profile picture
+		JLabel profilePic = new JLabel(new ImageIcon("src/main/resources/icons/profile.png"));
+		profilePic.setBounds(10, 25, 60, 60);
+		sidebar.add(profilePic);
+
+		// Add sidebar icons and actions
+		addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> navigateToHomepage());
+		addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {
+		});
+		addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> navigateToNotifications());
+		addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310,
+				e -> JOptionPane.showMessageDialog(this, "Community clicked!"));
+		addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380,
+				e -> JOptionPane.showMessageDialog(this, "Settings clicked!"));
+		addSidebarIcon(sidebar, "src/main/resources/icons/leave.png", "Logout", 450, e -> handleLogout());
+
+		return sidebar;
+	}
+	private void navigateToNotifications() {
+        EventQueue.invokeLater(() -> {
+        	Notifications notifications = new Notifications();
+        	notifications.setVisible(true);
+            notifications.setLocationRelativeTo(null);
+        });
+        dispose();
+    }
+
+
 	    JPanel sidebar = new JPanel();
 	    sidebar.setPreferredSize(new Dimension(80, 0)); // Fixed width for the sidebar
 	    sidebar.setBackground(Color.WHITE);
@@ -173,7 +217,7 @@ public class Messaging extends JFrame {
 	    profilePic.revalidate();
 	    profilePic.repaint(); // Ensure immediate UI refresh
 	}
-	
+ main
 	private void addSidebarIcon(JPanel sidebar, String iconPath, String tooltip, int yPosition,
 			java.awt.event.ActionListener action) {
 		ImageIcon originalIcon = new ImageIcon(iconPath);
@@ -406,16 +450,16 @@ public class Messaging extends JFrame {
 
 		// Remove the previous listener if one exists
 		if (chatListener != null) {
-			chatListener.remove();
+			chatListener.remove(); 
 		}
 
 		// Set up a new real-time listener for the selected chat
-		String chatId = currentUserId + "_" + contactId; // Chat ID format
-		chatListener = FirestoreHandler.addChatListener(chatId, (snapshots, e) -> {
-			if (e != null) {
-				System.err.println("Error listening for chat updates: " + e.getMessage());
-				return;
-			}
+	    String chatId = currentUserId + "_" + contactId; // Chat ID format
+	    chatListener = FirestoreHandler.addChatListener(chatId, (snapshots, e) -> {
+	        if (e != null) {
+	            System.err.println("Error listening for chat updates: " + e.getMessage());
+	            return;
+	        }
 
 			// Clear the chat panel to avoid duplicates
 			chatHistoryPanel.removeAll();
@@ -441,7 +485,95 @@ public class Messaging extends JFrame {
 
 		// Update the UI title with the contact name
 		setTitle("Chatting with " + contactName);
+		
+		// Scroll to the latest message
+	    SwingUtilities.invokeLater(() -> chatScrollPane.getVerticalScrollBar()
+	            .setValue(chatScrollPane.getVerticalScrollBar().getMaximum()));
+	    
+	 // Update contacts list after switching chat
+	    updateChatListOrder(contactId);
+
 	}
+	
+	private void updateChatListOrder(String contactId) {
+	    friendsList.stream()
+	        .filter(friend -> friend.getUserId().equals(contactId))
+	        .findFirst()
+	        .ifPresent(friend -> {
+	            friendsList.remove(friend);
+	            friendsList.add(0, friend); // Add to the top
+	        });
+
+	    // Refresh the contacts panel
+	    populateContacts();
+	}
+ Notifications
+
+	
+
+	private void displayMessage(String message, boolean isUserMessage) {
+		JPanel messagePanel = new JPanel(new FlowLayout(isUserMessage ? FlowLayout.RIGHT : FlowLayout.LEFT));
+		messagePanel.setBackground(Color.WHITE); // Match chat background
+
+		// Create the message bubble
+		JLabel messageLabel = new JLabel(
+				"<html><div style='padding: 8px; max-width: 200px;'>" + message + "</div></html>");
+		messageLabel.setOpaque(true);
+		messageLabel.setBackground(isUserMessage ? new Color(54, 125, 225) : new Color(240, 240, 240)); // Different
+																										// colors for
+																										// sent and
+																										// received
+																										// messages
+		messageLabel.setForeground(isUserMessage ? Color.WHITE : Color.BLACK);
+		messageLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10)); // Padding inside the bubble
+
+		// Add the bubble to the message panel
+		messagePanel.add(messageLabel);
+
+		// Add some vertical spacing between messages
+		chatHistoryPanel.add(messagePanel);
+		chatHistoryPanel.add(Box.createVerticalStrut(5)); // Space between messages
+
+		// Refresh the chat panel
+		chatHistoryPanel.revalidate();
+		chatHistoryPanel.repaint();
+
+		// Scroll to the latest message
+		SwingUtilities.invokeLater(() -> chatScrollPane.getVerticalScrollBar()
+				.setValue(chatScrollPane.getVerticalScrollBar().getMaximum()));
+	}
+	
+	private void listenForNewMessages() {
+	    FirestoreHandler.addGlobalChatListener(currentUserId, (snapshots, e) -> {
+	        if (e != null) {
+	            System.err.println("Error listening to new messages: " + e.getMessage());
+	            return;
+	        }
+
+	        // Update the friends list order based on the most recent message
+	        if (snapshots != null && !snapshots.isEmpty()) {
+	            for (DocumentSnapshot document : snapshots.getDocuments()) {
+	                String chatId = document.getId();
+	                String[] userIds = chatId.split("_");
+	                String otherUserId = userIds[0].equals(currentUserId) ? userIds[1] : userIds[0];
+
+	                // Move the chat with the other user to the top of the list
+	                friendsList.stream()
+	                    .filter(friend -> friend.getUserId().equals(otherUserId))
+	                    .findFirst()
+	                    .ifPresent(friend -> {
+	                        friendsList.remove(friend);
+	                        friendsList.add(0, friend); // Add to the top
+	                    });
+	            }
+
+	            // Refresh the contacts panel
+	            populateContacts();
+	        }
+	    });
+	}
+
+
 	private void displayMessage(String message, boolean isUserMessage) {
 	    JPanel messagePanel = new JPanel(new FlowLayout(isUserMessage ? FlowLayout.RIGHT : FlowLayout.LEFT));
 	    messagePanel.setBackground(Color.WHITE); // Match chat background
@@ -477,6 +609,7 @@ public class Messaging extends JFrame {
 	    // Scroll to the latest message
 	    SwingUtilities.invokeLater(() -> chatScrollPane.getVerticalScrollBar()
 	            .setValue(chatScrollPane.getVerticalScrollBar().getMaximum()));
+main
 
 	}
 }
