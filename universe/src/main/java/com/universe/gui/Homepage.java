@@ -7,12 +7,15 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -38,6 +41,7 @@ import com.universe.models.UserProfile;
 import com.universe.utils.Constants;
 import com.universe.utils.SessionManager;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -408,39 +412,120 @@ public class Homepage extends JFrame {
 		}).start();
 	}
 
+//	private void showProfilePopup(UserProfile user) {
+//		JPanel profilePanel = new JPanel();
+//		profilePanel.setLayout(new BoxLayout(profilePanel, BoxLayout.Y_AXIS));
+//		profilePanel.add(new JLabel("Name: " + user.getUsername()));
+//		profilePanel.add(new JLabel("University: " + user.getUniversity()));
+//		profilePanel.add(new JLabel("City: " + user.getProvince()));
+//		profilePanel.add(new JLabel("Interest: " + user.getInterests()));
+//		profilePanel.add(new JLabel("Date of Birth: " + user.getDateOfBirth()));
+//		profilePanel.add(new JLabel("Email: " + user.getEmail()));
+//
+//		int option = JOptionPane.showOptionDialog(this, profilePanel, "User Profile", JOptionPane.OK_CANCEL_OPTION,
+//				JOptionPane.INFORMATION_MESSAGE, null, new String[] { "Add Friend", "Close" }, "Close");
+//
+//		if (option == JOptionPane.OK_OPTION) {
+//			// Check if the user is already added
+//			synchronized (addedFriends) {
+//				boolean isAlreadyAdded = addedFriends.stream()
+//						.anyMatch(friend -> friend.getUserId().equals(user.getUserId()));
+//				if (isAlreadyAdded) {
+//					// Notify the user that the friend is already added
+//					JOptionPane.showMessageDialog(this, user.getUsername() + " is already added as a friend!",
+//							"Friend Already Added", JOptionPane.WARNING_MESSAGE);
+//				} else {
+//					// Add the friend to the Firestore and update UI
+//					FirestoreHandler.addFriend(SessionManager.currentUserId, user.getUserId(), user.getUsername(),
+//							user.getUniversity());
+//					addedFriends.add(user);
+//					refreshRightPanelAfterDelay();
+//					JOptionPane.showMessageDialog(this, user.getUsername() + " has been added as a friend!", "Success",
+//							JOptionPane.INFORMATION_MESSAGE);
+//				}
+//			}
+//		}
+//	}
+	
 	private void showProfilePopup(UserProfile user) {
-		JPanel profilePanel = new JPanel();
-		profilePanel.setLayout(new BoxLayout(profilePanel, BoxLayout.Y_AXIS));
-		profilePanel.add(new JLabel("Name: " + user.getUsername()));
-		profilePanel.add(new JLabel("University: " + user.getUniversity()));
-		profilePanel.add(new JLabel("City: " + user.getProvince()));
-		profilePanel.add(new JLabel("Interest: " + user.getInterests()));
-		profilePanel.add(new JLabel("Date of Birth: " + user.getDateOfBirth()));
-		profilePanel.add(new JLabel("Email: " + user.getEmail()));
+	    JDialog dialog = new JDialog(this, "User Profile", true);
+	    dialog.setSize(250, 250); // Reduced size for a compact layout
+	    dialog.setLayout(new BorderLayout());
+	    dialog.setResizable(false);
 
-		int option = JOptionPane.showOptionDialog(this, profilePanel, "User Profile", JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.INFORMATION_MESSAGE, null, new String[] { "Add Friend", "Close" }, "Close");
+	    // Profile Panel
+	    JPanel profilePanel = new JPanel();
+	    profilePanel.setLayout(new BoxLayout(profilePanel, BoxLayout.Y_AXIS));
+	    profilePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); // Minimal padding around the content
 
-		if (option == JOptionPane.OK_OPTION) {
-			// Check if the user is already added
-			synchronized (addedFriends) {
-				boolean isAlreadyAdded = addedFriends.stream()
-						.anyMatch(friend -> friend.getUserId().equals(user.getUserId()));
-				if (isAlreadyAdded) {
-					// Notify the user that the friend is already added
-					JOptionPane.showMessageDialog(this, user.getUsername() + " is already added as a friend!",
-							"Friend Already Added", JOptionPane.WARNING_MESSAGE);
-				} else {
-					// Add the friend to the Firestore and update UI
-					FirestoreHandler.addFriend(SessionManager.currentUserId, user.getUserId(), user.getUsername(),
-							user.getUniversity());
-					addedFriends.add(user);
-					refreshRightPanelAfterDelay();
-					JOptionPane.showMessageDialog(this, user.getUsername() + " has been added as a friend!", "Success",
-							JOptionPane.INFORMATION_MESSAGE);
-				}
-			}
-		}
+	    // Profile Picture
+	    JLabel profilePictureLabel = new JLabel();
+	    profilePictureLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+	    profilePictureLabel.setPreferredSize(new Dimension(80, 80)); // Smaller image size
+
+	    if (user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
+	        byte[] imageBytes = Base64.getDecoder().decode(user.getProfilePicture());
+	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+	        profilePictureLabel.setIcon(new ImageIcon(scaledImage));
+	    } else {
+	        // Default profile picture
+	        ImageIcon defaultIcon = new ImageIcon("src/main/resources/icons/profile.png");
+	        Image scaledDefaultImage = defaultIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+	        profilePictureLabel.setIcon(new ImageIcon(scaledDefaultImage));
+	    }
+	    profilePanel.add(profilePictureLabel);
+
+	    // User Information
+	    JLabel nameLabel = new JLabel("Name: " + user.getUsername());
+	    JLabel universityLabel = new JLabel("University: " + user.getUniversity());
+	    JLabel cityLabel = new JLabel("City: " + user.getProvince());
+	    JLabel interestsLabel = new JLabel("Interest: " + user.getInterests());
+	    JLabel dobLabel = new JLabel("Date of Birth: " + user.getDateOfBirth());
+	    JLabel emailLabel = new JLabel("Email: " + user.getEmail());
+
+	    // Style and alignment
+	    List<JLabel> labels = Arrays.asList(nameLabel, universityLabel, cityLabel, interestsLabel, dobLabel, emailLabel);
+	    for (JLabel label : labels) {
+	        label.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+	        label.setFont(new Font("Arial", Font.PLAIN, 11)); // Compact font size
+	        profilePanel.add(label);
+	    }
+
+	    dialog.add(profilePanel, BorderLayout.CENTER);
+
+	    // Button Panel
+	    JPanel buttonPanel = new JPanel();
+	    buttonPanel.setLayout(new BorderLayout());
+	    JButton closeButton = new JButton("Close");
+	    closeButton.addActionListener(e -> dialog.dispose());
+	    JButton addFriendButton = new JButton("Add Friend");
+	    addFriendButton.addActionListener(e -> {
+	        synchronized (addedFriends) {
+	            if (addedFriends.stream().anyMatch(friend -> friend.getUserId().equals(user.getUserId()))) {
+	                JOptionPane.showMessageDialog(this, user.getUsername() + " is already added as a friend!",
+	                        "Friend Already Added", JOptionPane.WARNING_MESSAGE);
+	            } else {
+	                FirestoreHandler.addFriend(SessionManager.currentUserId, user.getUserId(), user.getUsername(),
+	                        user.getUniversity());
+	                addedFriends.add(user);
+	                refreshRightPanelAfterDelay();
+	                JOptionPane.showMessageDialog(this, user.getUsername() + " has been added as a friend!", "Success",
+	                        JOptionPane.INFORMATION_MESSAGE);
+	            }
+	        }
+	        dialog.dispose();
+	    });
+
+	    JPanel buttons = new JPanel();
+	    buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS)); // Compact side-by-side buttons
+	    buttons.add(closeButton);
+	    buttons.add(addFriendButton);
+
+	    dialog.add(buttons, BorderLayout.SOUTH);
+
+	    dialog.setLocationRelativeTo(this);
+	    dialog.setVisible(true);
 	}
 
 	public void showProfile(UserProfile user, JFrame parentFrame) {
@@ -562,20 +647,38 @@ public class Homepage extends JFrame {
 
 	    JButton btnChangeProfilePicture = new JButton("Change Picture");
 	    btnChangeProfilePicture.setBounds(260, yPosition + 35, 140, fieldHeight);
+//	    btnChangeProfilePicture.addActionListener(e -> {
+//	        String newProfilePicture = selectProfilePicture();
+//	        if (newProfilePicture != null) {
+//	            user.setProfilePicture(newProfilePicture);
+//	            
+//	            // Update the preview in the dialog
+//	            byte[] imageBytes = Base64.getDecoder().decode(newProfilePicture);
+//	            ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+//	            Image scaledImage = profileImageIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+//	            profilePicturePreview.setIcon(new ImageIcon(scaledImage));
+//	            
+//	            // Save the updated profile picture to Firestore
+//	            FirestoreHandler.updateUserData(user);
+//	            
+//	            // Refresh the sidebar profile picture
+//	            updateSidebarProfilePicture(newProfilePicture);
+//	        }
+//	    });
 	    btnChangeProfilePicture.addActionListener(e -> {
-	        String newProfilePicture = selectProfilePicture();
+	        String newProfilePicture = selectAndResizeProfilePicture();
 	        if (newProfilePicture != null) {
 	            user.setProfilePicture(newProfilePicture);
-	            
+
 	            // Update the preview in the dialog
 	            byte[] imageBytes = Base64.getDecoder().decode(newProfilePicture);
 	            ImageIcon profileImageIcon = new ImageIcon(imageBytes);
 	            Image scaledImage = profileImageIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
 	            profilePicturePreview.setIcon(new ImageIcon(scaledImage));
-	            
+
 	            // Save the updated profile picture to Firestore
 	            FirestoreHandler.updateUserData(user);
-	            
+
 	            // Refresh the sidebar profile picture
 	            updateSidebarProfilePicture(newProfilePicture);
 	        }
@@ -605,6 +708,52 @@ public class Homepage extends JFrame {
 	    dialog.setLocationRelativeTo(null);
 	    dialog.setVisible(true);
 	}
+	
+	private String selectAndResizeProfilePicture() {
+	    JFileChooser fileChooser = new JFileChooser();
+	    fileChooser.setDialogTitle("Select Profile Picture");
+	    fileChooser.setFileFilter(new FileNameExtensionFilter("Image Files", "jpg", "jpeg", "png"));
+
+	    int result = fileChooser.showOpenDialog(null);
+	    if (result == JFileChooser.APPROVE_OPTION) {
+	        try {
+	            File selectedFile = fileChooser.getSelectedFile();
+	            BufferedImage originalImage = ImageIO.read(selectedFile);
+
+	            // Resize the image to a maximum size (e.g., 300x300)
+	            int maxDimension = 300;
+	            BufferedImage resizedImage = resizeImage(originalImage, maxDimension, maxDimension);
+
+	            // Convert the resized image to Base64
+	            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	            ImageIO.write(resizedImage, "png", baos); // Use "png" or other format
+	            byte[] imageBytes = baos.toByteArray();
+
+	            return Base64.getEncoder().encodeToString(imageBytes);
+	        } catch (IOException e) {
+	            JOptionPane.showMessageDialog(null, "Error reading image file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+	        }
+	    }
+	    return null;
+	}
+	
+	private BufferedImage resizeImage(BufferedImage originalImage, int maxWidth, int maxHeight) {
+	    int originalWidth = originalImage.getWidth();
+	    int originalHeight = originalImage.getHeight();
+
+	    double scale = Math.min((double) maxWidth / originalWidth, (double) maxHeight / originalHeight);
+
+	    int newWidth = (int) (originalWidth * scale);
+	    int newHeight = (int) (originalHeight * scale);
+
+	    BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
+	    Graphics g = resizedImage.getGraphics();
+	    g.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+	    g.dispose();
+
+	    return resizedImage;
+	}
+
 
 	private void updateSidebarProfilePicture(String newProfilePicture) {
 	    if (newProfilePicture != null && !newProfilePicture.isEmpty()) {
@@ -613,11 +762,15 @@ public class Homepage extends JFrame {
 	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
 	        profilePic.setIcon(new ImageIcon(scaledImage)); // Update the sidebar picture
 	    } else {
-	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png")); // Default icon
+	        // Fallback to default icon if no profile picture is set
+	        ImageIcon defaultIcon = new ImageIcon("src/main/resources/icons/profile.png");
+	        Image scaledDefaultImage = defaultIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+	        profilePic.setIcon(new ImageIcon(scaledDefaultImage)); // Set default profile picture
 	    }
 	    profilePic.revalidate();
 	    profilePic.repaint();
 	}
+	
 	private String selectProfilePicture() {
 	    JFileChooser fileChooser = new JFileChooser();
 	    fileChooser.setDialogTitle("Select Profile Picture");
@@ -742,16 +895,28 @@ public class Homepage extends JFrame {
 
 	    // Profile Picture
 	    profilePic = new JLabel();
+//	    String profilePicBase64 = currentUser.getProfilePicture();
+//	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
+//	        // Decode Base64 and set as profile picture
+//	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
+//	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
+//	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+//	        profilePic.setIcon(new ImageIcon(scaledImage));
+//	    } else {
+//	        // Use placeholder if no profile picture is available
+//	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png"));
+//	    }
 	    String profilePicBase64 = currentUser.getProfilePicture();
 	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
-	        // Decode Base64 and set as profile picture
 	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
 	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
 	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
 	        profilePic.setIcon(new ImageIcon(scaledImage));
 	    } else {
-	        // Use placeholder if no profile picture is available
-	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png"));
+	        // Default profile picture
+	        ImageIcon defaultIcon = new ImageIcon("src/main/resources/icons/profile.png");
+	        Image scaledDefaultImage = defaultIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+	        profilePic.setIcon(new ImageIcon(scaledDefaultImage));
 	    }
 
 	    profilePic.setBounds(5, 25, 60, 60);

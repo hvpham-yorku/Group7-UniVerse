@@ -478,30 +478,108 @@ public class SignUporIn {
 	}
 
 
+//	private void handleAddPicture() {
+//	    JFileChooser fileChooser = new JFileChooser();
+//	    int result = fileChooser.showOpenDialog(frame);
+//	    if (result == JFileChooser.APPROVE_OPTION) {
+//	        try {
+//	            File selectedFile = fileChooser.getSelectedFile();
+//	            BufferedImage image = ImageIO.read(selectedFile);
+//
+//	            // Encode image to Base64
+//	            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//	            ImageIO.write(image, "png", baos); // Use "png" or other format
+//	            byte[] imageBytes = baos.toByteArray();
+//	            encodedProfilePicture = Base64.getEncoder().encodeToString(imageBytes);
+//
+//	            // Display the image in the UI
+//	            ImageIcon profilePic = new ImageIcon(selectedFile.getAbsolutePath());
+//	            Image scaledImage = profilePic.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+//	            profilePicLabel.setIcon(new ImageIcon(scaledImage));
+//	        } catch (Exception e) {
+//	            JOptionPane.showMessageDialog(frame, "Failed to load image.", "Error", JOptionPane.ERROR_MESSAGE);
+//	            e.printStackTrace();
+//	        }
+//	    }
+//	}
+//	private void handleAddPicture() {
+//	    JFileChooser fileChooser = new JFileChooser();
+//	    int result = fileChooser.showOpenDialog(frame);
+//	    if (result == JFileChooser.APPROVE_OPTION) {
+//	        try {
+//	            File selectedFile = fileChooser.getSelectedFile();
+//	            BufferedImage originalImage = ImageIO.read(selectedFile);
+//
+//	            // Resize the image to a maximum size (e.g., 300x300)
+//	            int maxDimension = 300;
+//	            BufferedImage resizedImage = resizeImage(originalImage, maxDimension, maxDimension);
+//
+//	            // Encode the resized image to Base64
+//	            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//	            ImageIO.write(resizedImage, "png", baos); // Use "png" or other format
+//	            byte[] imageBytes = baos.toByteArray();
+//	            encodedProfilePicture = Base64.getEncoder().encodeToString(imageBytes);
+//
+//	            // Display the resized image in the UI
+//	            ImageIcon profilePic = new ImageIcon(resizedImage);
+//	            Image scaledImage = profilePic.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+//	            profilePicLabel.setIcon(new ImageIcon(scaledImage));
+//	        } catch (Exception e) {
+//	            JOptionPane.showMessageDialog(frame, "Failed to load image.", "Error", JOptionPane.ERROR_MESSAGE);
+//	            e.printStackTrace();
+//	        }
+//	    }
+//	}
 	private void handleAddPicture() {
 	    JFileChooser fileChooser = new JFileChooser();
 	    int result = fileChooser.showOpenDialog(frame);
 	    if (result == JFileChooser.APPROVE_OPTION) {
 	        try {
 	            File selectedFile = fileChooser.getSelectedFile();
-	            BufferedImage image = ImageIO.read(selectedFile);
+	            BufferedImage originalImage = ImageIO.read(selectedFile);
 
-	            // Encode image to Base64
+	            // Resize the image to a maximum size (e.g., 300x300)
+	            int maxDimension = 300;
+	            BufferedImage resizedImage = resizeImage(originalImage, maxDimension, maxDimension);
+
+	            // Encode the resized image to Base64
 	            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	            ImageIO.write(image, "png", baos); // Use "png" or other format
+	            ImageIO.write(resizedImage, "png", baos); // Use "png" or other format
 	            byte[] imageBytes = baos.toByteArray();
 	            encodedProfilePicture = Base64.getEncoder().encodeToString(imageBytes);
 
-	            // Display the image in the UI
-	            ImageIcon profilePic = new ImageIcon(selectedFile.getAbsolutePath());
+	            // Display the resized image in the UI
+	            ImageIcon profilePic = new ImageIcon(resizedImage);
 	            Image scaledImage = profilePic.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
 	            profilePicLabel.setIcon(new ImageIcon(scaledImage));
 	        } catch (Exception e) {
 	            JOptionPane.showMessageDialog(frame, "Failed to load image.", "Error", JOptionPane.ERROR_MESSAGE);
 	            e.printStackTrace();
 	        }
+	    } else {
+	        // Reset to null if no picture is selected
+	        encodedProfilePicture = null;
+	        // Optional: Update the UI with the default profile picture
+	        profilePicLabel.setIcon(new ImageIcon("src/main/resources/icons/profile.png"));
 	    }
 	}
+	private BufferedImage resizeImage(BufferedImage originalImage, int maxWidth, int maxHeight) {
+	    int originalWidth = originalImage.getWidth();
+	    int originalHeight = originalImage.getHeight();
+
+	    double scale = Math.min((double) maxWidth / originalWidth, (double) maxHeight / originalHeight);
+
+	    int newWidth = (int) (originalWidth * scale);
+	    int newHeight = (int) (originalHeight * scale);
+
+	    BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
+	    Graphics g = resizedImage.getGraphics();
+	    g.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+	    g.dispose();
+
+	    return resizedImage;
+	}
+	
 
 	private void handleSave(ActionEvent e) {
 	    if (SessionManager.currentUserId == null) {
