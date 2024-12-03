@@ -525,6 +525,7 @@ public class Interestspage extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         groupDialog.add(mainPanel, BorderLayout.CENTER);
 
+        // Left: Members Panel
         JPanel membersPanel = new JPanel();
         membersPanel.setLayout(new BorderLayout(10, 10));
         membersPanel.setBorder(BorderFactory.createTitledBorder("# Members"));
@@ -547,16 +548,21 @@ public class Interestspage extends JFrame {
                 JLabel nameLabel = new JLabel(user.getUsername());
                 nameLabel.setFont(new Font("Roboto", Font.BOLD, 14));
 
-                JButton addFriendButton = new JButton(FirestoreHandler.isFriend(SessionManager.currentUserId, member) ? "Added" : "Add Friend");
-                addFriendButton.setEnabled(!FirestoreHandler.isFriend(SessionManager.currentUserId, member));
-                addFriendButton.addActionListener(e -> {
-                    FirestoreHandler.addFriend(SessionManager.currentUserId, member, user.getUsername(), user.getUniversity());
-                    addFriendButton.setText("Added");
-                    addFriendButton.setEnabled(false);
-                });
+                // Disable "Add Friend" button for yourself
+                if (!member.equals(SessionManager.currentUserId)) {
+                    JButton addFriendButton = new JButton(
+                        FirestoreHandler.isFriend(SessionManager.currentUserId, member) ? "Added" : "Add Friend"
+                    );
+                    addFriendButton.setEnabled(!FirestoreHandler.isFriend(SessionManager.currentUserId, member));
+                    addFriendButton.addActionListener(e -> {
+                        FirestoreHandler.addFriend(SessionManager.currentUserId, member, user.getUsername(), user.getUniversity());
+                        addFriendButton.setText("Added");
+                        addFriendButton.setEnabled(false);
+                    });
+                    memberPanel.add(addFriendButton, BorderLayout.EAST);
+                }
 
                 memberPanel.add(nameLabel, BorderLayout.WEST);
-                memberPanel.add(addFriendButton, BorderLayout.EAST);
                 memberListPanel.add(memberPanel);
             }
         }
@@ -568,32 +574,56 @@ public class Interestspage extends JFrame {
 
         mainPanel.add(membersPanel);
 
+        // Right: About Panel
         JPanel aboutPanel = new JPanel();
         aboutPanel.setLayout(new BorderLayout(10, 10));
         aboutPanel.setBorder(BorderFactory.createTitledBorder("About this Group"));
 
-        JLabel descriptionLabel = new JLabel("<html>" +
-                "This group provides a platform to connect with like-minded individuals who share a passion for " + group + ".<br>" +
-                "The purpose of this community is to foster collaboration, exchange ideas, resources, and strategies to grow together.<br>" +
-                "By joining, you will have the opportunity to:<br>" +
-                "- Share insights and experiences.<br>" +
-                "- Build valuable connections.<br>" +
-                "- Work collectively to achieve personal and group objectives." +
+        // Fetch group details
+        Map<String, Object> groupDetails = FirestoreHandler.getAllGroups().stream()
+            .filter(groupData -> group.equals(groupData.get("groupName")))
+            .findFirst()
+            .orElse(null);
+
+        if (groupDetails != null) {
+            String groupDescription = (String) groupDetails.get("groupDescription");
+            String relatedInterest = (String) groupDetails.get("relatedInterest");
+            String rules = (String) groupDetails.get("rules");
+
+            JLabel descriptionLabel = new JLabel("<html>" +
+                "<b>Description:</b> " + groupDescription + "<br>" +
+                "<b>Related Interest:</b> " + relatedInterest + "<br>" +
+                "<b>Rules:</b> " + rules +
                 "</html>");
-        descriptionLabel.setFont(new Font("Roboto", Font.PLAIN, 14));
-        aboutPanel.add(descriptionLabel, BorderLayout.CENTER);
+            descriptionLabel.setFont(new Font("Roboto", Font.PLAIN, 14));
+            aboutPanel.add(descriptionLabel, BorderLayout.CENTER);
+        } else {
+            JLabel descriptionLabel = new JLabel("<html><b>No additional group information available.</b></html>");
+            descriptionLabel.setFont(new Font("Roboto", Font.PLAIN, 14));
+            aboutPanel.add(descriptionLabel, BorderLayout.CENTER);
+        }
 
         JButton discordButton = new JButton("Join Discord Chat!");
         discordButton.setFont(new Font("Roboto", Font.BOLD, 14));
         discordButton.setBackground(new Color(46, 157, 251));
-        discordButton.setForeground(Color.WHITE);
-        discordButton.addActionListener(e -> JOptionPane.showMessageDialog(groupDialog, "Redirecting to Discord..."));
+        discordButton.setForeground(Color.BLACK);
+        discordButton.addActionListener(e -> {
+            try {
+                Desktop.getDesktop().browse(new java.net.URI("https://discord.gg/jSFmGcCv")); // Our Discord link
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(groupDialog, "Unable to open Discord link.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
         aboutPanel.add(discordButton, BorderLayout.SOUTH);
 
         mainPanel.add(aboutPanel);
 
         groupDialog.setVisible(true);
     }
+
+    
+    
     private void showCreateGroupDialog() {
         JDialog createGroupDialog = new JDialog(this, "Create New Group", true);
         createGroupDialog.setSize(400, 400);
