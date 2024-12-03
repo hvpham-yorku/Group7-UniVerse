@@ -131,18 +131,31 @@ public class FirestoreHandler {
 		ApiFuture<WriteResult> writeResult = contactsRef.document(contactUserId).set(contactData);
 		try {
 			System.out.println("Contact added successfully at: " + writeResult.get().getUpdateTime());
-			// Add a notification for the new friend
+		
+			// Fetch sender's username
+	        String senderUsername;
+	        DocumentReference senderRef = db.collection("UserProfile").document(userId);
+	        DocumentSnapshot senderDoc = senderRef.get().get();
+	        if (senderDoc.exists()) {
+	            senderUsername = senderDoc.getString("username");
+	        } else {
+	            senderUsername = "Unknown";
+	        }
+	       
+
+	        // Add a notification for the new friend
 	        Map<String, Object> notificationData = new HashMap<>();
 	        notificationData.put("type", "friend_request");
-	        notificationData.put("content", contactUsername + " added you as a friend!");
+	        notificationData.put("content", senderUsername + " sent you a friend request.");
 	        addNotification(contactUserId, notificationData);
-		} catch (InterruptedException | ExecutionException e) {
-			System.err.println("Error adding contact: " + e.getMessage());
-		}
-		
-		
-		
+	;
+
+	    } catch (InterruptedException | ExecutionException e) {
+	        System.err.println("Error adding contact or notification: " + e.getMessage());
+	    }
 	}
+
+	
 
 	public static void removeFriend(String userId, String contactUserId) {
 		DocumentReference docRef = db.collection("UserProfile").document(userId).collection("contacts")
@@ -510,5 +523,6 @@ public class FirestoreHandler {
 	            .addSnapshotListener(listener);
 	}
 
+	
 
 }
