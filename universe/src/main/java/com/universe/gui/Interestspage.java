@@ -108,9 +108,6 @@ public class Interestspage extends JFrame {
 
 
 
-
-
-
     private void createLeftPanel() {
         JPanel leftPanel = new JPanel();
         leftPanel.setBounds(100, 80, 430, 480);
@@ -245,60 +242,11 @@ public class Interestspage extends JFrame {
     }
     
 
-//    private void addGroupCard(Map<String, Object> groupData) {
-//        JPanel groupCard = new JPanel();
-//        groupCard.setPreferredSize(new Dimension(310, 60));
-//        groupCard.setBackground(new Color(230, 230, 230));
-//        groupCard.setLayout(null);
-//
-//        String groupName = (String) groupData.get("groupName");
-//
-//        JLabel groupLabel = new JLabel(groupName);
-//        groupLabel.setFont(new Font("Roboto", Font.BOLD, 13));
-//        groupLabel.setBounds(10, 5, 200, 20);
-//        groupCard.add(groupLabel);
-//
-//        // Check membership dynamically
-//        boolean isMember = userGroups.contains(groupName);
-//
-//        JButton actionButton = new JButton(isMember ? "Joined" : "Join");
-//        actionButton.setBounds(220, 5, 80, 30);
-//        actionButton.setFont(new Font("Roboto", Font.BOLD, 10));
-//        actionButton.setBackground(isMember ? new Color(46, 204, 113) : new Color(46, 157, 251));
-//        actionButton.setForeground(Color.BLACK);
-//
-//        // Button click action
-//        actionButton.addActionListener(e -> {
-//            if (!isMember) {
-//                // Join group
-//                FirestoreHandler.addUserToGroup(SessionManager.currentUserId, groupName);
-//                userGroups.add(groupName); // Update local state
-//                actionButton.setText("Joined");
-//                actionButton.setBackground(new Color(46, 204, 113));
-//                actionButton.setEnabled(false); // Disable the button
-//                populateUserGroups(userGroups); // Refresh the left panel
-//            } else {
-//                // Leave group
-//                FirestoreHandler.removeUserFromGroup(SessionManager.currentUserId, groupName);
-//                userGroups.remove(groupName); // Update local state
-//                actionButton.setText("Join");
-//                actionButton.setBackground(new Color(46, 157, 251));
-//                actionButton.setEnabled(true); // Re-enable the button
-//                populateUserGroups(userGroups); // Refresh the left panel
-//            }
-//         // Force revalidate and repaint for immediate UI update
-//            interestsListPanel.revalidate();
-//            interestsListPanel.repaint();
-//        });
-//
-//        // Disable button if already joined
-//        actionButton.setEnabled(!isMember);
-//
-//        groupCard.add(actionButton);
-//        interestsListPanel.add(groupCard);
-//    }
     private void addGroupCard(Map<String, Object> groupData) {
         String groupName = (String) groupData.get("groupName");
+        String groupDescription = (String) groupData.get("groupDescription");
+        String relatedInterest = (String) groupData.get("relatedInterest");
+        String rules = (String) groupData.get("rules");
 
         JPanel groupCard = new JPanel();
         groupCard.setPreferredSize(new Dimension(310, 60));
@@ -319,35 +267,32 @@ public class Interestspage extends JFrame {
 
         joinButton.addActionListener(e -> {
             if (!userGroups.contains(groupName)) {
-                FirestoreHandler.addUserToGroup(SessionManager.currentUserId, groupName);
-                userGroups.add(groupName); // Update user's groups
-                populateUserGroups(userGroups); // Refresh left panel
-                joinButton.setText("Joined");
-                joinButton.setEnabled(false);
+                // Show group details and confirmation dialog
+                String groupInfo = "<html><b>Group Name:</b> " + groupName + "<br>" +
+                                   "<b>Description:</b> " + groupDescription + "<br>" +
+                                   "<b>Related Interest:</b> " + relatedInterest + "<br>" +
+                                   "<b>Rules:</b> " + rules + "</html>";
+                int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    groupInfo,
+                    "Join Group",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+
+                if (confirm == JOptionPane.YES_OPTION) {
+                    FirestoreHandler.addUserToGroup(SessionManager.currentUserId, groupName);
+                    userGroups.add(groupName); // Update user's groups
+                    populateUserGroups(userGroups); // Refresh left panel
+                    joinButton.setText("Joined");
+                    joinButton.setEnabled(false);
+                }
             }
         });
         groupCard.add(joinButton);
 
         interestsListPanel.add(groupCard);
     }
-
-
-
-
-
-
-
-
-//    private void joinGroup(String groupName) {
-//        if (!userGroups.contains(groupName)) {
-//            FirestoreHandler.addUserToGroup(SessionManager.currentUserId, groupName);
-//            JOptionPane.showMessageDialog(this, "You have successfully joined the group: " + groupName,
-//                    "Success", JOptionPane.INFORMATION_MESSAGE);
-//        } else {
-//            JOptionPane.showMessageDialog(this, "You are already a member of this group.",
-//                    "Info", JOptionPane.INFORMATION_MESSAGE);
-//        }
-//    }
 
 
 
@@ -439,21 +384,6 @@ public class Interestspage extends JFrame {
         JOptionPane.showMessageDialog(parentFrame, profilePanel, "Profile Details", JOptionPane.INFORMATION_MESSAGE);
     }
 
-//    private void populateInterestsList(List<String> interests) {
-//        interestsListPanel.removeAll();
-//        if (interests.isEmpty()) {
-//            JLabel noInterestsLabel = new JLabel("No interests found!", JLabel.CENTER);
-//            noInterestsLabel.setFont(new Font("Roboto", Font.BOLD, 14));
-//            noInterestsLabel.setForeground(Color.GRAY);
-//            interestsListPanel.add(noInterestsLabel);
-//        } else {
-//            for (String interest : interests) {
-//                addInterestCard(interest);
-//            }
-//        }
-//        interestsListPanel.revalidate();
-//        interestsListPanel.repaint();
-//    }
 
     private void populateUserGroups(List<String> groups) {
         userGroupsListPanel.removeAll(); // Clear existing components
@@ -474,34 +404,6 @@ public class Interestspage extends JFrame {
     }
 
 
-
-
-
-
-
-
-
-//    private void addInterestCard(String interest) {
-//        JPanel interestCard = new JPanel();
-//        interestCard.setPreferredSize(new Dimension(350, 60));
-//        interestCard.setBackground(new Color(230, 230, 230));
-//        interestCard.setLayout(null);
-//
-//        JLabel interestLabel = new JLabel(interest);
-//        interestLabel.setFont(new Font("Roboto", Font.BOLD, 13));
-//        interestLabel.setBounds(10, 5, 250, 20);
-//        interestCard.add(interestLabel);
-//
-//        JButton joinButton = new JButton("Join");
-//        joinButton.setBounds(240, 5, 60, 30);
-//        joinButton.setFont(new Font("Roboto", Font.BOLD, 10));
-//        joinButton.setBackground(new Color(46, 157, 251));
-//        joinButton.setForeground(Color.BLACK);
-//        joinButton.addActionListener(e -> showJoinConfirmation(interest));
-//        interestCard.add(joinButton);
-//
-//        interestsListPanel.add(interestCard);
-//    }
 
     private void addUserGroupCard(String group) {
         JPanel groupCard = new JPanel();
@@ -528,88 +430,29 @@ public class Interestspage extends JFrame {
         leaveButton.setBackground(new Color(231, 76, 60));
         leaveButton.setForeground(Color.BLACK);
         
-        //leaveButton.addActionListener(e -> showLeaveConfirmation(group));
+        
         leaveButton.addActionListener(e -> {
-            FirestoreHandler.removeUserFromGroup(SessionManager.currentUserId, group); // Remove from Firestore
-            userGroups.remove(group); // Remove from user's groups
-            populateUserGroups(userGroups); // Refresh left panel
-            populateAllGroups(); // Refresh right panel
-        });
-
+            int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to leave the group '" + group + "'?",
+                "Confirm Leave",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+            );
+            if (confirm == JOptionPane.YES_OPTION) {
+                FirestoreHandler.removeUserFromGroup(SessionManager.currentUserId, group); // Remove from Firestore
+                userGroups.remove(group); // Remove from user's groups
+                populateUserGroups(userGroups); // Refresh left panel
+                populateAllGroups(); // Refresh right panel
+                JOptionPane.showMessageDialog(this, "You have successfully left the group: " + group,
+                        "Success", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });     
         
         groupCard.add(leaveButton);
         userGroupsListPanel.add(groupCard);
     }
     
-    
-
-//    private void handleSearch() {
-//        String query = searchField.getText().trim().toLowerCase();
-//        List<Map<String, Object>> allGroups = FirestoreHandler.getAllGroups(); // Assuming this method exists
-//        List<Map<String, Object>> filteredGroups = new ArrayList<>();
-//
-//        if (allGroups != null) {
-//            for (Map<String, Object> group : allGroups) {
-//                String groupName = (String) group.get("groupName");
-//                if (groupName.toLowerCase().contains(query)) {
-//                    filteredGroups.add(group);
-//                }
-//            }
-//        }
-//
-//        // Display filtered groups
-//        interestsListPanel.removeAll();
-//        for (Map<String, Object> group : filteredGroups) {
-//            addGroupCard(group);
-//        }
-//        interestsListPanel.revalidate();
-//        interestsListPanel.repaint();
-//    }
-
-//    private void showJoinConfirmation(String interest) {
-//        String description = "<html><b>Description:</b><br>" +
-//                             "This group provides a platform to connect with like-minded individuals who share a passion for " + interest + ".<br>" +
-//                             "The purpose of this community is to foster collaboration and exchange ideas, resources, and strategies to grow together.<br>" +
-//                             "By joining, you will have the opportunity to:<br>" +
-//                             "- Share insights and experiences.<br>" +
-//                             "- Build valuable connections.<br>" +
-//                             "- Work collectively to achieve personal and group objectives.<br>" +
-//                             "</html>";
-//
-//        JPanel confirmationPanel = new JPanel();
-//        confirmationPanel.setLayout(new BoxLayout(confirmationPanel, BoxLayout.Y_AXIS));
-//        confirmationPanel.add(new JLabel("You're about to join the " + interest + " Community."));
-//        confirmationPanel.add(new JLabel(description));
-//
-//        int response = JOptionPane.showOptionDialog(this,
-//                confirmationPanel,
-//                "Confirm Join",
-//                JOptionPane.YES_NO_OPTION,
-//                JOptionPane.QUESTION_MESSAGE,
-//                null,
-//                new String[]{"Join Now", "Cancel"},
-//                "Cancel");
-//        if (response == JOptionPane.YES_OPTION) {
-//            userGroups.add(interest);
-//            populateUserGroups(userGroups);
-//        }
-//    }
-
-    private void showLeaveConfirmation(String group) {
-        int response = JOptionPane.showOptionDialog(this,
-                "Are you sure you want to leave the " + group + " group?",
-                "Confirm Leave",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                new String[]{"Leave", "Cancel"},
-                "Cancel");
-        if (response == JOptionPane.YES_OPTION) {
-            FirestoreHandler.removeUserFromGroup(SessionManager.currentUserId, group);
-            JOptionPane.showMessageDialog(this, "You have successfully left the group: " + group,
-                    "Success", JOptionPane.INFORMATION_MESSAGE);
-        }
-    }
 
 
     private void openGroupPage(String group) {

@@ -421,25 +421,10 @@ public class FirestoreHandler {
 		// Attach a snapshot listener to the collection (ordered by timestamp)
 		return messagesRef.orderBy("timestamp", Query.Direction.ASCENDING).addSnapshotListener(listener);
 	}
-	 //Modifies for community page , kennie
 	
-//	public static List<String> getUserGroups(String userId) {
-//	    List<String> userGroups = new ArrayList<>();
-//	    try {
-//	        // Replace with actual Firestore logic to fetch user's groups
-//	        // Example logic:
-//	        Firestore db = FirestoreClient.getFirestore();
-//	        DocumentReference docRef = db.collection("users").document(userId);
-//	        ApiFuture<DocumentSnapshot> future = docRef.get();
-//	        DocumentSnapshot document = future.get();
-//	        if (document.exists()) {
-//	            userGroups = (List<String>) document.get("groups"); // Adjust based on your Firestore schema
-//	        }
-//	    } catch (Exception e) {
-//	        e.printStackTrace();
-//	    }
-//	    return userGroups;
-//	}
+	
+	 //Modifications for community page , kennie
+
 	
 	/**
      * Fetches members of a group from the database.
@@ -618,6 +603,44 @@ public class FirestoreHandler {
             System.err.println("Error removing user from group: " + e.getMessage());
         }
     }
+    
+    //Add methods to determine the creator of the group and delete it from Firestore:
+    public static boolean isGroupCreator(String userId, String groupName) {
+        try {
+            DocumentSnapshot groupSnapshot = db.collection("groups").document(groupName).get().get();
+            if (groupSnapshot.exists()) {
+                String creatorId = groupSnapshot.getString("creatorId");
+                return userId.equals(creatorId);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            System.err.println("Error checking group creator: " + e.getMessage());
+        }
+        return false;
+    }
+    
+    //deleteGroup Method
+    public static void deleteGroup(String groupName) {
+        try {
+            // Delete group document
+            db.collection("groups").document(groupName).delete().get();
+
+            // Optionally, clean up references in users' "groups" arrays
+            ApiFuture<QuerySnapshot> usersFuture = db.collection("users").get();
+            List<QueryDocumentSnapshot> userDocs = usersFuture.get().getDocuments();
+
+            for (QueryDocumentSnapshot userDoc : userDocs) {
+                db.collection("users").document(userDoc.getId())
+                  .update("groups", FieldValue.arrayRemove(groupName)).get();
+            }
+
+            System.out.println("Group '" + groupName + "' successfully deleted from Firestore.");
+        } catch (InterruptedException | ExecutionException e) {
+            System.err.println("Error deleting group: " + e.getMessage());
+        }
+    }
+
+
+    
 
 
     
@@ -633,31 +656,6 @@ public class FirestoreHandler {
 
 
 
-
-
-
-
-//    public static List<Map<String, Object>> getGroupsMatchingInterests(List<String> interests) {
-//        List<Map<String, Object>> matchingGroups = new ArrayList<>();
-//        try {
-//            CollectionReference groupsRef = db.collection("groups");
-//
-//            for (String interest : interests) {
-//                Query query = groupsRef.whereEqualTo("groupName", interest);
-//                ApiFuture<QuerySnapshot> querySnapshot = query.get();
-//
-//                for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
-//                    Map<String, Object> groupData = document.getData();
-//                    if (groupData != null) {
-//                        matchingGroups.add(groupData);
-//                    }
-//                }
-//            }
-//        } catch (InterruptedException | ExecutionException e) {
-//            System.err.println("Error fetching groups matching interests: " + e.getMessage());
-//        }
-//        return matchingGroups;
-//    }
 
 
 
