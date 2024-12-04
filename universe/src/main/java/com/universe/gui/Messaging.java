@@ -1,20 +1,31 @@
 package com.universe.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -25,6 +36,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.json.JSONObject;
 
@@ -34,7 +46,9 @@ import com.google.cloud.firestore.ListenerRegistration;
 import com.universe.FirebaseInitializer;
 import com.universe.FirestoreHandler;
 import com.universe.models.UserProfile;
+import com.universe.utils.Constants;
 import com.universe.utils.SessionManager;
+import com.universe.utils.Sidebar;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -51,6 +65,8 @@ public class Messaging extends JFrame {
 	private JPanel chatHistoryPanel; // Chat history panel
 	private JScrollPane chatScrollPane; // Scrollable chat history
 	private List<UserProfile> friendsList; // List of friends for the current user
+	private UserProfile currentUser; // Logged-in user's profile
+
 
 	// Firestore real-time listener
 	private ListenerRegistration chatListener;
@@ -98,8 +114,11 @@ public class Messaging extends JFrame {
 		setContentPane(contentPane);
 
 		// Sidebar panel (left)
-		JPanel sidebarPanel = createSidebar();
-		contentPane.add(sidebarPanel, BorderLayout.WEST);
+		JPanel sidebarPanel = Sidebar.createSidebar(currentUser,this);
+		
+		contentPane.add(sidebarPanel);
+		//add(sidebarPanel, BorderLayout.WEST);
+		
 
 		// Contacts and Chat Panels
 		JPanel contactsPanel = createContactsPanel();
@@ -120,76 +139,13 @@ public class Messaging extends JFrame {
 		});
 	}
 
-	private JPanel createSidebar() {
-	    JPanel sidebar = new JPanel();
-	    sidebar.setPreferredSize(new Dimension(80, 0)); // Fixed width for the sidebar
-	    sidebar.setBackground(Color.WHITE);
-	    sidebar.setLayout(null);
-
-	    // Initialize profilePic
-	    profilePic = new JLabel(); 
-
-	    String profilePicBase64 = FirestoreHandler.getUserData(currentUserId).getProfilePicture(); // Fetch profile picture
-	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
-	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
-	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
-	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
-	        profilePic.setIcon(new ImageIcon(scaledImage));
-	    } else {
-	        // Default profile picture
-	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png"));
-	    }
-
-	    profilePic.setBounds(10, 28, 60, 60);
-	    profilePic.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Change cursor to hand
-	    profilePic.setToolTipText("View Profile"); 
-
-	    sidebar.add(profilePic);
-
-	    // Add sidebar icons and actions
-	    addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> navigateToHomepage());
-	    addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {});
-	    addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240,
-	            e -> JOptionPane.showMessageDialog(this, "Notifications clicked!"));
-	    addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310,
-	            e -> JOptionPane.showMessageDialog(this, "Community clicked!"));
-	    addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380,
-	            e -> JOptionPane.showMessageDialog(this, "Settings clicked!"));
-	    addSidebarIcon(sidebar, "src/main/resources/icons/leave.png", "Logout", 450, e -> handleLogout());
-
-	    return sidebar;
-	}
 	
-	private void refreshProfilePicture() {
-	    String profilePicBase64 = FirestoreHandler.getUserData(currentUserId).getProfilePicture(); // Fetch latest picture
-	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
-	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
-	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
-	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
-	        profilePic.setIcon(new ImageIcon(scaledImage));
-	    } else {
-	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png")); // Default icon
-	    }
-	    profilePic.revalidate();
-	    profilePic.repaint(); // Ensure immediate UI refresh
-	}
 	
-	private void addSidebarIcon(JPanel sidebar, String iconPath, String tooltip, int yPosition,
-			java.awt.event.ActionListener action) {
-		ImageIcon originalIcon = new ImageIcon(iconPath);
-		Image resizedImage = originalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-		ImageIcon resizedIcon = new ImageIcon(resizedImage);
-		JButton iconButton = new JButton(resizedIcon);
-		iconButton.setBounds(10, yPosition, 60, 60);
-		iconButton.setBackground(Color.WHITE);
-		iconButton.setBorder(BorderFactory.createEmptyBorder());
-		iconButton.setFocusPainted(false);
-		iconButton.setToolTipText(tooltip);
-		iconButton.addActionListener(action);
-		sidebar.add(iconButton);
-	}
 
-	private void navigateToHomepage() {
+	
+
+	
+	private void navigateToHomepage(JFrame parentFrame) {
 		EventQueue.invokeLater(() -> {
 			Homepage homepage = new Homepage();
 			homepage.setVisible(true);
@@ -197,6 +153,7 @@ public class Messaging extends JFrame {
 		});
 		dispose(); // Close current page
 	}
+	
 	
 	private void handleLogout() {
 		int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit?", "Exit Confirmation",
@@ -212,7 +169,8 @@ public class Messaging extends JFrame {
 
 		// Contacts Header
 		JLabel contactsLabel = new JLabel("Contacts", SwingConstants.CENTER);
-		contactsLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+		contactsLabel.setBorder(BorderFactory.createEmptyBorder(7, 0, 7, 0));
+		
 		contactsPanel.add(contactsLabel, BorderLayout.NORTH);
 
 		// Search and Add Contact

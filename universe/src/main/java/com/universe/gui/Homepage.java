@@ -40,6 +40,7 @@ import com.universe.FirestoreHandler;
 import com.universe.models.UserProfile;
 import com.universe.utils.Constants;
 import com.universe.utils.SessionManager;
+import com.universe.utils.Sidebar;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -118,7 +119,8 @@ public class Homepage extends JFrame {
 		contentPane.add(welcomePanel);
 
 		// Sidebar
-		JPanel sidebar = createSidebar(this);
+		//JPanel sidebar = createSidebar(this);
+		JPanel sidebar = Sidebar.createSidebar(currentUser, this);
 		contentPane.add(sidebar);
 
 		// Create panels in the correct order
@@ -887,103 +889,19 @@ public class Homepage extends JFrame {
 
 
 	
-	private JPanel createSidebar(JFrame parentFrame) {
-	    JPanel sidebar = new JPanel();
-	    sidebar.setBounds(10, 10, 70, 540);
-	    sidebar.setBackground(Color.WHITE);
-	    sidebar.setLayout(null);
+	
 
-	    // Profile Picture
-	    profilePic = new JLabel();
-//	    String profilePicBase64 = currentUser.getProfilePicture();
-//	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
-//	        // Decode Base64 and set as profile picture
-//	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
-//	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
-//	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
-//	        profilePic.setIcon(new ImageIcon(scaledImage));
-//	    } else {
-//	        // Use placeholder if no profile picture is available
-//	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png"));
-//	    }
-	    String profilePicBase64 = currentUser.getProfilePicture();
-	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
-	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
-	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
-	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
-	        profilePic.setIcon(new ImageIcon(scaledImage));
-	    } else {
-	        // Default profile picture
-	        ImageIcon defaultIcon = new ImageIcon("src/main/resources/icons/profile.png");
-	        Image scaledDefaultImage = defaultIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
-	        profilePic.setIcon(new ImageIcon(scaledDefaultImage));
-	    }
-
-	    profilePic.setBounds(5, 25, 60, 60);
-	    profilePic.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR)); // Change cursor to hand for click indication
-	    profilePic.setToolTipText("View Profile"); // Tooltip for accessibility
-
-	    profilePic.addMouseListener(new java.awt.event.MouseAdapter() {
-	        @Override
-	        public void mouseClicked(java.awt.event.MouseEvent e) {
-	            // Show the current user's profile in a pop-up
-	            showProfile(currentUser, Homepage.this);
-	        }
-	    });
-	    sidebar.add(profilePic);
-
-	    // Sidebar Icons
-	    addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> {
-	        // Homepage homepage = new Homepage();
-	        // homepage.setVisible(true);
-	        // parentFrame.dispose();
-	    });
-	    addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {
-	        navigateToMessages(parentFrame);
-	    });
-	    addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> {
-	        JOptionPane.showMessageDialog(parentFrame, "Notifications clicked!");
-	    });
-	    addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310, e -> {
-	        JOptionPane.showMessageDialog(parentFrame, "Community clicked!");
-	    });
-	    addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380, e -> {
-	        JOptionPane.showMessageDialog(parentFrame, "Settings clicked!");
-	    });
-	    addSidebarIcon(sidebar, "src/main/resources/icons/leave.png", "Logout", 450, e -> {
-	        int confirm = JOptionPane.showConfirmDialog(parentFrame, "Are you sure you want to exit?",
-	                "Exit Confirmation", JOptionPane.YES_NO_OPTION);
-	        if (confirm == JOptionPane.YES_OPTION) {
-	            System.exit(0);
-	        }
-	    });
-
-	    return sidebar;
-	}
-
-	private void navigateToMessages(JFrame parentFrame) {
-	    // Dispose of the current frame to clean up resources
+	private void navigateToNotifications(JFrame parentFrame) {
+		 // Dispose of the current frame to clean up resources
 	    parentFrame.dispose(); 
 
+	    //UNCOMMENT AFTER MERGE!!!!
 	    // Safely open the Messaging frame on the Event Dispatch Thread
-	    EventQueue.invokeLater(() -> {
-	        Messaging messaging = new Messaging();
-	        messaging.setVisible(true);
-	        messaging.setLocationRelativeTo(null); // Center the new window
-	    });
-	}
-	private void addSidebarIcon(JPanel sidebar, String iconPath, String tooltip, int yPosition,
-			java.awt.event.ActionListener action) {
-		ImageIcon originalIcon = new ImageIcon(iconPath);
-		Image resizedImage = originalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-		ImageIcon resizedIcon = new ImageIcon(resizedImage);
-		JButton iconButton = new JButton(resizedIcon);
-		iconButton.setBounds(5, yPosition, 60, 60);
-		iconButton.setBackground(Color.WHITE);
-		iconButton.setBorder(BorderFactory.createEmptyBorder());
-		iconButton.setFocusPainted(false);
-		iconButton.setToolTipText(tooltip);
-		iconButton.addActionListener(action);
-		sidebar.add(iconButton);
+	    //EventQueue.invokeLater(() -> {
+	       // Notifications notifications = new Notifications();
+	        //notifications.setVisible(true);
+	        //notifications.setLocationRelativeTo(null); // Center the new window
+	  //  });
+		
 	}
 }
