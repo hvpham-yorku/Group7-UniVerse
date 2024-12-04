@@ -259,12 +259,21 @@ public class FirestoreHandler {
 		CollectionReference messagesRef = db.collection("chats").document(userId + "_" + contactId)
 				.collection("messages");
 		ApiFuture<DocumentSnapshot> existingMessage = messagesRef.document(messageId).get();
-
+		
+		// Define chatId for this message
+	    String chatId = userId + "_" + contactId;
+		
 		try {
 			if (!existingMessage.get().exists()) {
 				// Save message in both userId_contactId and contactId_userId
 				saveMessageInChat(userId + "_" + contactId, messageId, messageData);
 				saveMessageInChat(contactId + "_" + userId, messageId, messageData);
+				// Add a notification for the receiver
+			    Map<String, Object> notificationData = new HashMap<>();
+			    notificationData.put("type", "new_message");
+			    notificationData.put("content", "You received a new message!");
+			    notificationData.put("metadata", Map.of("chatId", chatId, "senderId", userId));
+			    addNotification(contactId, notificationData);
 			}
 		} catch (InterruptedException | ExecutionException e) {
 			System.err.println("Error checking existing message: " + e.getMessage());
