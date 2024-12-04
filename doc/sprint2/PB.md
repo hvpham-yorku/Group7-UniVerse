@@ -71,7 +71,7 @@
     - **Criteria for Satisfaction**:
       - An in-app calendar feature allows activity scheduling.
       - Activity details (time, location) are shared with both users.
-    - **Status**: Not started.
+    - **Status**: ✅ Discussed during stand up meetings, not in scope of project anymore.
 
 12. **User Story**: As a user, I want to receive notifications for new matches, messages, and scheduled activities to stay updated.
     - **Criteria for Satisfaction**:
@@ -89,13 +89,13 @@
     - **Criteria for Satisfaction**:
       - Users can block or report other users.
       - Blocked users can no longer send messages or connection requests.
-    - **Status**: Not started.
+    - **Status**: ✅ Discussed during stand up meetings, not in scope of project anymore.
 
 15. **User Story**: As a user, I want my account to show “Last Active” so that my connections know when I was last online.
     - **Criteria for Satisfaction**:
       - Profiles display the “Last Active” timestamp.
       - “Last Active” updates based on user login and activity.
-    - **Status**: Not started.
+    - **Status**: ✅ Discussed during stand up meetings, not in scope of project anymore.
 
 16. **User Story**: As a user, I want to customize my search filters to find users with niche interests relevant to me.
     - **Criteria for Satisfaction**:
@@ -107,7 +107,7 @@
     - **Criteria for Satisfaction**:
       - A weekly list of suggested profiles is sent to users based on interests.
       - Suggestions are updated weekly based on recent user activity.
-    - **Status**: Not started.
+    - **Status**: ✅ Discussed during stand up meetings, not in scope of project anymore.
 
 18. **User Story**: As a user, I want to have access to account recovery options in case I forget my password or cannot access my email.
     - **Criteria for Satisfaction**:
