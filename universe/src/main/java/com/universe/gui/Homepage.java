@@ -880,9 +880,7 @@ public class Homepage extends JFrame {
 	    addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {
 	        navigateToMessages(parentFrame);
 	    });
-	    addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> {
-	        JOptionPane.showMessageDialog(parentFrame, "Notifications clicked!");
-	    });
+		addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> navigateToNotifications());
 	    
 	    addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310, e -> navigatetoInterestPage(parentFrame));
 	    
@@ -899,6 +897,15 @@ public class Homepage extends JFrame {
 
 	    return sidebar;
 	}
+	
+	private void navigateToNotifications() {
+        EventQueue.invokeLater(() -> {
+        	Notifications notifications = new Notifications();
+        	notifications.setVisible(true);
+            notifications.setLocationRelativeTo(null);
+        });
+        dispose();
+    }
 
 	private void navigateToMessages(JFrame parentFrame) {
 	    // Dispose of the current frame to clean up resources
