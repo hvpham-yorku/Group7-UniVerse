@@ -115,8 +115,10 @@ public class Messaging extends JFrame {
 
 		// Sidebar panel (left)
 		JPanel sidebarPanel = Sidebar.createSidebar(currentUser,this);
+		sidebarPanel.setPreferredSize(new Dimension(80, 0)); // Set fixed width for the sidebar
+		contentPane.add(sidebarPanel, BorderLayout.WEST);
 		
-		contentPane.add(sidebarPanel);
+		//contentPane.add(sidebarPanel);
 		//add(sidebarPanel, BorderLayout.WEST);
 		
 
