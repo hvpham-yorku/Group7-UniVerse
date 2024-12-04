@@ -16,6 +16,10 @@ then run
 ```
 in your terminal to refresh the session. 
 
+https://docs.google.com/document/d/1qwCBQ13yHv0Tm9d-tXbxx8y92L3dNKNo_C03voE1P44/edit?usp=sharing
+
+In the google doc above is our OpenAI API keys, to use them, right click on the project folder in eclipse, go to run configuration, under that click on the universe class, and add the OPENAI_API_KEYs as variable, and the API key ad content
+
 ## Motivation
 
 **UniVerse** is a social networking application that connects users based on shared hobbies and interests. The project aims to help users find friends with similar passions, enhancing their social experience by allowing them to connect with like-minded individuals. By focusing on specific activities, UniVerse fosters meaningful connections and helps users engage in group activities with new friends.
