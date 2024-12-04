@@ -528,6 +528,50 @@ public class Homepage extends JFrame {
 	    dialog.setVisible(true);
 	}
 
+Notifications
+	private JPanel createSidebar(JFrame parentFrame) {
+		JPanel sidebar = new JPanel();
+		sidebar.setBounds(10, 10, 70, 540);
+		sidebar.setBackground(Color.WHITE);
+		sidebar.setLayout(null);
+
+		JLabel profilePic = new JLabel(new ImageIcon("src/main/resources/icons/profile.png"));
+		profilePic.setBounds(5, 25, 60, 60);
+		sidebar.add(profilePic);
+
+		addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> {
+			// Homepage homepage = new Homepage();
+			// homepage.setVisible(true);
+			// parentFrame.dispose();
+		});
+		addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {
+			Messaging messaging = new Messaging();
+			messaging.setVisible(true);
+			messaging.setLocationRelativeTo(null);
+			parentFrame.dispose();
+		});
+		addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> {
+	        EventQueue.invokeLater(() -> {
+	            Notifications notifications = new Notifications();
+	            notifications.setVisible(true);
+	            notifications.setLocationRelativeTo(null);
+	        });
+	        parentFrame.dispose();
+	    });
+		addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310, e -> {
+			JOptionPane.showMessageDialog(parentFrame, "Community clicked!");
+		});
+		addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380, e -> {
+			JOptionPane.showMessageDialog(parentFrame, "Settings clicked!");
+		});
+		addSidebarIcon(sidebar, "src/main/resources/icons/leave.png", "Logout", 450, e -> {
+			int confirm = JOptionPane.showConfirmDialog(parentFrame, "Are you sure you want to exit?",
+					"Exit Confirmation", JOptionPane.YES_NO_OPTION);
+			if (confirm == JOptionPane.YES_OPTION) {
+				System.exit(0);
+			}
+		});
+
 	public void showProfile(UserProfile user, JFrame parentFrame) {
 	    JDialog dialog = new JDialog(parentFrame, "Edit My Profile", true);
 	    dialog.setSize(500, 700);
@@ -884,6 +928,7 @@ public class Homepage extends JFrame {
 					JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
+main
 
 
 	
