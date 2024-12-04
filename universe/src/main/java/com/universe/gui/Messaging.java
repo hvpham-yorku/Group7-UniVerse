@@ -149,8 +149,7 @@ public class Messaging extends JFrame {
 	    // Add sidebar icons and actions
 	    addSidebarIcon(sidebar, "src/main/resources/icons/home.png", "Home", 100, e -> navigateToHomepage());
 	    addSidebarIcon(sidebar, "src/main/resources/icons/messages.png", "Chat", 170, e -> {});
-	    addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240,
-	            e -> JOptionPane.showMessageDialog(this, "Notifications clicked!"));
+	    addSidebarIcon(sidebar, "src/main/resources/icons/notifications.png", "Notifications", 240, e -> navigateToNotifications());
 	    addSidebarIcon(sidebar, "src/main/resources/icons/community.png", "Community", 310,
 	            e -> JOptionPane.showMessageDialog(this, "Community clicked!"));
 	    addSidebarIcon(sidebar, "src/main/resources/icons/settings.png", "Settings", 380,
@@ -159,6 +158,15 @@ public class Messaging extends JFrame {
 
 	    return sidebar;
 	}
+	
+	private void navigateToNotifications() {
+        EventQueue.invokeLater(() -> {
+        	Notifications notifications = new Notifications();
+        	notifications.setVisible(true);
+            notifications.setLocationRelativeTo(null);
+        });
+        dispose();
+    }
 	
 	private void refreshProfilePicture() {
 	    String profilePicBase64 = FirestoreHandler.getUserData(currentUserId).getProfilePicture(); // Fetch latest picture
