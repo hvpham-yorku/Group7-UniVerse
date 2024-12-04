@@ -151,14 +151,20 @@ public class FirestoreHandler {
 		contactData.put("university", contactUniversity);
 		
 		// Add a notification for the new friend
-        Map<String, Object> notificationData = new HashMap<>();
-        notificationData.put("type", "friend_request");
-        notificationData.put("content", contactUsername + " added you as a friend!");
-        addNotification(contactUserId, notificationData);
+	    Map<String, Object> notificationData = new HashMap<>();
+	    notificationData.put("type", "friend_request");
+	    notificationData.put("content", contactUsername + " added you as a friend!");
+	    notificationData.put("senderId", userId);  // Add the senderId to the notificationData
+	    // Debug: Log the notification data
+	    System.out.println("Creating friend request notification: " + notificationData);
+
+	    addNotification(contactUserId, notificationData); // Add the notification for the recipient user
+
 
 		ApiFuture<WriteResult> writeResult = contactsRef.document(contactUserId).set(contactData);
 		try {
 			System.out.println("Contact added successfully at: " + writeResult.get().getUpdateTime());
+			
 		} catch (InterruptedException | ExecutionException e) {
 			System.err.println("Error adding contact: " + e.getMessage());
 		}

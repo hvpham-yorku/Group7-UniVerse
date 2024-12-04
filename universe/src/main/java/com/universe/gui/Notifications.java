@@ -22,6 +22,7 @@ import javax.swing.border.EmptyBorder;
 
 import com.universe.FirebaseInitializer;
 import com.universe.FirestoreHandler;
+import com.universe.models.UserProfile;
 import com.universe.utils.SessionManager;
 
 public class Notifications extends JFrame {
@@ -197,11 +198,21 @@ public class Notifications extends JFrame {
         String userId = SessionManager.currentUserId;
 
         switch (type) {
-            case "friend_request":
-               JOptionPane.showMessageDialog(this, "Friend Request received.");
-            	
-                 break;
-            	
+        case "friend_request":
+        	String friendRequestSenderId = (String) notification.get("senderId");
+            if (friendRequestSenderId == null || friendRequestSenderId.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Notification metadata is missing sender information.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Fetch sender profile and display a friend request dialog
+            UserProfile senderProfile = FirestoreHandler.getUserData(friendRequestSenderId);
+            if (senderProfile != null) {
+                showFriendRequestProfile(senderProfile, userId, notificationId);
+            } else {
+                JOptionPane.showMessageDialog(this, "Unable to fetch user information.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            break;
             case "new_message":
                 Map<String, Object> metadata = (Map<String, Object>) notification.get("metadata");
                 if (metadata != null) {
@@ -246,6 +257,45 @@ public class Notifications extends JFrame {
         }
         
     }
+    private void showFriendRequestProfile(UserProfile senderProfile, String currentUserId, String notificationId) {
+        JFrame profileFrame = new JFrame("Friend Request - " + senderProfile.getUsername());
+        profileFrame.setSize(400, 300);
+        profileFrame.setLayout(new BorderLayout());
+
+        // Profile Info Panel
+        JPanel profilePanel = new JPanel();
+        profilePanel.setLayout(new BoxLayout(profilePanel, BoxLayout.Y_AXIS));
+        profilePanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        profilePanel.setBackground(Color.WHITE);
+
+        JLabel usernameLabel = new JLabel("Username: " + senderProfile.getUsername());
+        JLabel emailLabel = new JLabel("Email: " + senderProfile.getEmail());
+        JLabel universityLabel = new JLabel("University: " + senderProfile.getUniversity());
+        JLabel bioLabel = new JLabel("Bio: " + (senderProfile.getBio() != null ? senderProfile.getBio() : "N/A"));
+
+        profilePanel.add(usernameLabel);
+        profilePanel.add(emailLabel);
+        profilePanel.add(universityLabel);
+        profilePanel.add(bioLabel);
+
+        // Add Friend Button
+        JButton addFriendButton = new JButton("Add Friend");
+        addFriendButton.addActionListener(e -> {
+            // Add friend to Firestore and mark notification as read
+            FirestoreHandler.addFriend(currentUserId, senderProfile.getUserId(), senderProfile.getUsername(), senderProfile.getUniversity());
+            FirestoreHandler.markNotificationAsRead(currentUserId, notificationId);
+
+            JOptionPane.showMessageDialog(profileFrame, "You are now friends with " + senderProfile.getUsername());
+            profileFrame.dispose();
+        });
+
+        profileFrame.add(profilePanel, BorderLayout.CENTER);
+        profileFrame.add(addFriendButton, BorderLayout.SOUTH);
+
+        profileFrame.setLocationRelativeTo(null);
+        profileFrame.setVisible(true);
+    }
+
     
 
 }
