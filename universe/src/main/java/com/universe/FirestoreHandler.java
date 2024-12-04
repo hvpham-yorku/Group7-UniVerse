@@ -638,11 +638,6 @@ public class FirestoreHandler {
             System.err.println("Error deleting group: " + e.getMessage());
         }
     }
-
-
-    
-
-
     
     //Add a method to attach a real-time listener to the user's groups.
     
@@ -650,13 +645,5 @@ public class FirestoreHandler {
         DocumentReference userDoc = db.collection(COLLECTION_NAME).document(userId);
         return userDoc.addSnapshotListener(listener);
     }
-
-
-
-
-
-
-
-
 
 }

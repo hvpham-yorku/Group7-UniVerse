@@ -412,40 +412,6 @@ public class Homepage extends JFrame {
 		}).start();
 	}
 
-//	private void showProfilePopup(UserProfile user) {
-//		JPanel profilePanel = new JPanel();
-//		profilePanel.setLayout(new BoxLayout(profilePanel, BoxLayout.Y_AXIS));
-//		profilePanel.add(new JLabel("Name: " + user.getUsername()));
-//		profilePanel.add(new JLabel("University: " + user.getUniversity()));
-//		profilePanel.add(new JLabel("City: " + user.getProvince()));
-//		profilePanel.add(new JLabel("Interest: " + user.getInterests()));
-//		profilePanel.add(new JLabel("Date of Birth: " + user.getDateOfBirth()));
-//		profilePanel.add(new JLabel("Email: " + user.getEmail()));
-//
-//		int option = JOptionPane.showOptionDialog(this, profilePanel, "User Profile", JOptionPane.OK_CANCEL_OPTION,
-//				JOptionPane.INFORMATION_MESSAGE, null, new String[] { "Add Friend", "Close" }, "Close");
-//
-//		if (option == JOptionPane.OK_OPTION) {
-//			// Check if the user is already added
-//			synchronized (addedFriends) {
-//				boolean isAlreadyAdded = addedFriends.stream()
-//						.anyMatch(friend -> friend.getUserId().equals(user.getUserId()));
-//				if (isAlreadyAdded) {
-//					// Notify the user that the friend is already added
-//					JOptionPane.showMessageDialog(this, user.getUsername() + " is already added as a friend!",
-//							"Friend Already Added", JOptionPane.WARNING_MESSAGE);
-//				} else {
-//					// Add the friend to the Firestore and update UI
-//					FirestoreHandler.addFriend(SessionManager.currentUserId, user.getUserId(), user.getUsername(),
-//							user.getUniversity());
-//					addedFriends.add(user);
-//					refreshRightPanelAfterDelay();
-//					JOptionPane.showMessageDialog(this, user.getUsername() + " has been added as a friend!", "Success",
-//							JOptionPane.INFORMATION_MESSAGE);
-//				}
-//			}
-//		}
-//	}
 	
 	private void showProfilePopup(UserProfile user) {
 	    JDialog dialog = new JDialog(this, "User Profile", true);
@@ -647,24 +613,7 @@ public class Homepage extends JFrame {
 
 	    JButton btnChangeProfilePicture = new JButton("Change Picture");
 	    btnChangeProfilePicture.setBounds(260, yPosition + 35, 140, fieldHeight);
-//	    btnChangeProfilePicture.addActionListener(e -> {
-//	        String newProfilePicture = selectProfilePicture();
-//	        if (newProfilePicture != null) {
-//	            user.setProfilePicture(newProfilePicture);
-//	            
-//	            // Update the preview in the dialog
-//	            byte[] imageBytes = Base64.getDecoder().decode(newProfilePicture);
-//	            ImageIcon profileImageIcon = new ImageIcon(imageBytes);
-//	            Image scaledImage = profileImageIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
-//	            profilePicturePreview.setIcon(new ImageIcon(scaledImage));
-//	            
-//	            // Save the updated profile picture to Firestore
-//	            FirestoreHandler.updateUserData(user);
-//	            
-//	            // Refresh the sidebar profile picture
-//	            updateSidebarProfilePicture(newProfilePicture);
-//	        }
-//	    });
+
 	    btnChangeProfilePicture.addActionListener(e -> {
 	        String newProfilePicture = selectAndResizeProfilePicture();
 	        if (newProfilePicture != null) {
@@ -895,17 +844,7 @@ public class Homepage extends JFrame {
 
 	    // Profile Picture
 	    profilePic = new JLabel();
-//	    String profilePicBase64 = currentUser.getProfilePicture();
-//	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
-//	        // Decode Base64 and set as profile picture
-//	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
-//	        ImageIcon profileImageIcon = new ImageIcon(imageBytes);
-//	        Image scaledImage = profileImageIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
-//	        profilePic.setIcon(new ImageIcon(scaledImage));
-//	    } else {
-//	        // Use placeholder if no profile picture is available
-//	        profilePic.setIcon(new ImageIcon("src/main/resources/icons/profile.png"));
-//	    }
+
 	    String profilePicBase64 = currentUser.getProfilePicture();
 	    if (profilePicBase64 != null && !profilePicBase64.isEmpty()) {
 	        byte[] imageBytes = Base64.getDecoder().decode(profilePicBase64);
