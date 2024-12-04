@@ -14,6 +14,8 @@ public class UserProfile {
 	private List<String> interests;
 	private String contactUserId; 
 	private String profilePicture; 
+	private List<String> groups; // Add this field
+
 
 	// Getter and Setter for contactUserId
 	public String getContactUserId() {
@@ -181,5 +183,14 @@ public class UserProfile {
 	public void setInterests(List<String> interests) {
 		this.interests = interests;
 	}
+	
+	// Getter and Setter for groups
+    public List<String> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<String> groups) {
+        this.groups = groups;
+    }
 
 }
